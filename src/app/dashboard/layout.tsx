@@ -2,8 +2,9 @@
 
 import Link from 'next/link'
 import Image from 'next/image'
-import { usePathname } from 'next/navigation'
-import { Home, Search, Users, LayoutList, MessageCircle, Bell, User } from 'lucide-react'
+import { usePathname, useRouter } from 'next/navigation'
+import { Home, Search, Users, LayoutList, MessageCircle, Bell, User, LogOut } from 'lucide-react'
+import { createClient } from '@/lib/supabase'
 
 const navItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
@@ -15,6 +16,13 @@ const navItems = [
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -49,7 +57,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </nav>
 
-          {/* Rechts: notificaties + profiel */}
+          {/* Rechts: notificaties + profiel + logout */}
           <div className="flex items-center gap-3">
             <Link
               href="/dashboard/notifications"
@@ -64,6 +72,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <User className="w-5 h-5 text-white" />
             </Link>
+            <button
+              onClick={handleLogout}
+              className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors"
+              title="Uitloggen"
+            >
+              <LogOut className="w-5 h-5 text-gray-500" />
+            </button>
           </div>
         </div>
       </header>
