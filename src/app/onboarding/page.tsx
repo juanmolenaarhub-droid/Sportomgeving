@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
+import { validateImageFile } from '@/lib/validateFile'
+import { sanitizeText, limitLength } from '@/lib/sanitize'
 
 const SPORTS = [
   { id: 1, name: 'Hardlopen' },
@@ -47,10 +49,11 @@ export default function OnboardingPage() {
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
-    if (file) {
-      setAvatarFile(file)
-      setAvatarPreview(URL.createObjectURL(file))
-    }
+    if (!file) return
+    const err = validateImageFile(file)
+    if (err) { alert(err); return }
+    setAvatarFile(file)
+    setAvatarPreview(URL.createObjectURL(file))
   }
 
   function toggleSport(sportId: number) {
@@ -96,10 +99,10 @@ export default function OnboardingPage() {
     const { error: profileError } = await supabase
       .from('profiles')
       .update({
-        full_name: fullName,
-        region,
+        full_name: sanitizeText(limitLength(fullName, 80)),
+        region: sanitizeText(limitLength(region, 80)),
         age: age ? parseInt(age) : null,
-        bio,
+        bio: sanitizeText(limitLength(bio, 500)),
         avatar_url: avatarUrl || undefined,
         relationship_status: relationshipStatus || null,
       })

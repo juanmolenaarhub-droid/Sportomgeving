@@ -28,7 +28,13 @@ export default function RegisterPage() {
       },
     })
     if (error) {
-      setError(error.message)
+      if (error.message.includes('already registered') || error.message.includes('already exists')) {
+        setError('Dit e-mailadres is al in gebruik.')
+      } else if (error.message.includes('password')) {
+        setError('Wachtwoord moet minimaal 6 tekens bevatten.')
+      } else {
+        setError('Er is iets misgegaan. Probeer het opnieuw.')
+      }
       setLoading(false)
     } else {
       router.push('/onboarding')

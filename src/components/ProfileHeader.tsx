@@ -3,6 +3,7 @@
 import { useRef, useState } from 'react'
 import { Camera, Pencil } from 'lucide-react'
 import { Avatar } from './Avatar'
+import { validateImageFile } from '@/lib/validateFile'
 
 type Props = {
   name: string
@@ -31,6 +32,8 @@ export function ProfileHeader({
   function handleBanner(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const err = validateImageFile(file)
+    if (err) { alert(err); return }
     setBannerPreview(URL.createObjectURL(file))
     onBannerChange?.(file)
   }
@@ -38,6 +41,8 @@ export function ProfileHeader({
   function handleAvatar(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    const err = validateImageFile(file)
+    if (err) { alert(err); return }
     setAvatarPreview(URL.createObjectURL(file))
     onAvatarChange?.(file)
   }
