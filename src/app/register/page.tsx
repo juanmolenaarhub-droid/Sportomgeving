@@ -6,8 +6,8 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase'
 
-const SYNE = { fontFamily: "'Syne', sans-serif" }
-const DM = { fontFamily: "'DM Sans', sans-serif" }
+const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
+const DM: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -47,294 +47,217 @@ export default function RegisterPage() {
   return (
     <>
       <style>{`
-        @keyframes reg-slideUp {
-          from { opacity: 0; transform: translateY(28px); }
+        @keyframes r-up {
+          from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes reg-floatA {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50%       { transform: translateY(-16px) rotate(10deg); }
+        @keyframes r-dot {
+          0%,100% { opacity:1; } 50% { opacity:0.3; }
         }
-        @keyframes reg-floatB {
-          0%, 100% { transform: translateY(0) rotate(0deg); }
-          50%       { transform: translateY(-10px) rotate(-6deg); }
-        }
-        @keyframes reg-spin {
-          from { transform: rotate(0deg); }
-          to   { transform: rotate(360deg); }
-        }
-        @keyframes reg-pulse {
-          0%, 100% { opacity: 1; }
-          50%       { opacity: 0.4; }
-        }
-        @keyframes reg-shine {
-          0%   { transform: translateX(-150%) skewX(-12deg); }
-          100% { transform: translateX(250%) skewX(-12deg); }
-        }
-        .reg-a1 { animation: reg-slideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.05s both; }
-        .reg-a2 { animation: reg-slideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.18s both; }
-        .reg-a3 { animation: reg-slideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.28s both; }
-        .reg-a4 { animation: reg-slideUp 0.7s cubic-bezier(0.16,1,0.3,1) 0.4s both; }
-        .reg-input {
+        .r1 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .08s both; }
+        .r2 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .18s both; }
+        .r3 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .28s both; }
+        .r4 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .38s both; }
+        .r5 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .48s both; }
+
+        .ri {
+          display: block;
           width: 100%;
-          background: white;
-          border: 2px solid transparent;
-          border-radius: 16px;
-          padding: 14px 20px;
-          color: black;
-          font-size: 15px;
-          font-weight: 500;
-          outline: none;
-          transition: border-color 0.2s, box-shadow 0.2s;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.06);
-          font-family: 'DM Sans', sans-serif;
-        }
-        .reg-input::placeholder { color: #c9c7c2; }
-        .reg-input:focus {
-          border-color: #E87722;
-          box-shadow: 0 0 0 4px rgba(232,119,34,0.12);
-        }
-        .reg-cta {
-          position: relative;
-          width: 100%;
-          background: #E87722;
-          color: white;
-          font-weight: 900;
-          padding: 18px 24px;
-          border-radius: 18px;
-          font-size: 14px;
-          letter-spacing: 0.12em;
-          text-transform: uppercase;
-          overflow: hidden;
-          transition: background 0.2s, transform 0.15s;
-          font-family: 'Syne', sans-serif;
-          cursor: pointer;
+          background: transparent;
           border: none;
+          border-bottom: 2px solid #e0deda;
+          padding: 13px 0 13px 0;
+          font-size: 16px;
+          color: #111;
+          outline: none;
+          transition: border-color .2s;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 500;
+        }
+        .ri::placeholder { color: #c0bdb8; font-weight: 400; }
+        .ri:focus { border-bottom-color: #E87722; }
+
+        .rb {
           display: flex;
           align-items: center;
           justify-content: center;
           gap: 10px;
+          width: 100%;
+          padding: 17px 24px;
+          background: #E87722;
+          color: white;
+          border: none;
+          border-radius: 14px;
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: 13px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background .2s, transform .15s;
         }
-        .reg-cta:hover { background: #111; transform: translateY(-1px); }
-        .reg-cta:active { transform: translateY(0px); }
-        .reg-cta:disabled { opacity: 0.5; pointer-events: none; }
-        .reg-cta::after {
-          content: '';
-          position: absolute;
-          top: 0; left: -60%;
-          width: 40%; height: 100%;
-          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
-          skewX: -12deg;
-        }
-        .reg-cta:hover::after { animation: reg-shine 0.6s ease forwards; }
+        .rb:hover:not(:disabled) { background: #111; transform: translateY(-1px); }
+        .rb:disabled { opacity: .45; cursor: not-allowed; }
       `}</style>
 
-      <div style={DM} className="min-h-screen flex overflow-hidden">
+      <div style={DM} className="min-h-screen flex">
 
-        {/* ── LEFT PANEL ── Black, athletic */}
-        <div className="hidden lg:flex relative flex-col w-[44%] bg-black overflow-hidden">
+        {/* ── LEFT: Orange brand panel ── */}
+        <div className="hidden lg:flex flex-col w-[42%] bg-[#E87722] p-14 relative overflow-hidden select-none">
 
-          {/* Ghost background word */}
-          <div className="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
-            <span style={{ ...SYNE, fontWeight: 900, fontSize: '18vw', lineHeight: 1, letterSpacing: '-0.04em', color: 'rgba(255,255,255,0.025)' }}>
-              JOIN
-            </span>
+          {/* Large jersey number in bg */}
+          <div aria-hidden className="absolute -bottom-6 -right-4 pointer-events-none"
+            style={{ ...SYNE, fontWeight: 900, fontSize: '38vw', lineHeight: 1, letterSpacing: '-0.06em', color: 'rgba(0,0,0,0.07)' }}>
+            01
           </div>
 
-          {/* Orange triangle — top right */}
-          <div className="absolute top-0 right-0 w-52 h-52 pointer-events-none"
-            style={{ background: '#E87722', clipPath: 'polygon(100% 0, 0 0, 100% 100%)' }} />
+          {/* Logo */}
+          <Link href="/" className="relative z-10">
+            <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" style={{ filter: 'brightness(0)' }} />
+          </Link>
 
-          {/* Spinning ring */}
-          <div className="absolute bottom-28 right-10 w-36 h-36 rounded-full pointer-events-none"
-            style={{ border: '2px solid rgba(232,119,34,0.22)', animation: 'reg-spin 25s linear infinite' }}>
-            <div className="absolute top-0 left-1/2 w-3 h-3 -translate-x-1/2 -translate-y-1/2 bg-[#E87722] rounded-full" />
-            <div className="absolute bottom-0 left-1/2 w-2 h-2 -translate-x-1/2 translate-y-1/2 bg-[#E87722]/50 rounded-full" />
-          </div>
-          <div className="absolute bottom-20 right-20 w-20 h-20 rounded-full pointer-events-none"
-            style={{ border: '1px solid rgba(232,119,34,0.15)' }} />
+          {/* Copy */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center">
+            <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.45)' }} className="mb-7">
+              Gratis starten
+            </p>
+            <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.87, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.8vw, 66px)', color: '#000' }}>
+              Word lid.<br />
+              Sport samen.<br />
+              <span style={{ color: 'white' }}>Gratis.</span>
+            </h2>
 
-          {/* Floating dots */}
-          <div className="absolute top-44 left-14 w-5 h-5 bg-[#E87722] rounded-full pointer-events-none"
-            style={{ animation: 'reg-floatA 6s ease-in-out infinite', opacity: 0.7 }} />
-          <div className="absolute top-64 right-16 w-3 h-3 rounded-full pointer-events-none"
-            style={{ background: 'rgba(232,119,34,0.35)', animation: 'reg-floatB 7.5s ease-in-out infinite 1.2s' }} />
-          <div className="absolute top-80 left-8 w-2 h-2 bg-white/20 rounded-full pointer-events-none"
-            style={{ animation: 'reg-floatA 5s ease-in-out infinite 0.5s' }} />
-
-          {/* Horizontal rule accent */}
-          <div className="absolute left-12 right-12 pointer-events-none" style={{ top: '42%', height: '1px', background: 'rgba(255,255,255,0.04)' }} />
-
-          {/* Content */}
-          <div className="relative z-10 flex flex-col h-full p-12">
-
-            {/* Logo */}
-            <div>
-              <Link href="/">
-                <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain brightness-0 invert" />
-              </Link>
-            </div>
-
-            {/* Main copy */}
-            <div className="flex-1 flex flex-col justify-center py-10">
-              <p className="text-[#E87722] text-[10px] font-black uppercase tracking-[0.25em] mb-6">
-                Gratis starten
-              </p>
-              <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em' }}
-                className="text-white mb-3">
-                <span style={{ fontSize: 'clamp(48px, 4.5vw, 72px)', display: 'block', ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em' }}>
-                  Word lid van
-                </span>
-                <span style={{ fontSize: 'clamp(72px, 7vw, 110px)', display: 'block', color: '#E87722', fontFamily: "'Syne', sans-serif", fontWeight: 900, lineHeight: 0.85, letterSpacing: '-0.04em' }}>
-                  2.400+
-                </span>
-                <span style={{ fontSize: 'clamp(48px, 4.5vw, 72px)', display: 'block', fontFamily: "'Syne', sans-serif", fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em' }}>
-                  sporters.
-                </span>
-              </h2>
-
-              <div className="mt-10 space-y-5">
-                {[
-                  { num: '01', text: 'Volledig gratis account' },
-                  { num: '02', text: 'Match op jouw niveau en locatie' },
-                  { num: '03', text: 'Meer dan 12 sporten beschikbaar' },
-                ].map(item => (
-                  <div key={item.num} className="flex items-center gap-4 group">
-                    <span style={{ ...SYNE, fontSize: '10px', fontWeight: 700, color: 'rgba(232,119,34,0.5)', minWidth: '20px' }}>
-                      {item.num}
-                    </span>
-                    <div style={{ width: '20px', height: '1px', background: 'rgba(232,119,34,0.25)' }} />
-                    <span className="text-gray-400 text-sm font-medium group-hover:text-gray-200 transition-colors">
-                      {item.text}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Bottom link */}
-            <div>
-              <p className="text-gray-600 text-sm">
-                Al een account?{' '}
-                <Link href="/login" className="text-[#E87722] font-bold hover:underline transition-colors">
-                  Inloggen →
-                </Link>
-              </p>
+            <div className="mt-12 space-y-4">
+              {[
+                '2.400+ sporters actief in Nederland',
+                'Match op sport, niveau én locatie',
+                '12 sporten — van hardlopen tot zwemmen',
+              ].map((txt) => (
+                <div key={txt} className="flex items-start gap-3">
+                  <div style={{ width: 18, height: 2, background: 'rgba(0,0,0,0.28)', marginTop: 8, flexShrink: 0 }} />
+                  <span style={{ fontSize: 14, color: 'rgba(0,0,0,0.62)', fontWeight: 500, lineHeight: 1.5 }}>{txt}</span>
+                </div>
+              ))}
             </div>
           </div>
+
+          <p className="relative z-10" style={{ fontSize: 13, color: 'rgba(0,0,0,0.45)' }}>
+            Al een account?{' '}
+            <Link href="/login" style={{ color: '#000', fontWeight: 700 }}>Inloggen →</Link>
+          </p>
         </div>
 
-        {/* ── RIGHT PANEL ── Form */}
-        <div className="flex-1 flex flex-col relative overflow-hidden"
-          style={{ background: '#edece8', backgroundImage: `url("data:image/svg+xml,%3Csvg width='24' height='24' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='1' cy='1' r='1.2' fill='rgba(0,0,0,0.05)'/%3E%3C/svg%3E")` }}>
+        {/* ── RIGHT: Form ── */}
+        <div className="flex-1 bg-white flex flex-col">
 
-          {/* Corner accent */}
-          <div className="absolute bottom-0 right-0 w-64 h-64 pointer-events-none"
-            style={{ background: '#E87722', clipPath: 'polygon(100% 0, 100% 100%, 0 100%)', opacity: 0.06 }} />
-
-          {/* Mobile header */}
-          <div className="lg:hidden flex items-center justify-between p-6">
+          {/* Mobile nav */}
+          <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-gray-100">
             <Link href="/"><Image src="/logo.png" alt="Buddys" height={26} width={90} className="object-contain" /></Link>
             <Link href="/login" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Inloggen</Link>
           </div>
 
-          {/* Form area */}
-          <div className="flex-1 flex items-center justify-center px-8 py-10">
-            <div className="w-full max-w-[400px]">
+          <div className="flex-1 flex items-center justify-center px-8 py-14 lg:px-16">
+            <div className="w-full max-w-[370px]">
 
-              {/* Title */}
-              <div className="reg-a1 mb-9">
-                <div className="inline-flex items-center gap-2 mb-5 px-3 py-1.5 rounded-full text-[10px] font-black uppercase tracking-[0.18em]"
-                  style={{ background: 'rgba(232,119,34,0.1)', color: '#E87722' }}>
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#E87722]"
-                    style={{ animation: 'reg-pulse 2s ease-in-out infinite' }} />
-                  Nu gratis starten
+              {/* Heading */}
+              <div className="r1 mb-10">
+                <div className="flex items-center gap-2 mb-5">
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E87722', animation: 'r-dot 2s ease-in-out infinite', display: 'inline-block' }} />
+                  <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#E87722' }}>
+                    Nu aanmelden
+                  </span>
                 </div>
-                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 5vw, 54px)' }}
-                  className="text-black">
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#111' }}>
                   Account<br />aanmaken.
                 </h1>
               </div>
 
               {/* Form */}
-              <form onSubmit={handleRegister} className="reg-a2">
-                <div className="space-y-4">
+              <form onSubmit={handleRegister}>
 
-                  <div>
-                    <label style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#111', display: 'block', marginBottom: '8px' }}>
-                      Gebruikersnaam
-                    </label>
-                    <input
-                      className="reg-input"
-                      type="text"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
-                      required
-                      minLength={3}
-                      placeholder="jouwusername"
-                    />
-                  </div>
+                <div className="r2 mb-7">
+                  <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
+                    Gebruikersnaam
+                  </label>
+                  <input
+                    className="ri"
+                    type="text"
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
+                    required
+                    minLength={3}
+                    placeholder="jouwusername"
+                  />
+                </div>
 
-                  <div>
-                    <label style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#111', display: 'block', marginBottom: '8px' }}>
-                      E-mailadres
-                    </label>
-                    <input
-                      className="reg-input"
-                      type="email"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      placeholder="jij@email.com"
-                    />
-                  </div>
+                <div className="r3 mb-7">
+                  <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
+                    E-mailadres
+                  </label>
+                  <input
+                    className="ri"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    placeholder="jij@email.com"
+                  />
+                </div>
 
-                  <div>
-                    <label style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#111', display: 'block', marginBottom: '8px' }}>
-                      Wachtwoord
-                    </label>
-                    <input
-                      className="reg-input"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                      required
-                      minLength={6}
-                      placeholder="Minimaal 6 tekens"
-                    />
-                  </div>
+                <div className="r4 mb-9">
+                  <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
+                    Wachtwoord
+                  </label>
+                  <input
+                    className="ri"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                    minLength={6}
+                    placeholder="Minimaal 6 tekens"
+                  />
                 </div>
 
                 {error && (
-                  <div className="mt-4 bg-red-50 border border-red-100 rounded-xl px-4 py-3">
+                  <div className="mb-5 px-4 py-3 bg-red-50 border border-red-100 rounded-xl">
                     <p className="text-red-500 text-sm font-medium">{error}</p>
                   </div>
                 )}
 
-                <div className="reg-a3 mt-6">
-                  <button type="submit" disabled={loading} className="reg-cta">
+                <div className="r5">
+                  <button type="submit" disabled={loading} className="rb">
                     {loading ? 'Bezig...' : (
                       <>
                         Maak gratis account aan
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                          <path d="M1 6.5h11M6.5 1l5.5 5.5-5.5 5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
                   </button>
-                </div>
 
-                <p className="reg-a4 mt-4 text-xs text-gray-400 text-center" style={DM}>
-                  Door te registreren ga je akkoord met onze{' '}
-                  <span className="underline cursor-pointer hover:text-gray-600 transition-colors">voorwaarden</span>.
-                </p>
+                  {/* Live badge below CTA */}
+                  <div className="flex items-center justify-center gap-2 mt-5">
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
+                    <span style={{ ...DM, fontSize: 12, color: '#aaa', fontWeight: 500 }}>
+                      24 sporters aangemeld vandaag
+                    </span>
+                  </div>
+
+                  <p style={{ ...DM, fontSize: 11, color: '#bbb', textAlign: 'center', marginTop: 16 }}>
+                    Door te registreren ga je akkoord met onze{' '}
+                    <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>voorwaarden</span>.
+                  </p>
+                </div>
               </form>
 
-              {/* Mobile login link */}
-              <p className="lg:hidden mt-8 text-center text-sm text-gray-500">
+              {/* Mobile link */}
+              <p className="lg:hidden mt-8 text-center" style={{ fontSize: 13, color: '#aaa' }}>
                 Al een account?{' '}
-                <Link href="/login" className="text-[#E87722] font-bold hover:underline">Inloggen</Link>
+                <Link href="/login" style={{ color: '#E87722', fontWeight: 700 }}>Inloggen</Link>
               </p>
+
             </div>
           </div>
         </div>
