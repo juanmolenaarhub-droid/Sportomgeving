@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { Camera, Check } from 'lucide-react'
+import { PlacesInput } from '@/components/ui/places-input'
 import { createClient } from '@/lib/supabase'
 import { validateImageFile } from '@/lib/validateFile'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
@@ -48,6 +49,8 @@ export default function OnboardingPage() {
   // Step 1
   const [fullName, setFullName]     = useState('')
   const [region, setRegion]         = useState('')
+  const [regionLat, setRegionLat]   = useState<number | undefined>()
+  const [regionLng, setRegionLng]   = useState<number | undefined>()
   const [age, setAge]               = useState('')
   const [geslacht1, setGeslacht1]   = useState('')
   const [bio, setBio]               = useState('')
@@ -144,6 +147,8 @@ export default function OnboardingPage() {
     await supabase.from('profiles').update({
       full_name:        sanitizeText(limitLength(fullName, 80)),
       region:           sanitizeText(limitLength(region, 80)),
+      region_lat:       regionLat ?? null,
+      region_lng:       regionLng ?? null,
       age:              age ? parseInt(age) : null,
       bio:              sanitizeText(limitLength(bio, 500)),
       avatar_url:       avatarUrl || undefined,
@@ -337,12 +342,15 @@ export default function OnboardingPage() {
                       <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
                         Stad / Regio <span style={{ color: '#E87722' }}>*</span>
                       </label>
-                      <input
-                        className={`ob-field ${errors1.region ? 'ob-field-error' : ''}`}
-                        type="text"
+                      <PlacesInput
                         value={region}
-                        onChange={e => { setRegion(e.target.value); setErrors1(p => ({ ...p, region: '' })) }}
-                        placeholder="Amsterdam"
+                        onChange={(val, lat, lng) => {
+                          setRegion(val)
+                          setRegionLat(lat)
+                          setRegionLng(lng)
+                          setErrors1(p => ({ ...p, region: '' }))
+                        }}
+                        hasError={!!errors1.region}
                       />
                       {errors1.region && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>{errors1.region}</p>}
                     </div>
