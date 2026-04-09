@@ -3,14 +3,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Search, Users, LayoutList, MessageCircle, Bell, User, LogOut } from 'lucide-react'
+import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const navItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
-  { href: '/dashboard/find', label: 'Zoek een Buddy', icon: Search },
-  { href: '/dashboard/groups', label: 'Groepen', icon: Users },
   { href: '/dashboard/feed', label: 'Tijdlijn', icon: LayoutList },
+  { href: '/dashboard/groups', label: 'Groepen', icon: Users },
   { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle, badge: 2 },
 ]
 
@@ -55,6 +54,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               )
             })}
+            {/* Zoek buddies CTA */}
+            <Link
+              href="/dashboard/find"
+              className={`relative flex items-center gap-2 ml-2 px-5 py-2 rounded-xl text-sm font-black transition-all ${
+                pathname.startsWith('/dashboard/find')
+                  ? 'bg-[#111] text-white'
+                  : 'bg-[#E87722] text-white hover:bg-[#111]'
+              }`}
+              style={{ fontFamily: "'Syne', sans-serif", letterSpacing: '0.02em' }}
+            >
+              <Search className="w-4 h-4" />
+              Zoek buddies
+            </Link>
           </nav>
 
           {/* Rechts: notificaties + profiel + logout */}
@@ -90,7 +102,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* Mobiele bottom navigation */}
       <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-30">
-        <div className="flex">
+        <div className="flex items-center">
           {navItems.map(({ href, label, icon: Icon, badge }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
@@ -113,6 +125,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               </Link>
             )
           })}
+          {/* Zoek buddies — prominente CTA in mobiele nav */}
+          <Link
+            href="/dashboard/find"
+            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors relative ${
+              pathname.startsWith('/dashboard/find') ? 'text-[#E87722]' : 'text-white'
+            }`}
+          >
+            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl ${
+              pathname.startsWith('/dashboard/find') ? 'bg-[#111]' : 'bg-[#E87722]'
+            }`}>
+              <Search className="w-5 h-5" />
+              <span className="text-[9px] font-black" style={{ fontFamily: "'Syne', sans-serif" }}>Zoek buddies</span>
+            </div>
+          </Link>
         </div>
       </nav>
     </div>

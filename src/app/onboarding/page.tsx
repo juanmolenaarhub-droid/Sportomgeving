@@ -159,6 +159,18 @@ export default function OnboardingPage() {
         }
       }
 
+      let bannerUrl = ''
+      if (bannerFile) {
+        const ext = bannerFile.name.split('.').pop()
+        const path = `banners/${user.id}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('avatars').upload(path, bannerFile, { upsert: true })
+        if (!uploadError) {
+          const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+          bannerUrl = data.publicUrl
+        }
+      }
+
       const { error: profileError } = await supabase.from('profiles').update({
         full_name:  sanitizeText(limitLength(fullName, 80)),
         region:     sanitizeText(limitLength(region, 80)),
@@ -167,6 +179,7 @@ export default function OnboardingPage() {
         age:        age ? parseInt(age) : null,
         bio:        sanitizeText(limitLength(bio, 500)),
         avatar_url: avatarUrl || undefined,
+        banner_url: bannerUrl || undefined,
         goal:       geslacht,
       }).eq('id', user.id)
 

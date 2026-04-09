@@ -27,7 +27,18 @@ export default function LoginPage() {
       setError('E-mailadres of wachtwoord klopt niet.')
       setLoading(false)
     } else {
-      router.push('/dashboard/feed')
+      const supabase2 = createClient()
+      const { data: { user } } = await supabase2.auth.getUser()
+      if (user) {
+        const { data: profile } = await supabase2.from('profiles').select('full_name').eq('id', user.id).single()
+        if (!profile?.full_name) {
+          router.push('/onboarding')
+        } else {
+          router.push('/dashboard/feed')
+        }
+      } else {
+        router.push('/dashboard/feed')
+      }
     }
   }
 
