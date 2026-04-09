@@ -386,82 +386,52 @@ export default function OnboardingPage() {
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
                       Geslacht <span style={{ color: '#E87722' }}>*</span>
                     </label>
-                    <div className="flex gap-2 items-start">
-                      {/* Man */}
-                      <button
-                        onClick={() => { setGeslacht1('Man'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                        style={{
-                          flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
-                          background: geslacht1 === 'Man' ? '#E87722' : '#EDEDED',
-                          color: geslacht1 === 'Man' ? 'white' : '#555',
-                        }}
-                      >
-                        Man
-                      </button>
-
-                      {/* Vrouw */}
-                      <button
-                        onClick={() => { setGeslacht1('Vrouw'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                        style={{
-                          flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
-                          background: geslacht1 === 'Vrouw' ? '#E87722' : '#EDEDED',
-                          color: geslacht1 === 'Vrouw' ? 'white' : '#555',
-                        }}
-                      >
-                        Vrouw
-                      </button>
-
-                      {/* Anders — pill + dropdown */}
-                      <div style={{ flex: 1, position: 'relative' }}>
-                        {/* Als nog geen sub-optie: toon "Anders ▾" pill */}
-                        {geslacht1 !== 'Anders' || !andersOptie ? (
-                          <button
-                            onClick={() => { setGeslacht1('Anders'); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                            style={{
-                              width: '100%', padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
-                              background: geslacht1 === 'Anders' ? '#E87722' : '#EDEDED',
-                              color: geslacht1 === 'Anders' ? 'white' : '#555',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                            }}
-                          >
-                            {andersOptie && geslacht1 === 'Anders' ? andersOptie : 'Anders'}
-                            {geslacht1 === 'Anders' && <span style={{ fontSize: 10 }}>▾</span>}
-                          </button>
-                        ) : (
-                          /* Als sub-optie gekozen: toon die optie als oranje pill */
-                          <button
-                            onClick={() => setAndersOptie('')}
-                            style={{
-                              width: '100%', padding: '9px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
-                              background: '#E87722', color: 'white',
-                              display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
-                            }}
-                          >
-                            {andersOptie} <span style={{ fontSize: 10 }}>▾</span>
-                          </button>
-                        )}
-
-                        {/* Dropdown — zichtbaar als Anders actief is */}
-                        {geslacht1 === 'Anders' && (
-                          <select
-                            value={andersOptie}
-                            onChange={e => { setAndersOptie(e.target.value); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                            className="ob-field"
-                            style={{
-                              marginTop: 6, borderRadius: 10, fontSize: 13,
-                              appearance: 'none',
-                              backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                              backgroundRepeat: 'no-repeat', backgroundPosition: 'right 12px center',
-                            }}
-                          >
-                            <option value="">Kies een optie</option>
-                            {['Non-binair','Genderqueer','Genderfluid','Agender','Bigender','Transgender man','Transgender vrouw','Liever niet zeggen'].map(o => (
-                              <option key={o} value={o}>{o}</option>
-                            ))}
-                          </select>
-                        )}
-                      </div>
+                    <div className="flex gap-2">
+                      {[
+                        { val: 'Man',   label: 'Man' },
+                        { val: 'Vrouw', label: 'Vrouw' },
+                        { val: 'Anders', label: andersOptie && geslacht1 === 'Anders' ? andersOptie : 'Anders' },
+                      ].map(g => (
+                        <button
+                          key={g.val}
+                          onClick={() => {
+                            setGeslacht1(g.val)
+                            if (g.val !== 'Anders') setAndersOptie('')
+                            setErrors1(p => ({ ...p, geslacht: '' }))
+                          }}
+                          style={{
+                            flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600,
+                            border: 'none', cursor: 'pointer', transition: 'all .15s',
+                            background: geslacht1 === g.val ? '#E87722' : '#EDEDED',
+                            color: geslacht1 === g.val ? 'white' : '#555',
+                          }}
+                        >
+                          {g.label}
+                        </button>
+                      ))}
                     </div>
+
+                    {/* Dropdown verschijnt onder de pills als Anders geselecteerd is */}
+                    {geslacht1 === 'Anders' && (
+                      <select
+                        value={andersOptie}
+                        onChange={e => { setAndersOptie(e.target.value); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        className="ob-field"
+                        style={{
+                          marginTop: 8,
+                          appearance: 'none',
+                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
+                          backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
+                        }}
+                        autoFocus
+                      >
+                        <option value="">Kies een optie</option>
+                        {['Non-binair','Genderqueer','Genderfluid','Agender','Bigender','Transgender man','Transgender vrouw','Liever niet zeggen'].map(o => (
+                          <option key={o} value={o}>{o}</option>
+                        ))}
+                      </select>
+                    )}
+
                     {errors1.geslacht && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>{errors1.geslacht}</p>}
                   </div>
 
