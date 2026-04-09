@@ -6,24 +6,16 @@ import { useParams } from 'next/navigation'
 import {
   MapPin, Award, MessageCircle, UserPlus, Check, ArrowLeft,
   Users, Heart, Flame, Trophy, Calendar, Clock, ChevronRight,
-  Send, X,
+  Send, X, Lock,
 } from 'lucide-react'
-import { StoryAvatar } from '@/components/StoryAvatar'
 import { ProfileHeader } from '@/components/ProfileHeader'
 
-// ── Demo data (later vervangen door Supabase fetch) ───────────────────────────
+// ── Demo data ─────────────────────────────────────────────────────────────────
 const PROFILES: Record<string, {
-  id: string
-  name: string
-  region: string
-  age: number
-  bio: string
+  id: string; name: string; region: string; age: number; bio: string
   sports: { label: string; level: string }[]
-  following: boolean
-  requested: boolean
-  openFollow?: boolean
-  bannerUrl?: string
-  avatarUrl?: string
+  following: boolean; requested: boolean; openFollow?: boolean
+  bannerUrl?: string; avatarUrl?: string
   stats: { volgers: number; volgend: number; posts: number; groepen: number }
   recentPosts: { id: string; content: string; sport: string; time: string; likes: number; comments: number; image?: string; distance?: number; duration?: number }[]
   groups: { name: string; members: number; sport: string }[]
@@ -80,12 +72,91 @@ const PROFILES: Record<string, {
     groups: [{ name: 'Amsterdam Yoga', members: 76, sport: 'Yoga' }, { name: 'Park Sports AMS', members: 134, sport: 'Hardlopen' }],
     achievements: [{ label: '100 posts', icon: '📸' }, { label: 'Yoga instructeur', icon: '🧘' }, { label: 'Community builder', icon: '❤️' }],
   },
+  '5': {
+    id: '5', name: 'Kevin Smit', region: 'Den Haag', age: 22,
+    bio: 'Voetballer en recreatief tennisspeler. Op zoek naar iemand voor weekendmatches.',
+    sports: [{ label: 'Voetbal', level: 'Gemiddeld' }, { label: 'Tennis', level: 'Beginner' }],
+    following: false, requested: false,
+    stats: { volgers: 54, volgend: 40, posts: 8, groepen: 1 },
+    recentPosts: [{ id: 'r1', content: 'Wie wil er zondag mee voetballen in Den Haag? We hebben nog 2 man nodig!', sport: 'Voetbal', time: 'Gisteren', likes: 11, comments: 7 }],
+    groups: [{ name: 'Den Haag FC Casual', members: 22, sport: 'Voetbal' }],
+    achievements: [{ label: 'Eerste match gedeeld', icon: '⚽' }],
+  },
+  '6': {
+    id: '6', name: 'Anna de Boer', region: 'Amsterdam', age: 27,
+    bio: 'Triatleet in opleiding. Zwem, fiets en ren. Op zoek naar trainingspartner voor alle drie.',
+    sports: [{ label: 'Zwemmen', level: 'Gevorderd' }, { label: 'Hardlopen', level: 'Gemiddeld' }, { label: 'Fietsen', level: 'Gemiddeld' }],
+    following: false, requested: false,
+    stats: { volgers: 203, volgend: 115, posts: 45, groepen: 3 },
+    recentPosts: [{ id: 'r1', content: '2km gezwommen in het openwater. Klaar voor de triathlon!', sport: 'Zwemmen', time: '2 dagen geleden', likes: 33, comments: 9 }],
+    groups: [{ name: 'Amsterdam Triathlon', members: 88, sport: 'Zwemmen' }],
+    achievements: [{ label: 'Triathlon deelnemer', icon: '🏊' }, { label: '200km gefietst', icon: '🚴' }],
+  },
 }
 
-function getLevelStyle(level: string) {
+function getLevelStyleCard(level: string) {
   if (level === 'Gevorderd') return 'bg-black text-white'
   if (level === 'Gemiddeld') return 'bg-[#E87722] text-white'
   return 'bg-gray-100 text-gray-500'
+}
+
+// ── Locked sectie placeholder ─────────────────────────────────────────────────
+function LockedSection({ firstName, onUnlock }: { firstName: string; onUnlock: () => void }) {
+  return (
+    <div className="relative rounded-xl overflow-hidden min-h-[80px]">
+      {/* Vage nep-content */}
+      <div className="blur-sm select-none pointer-events-none space-y-2.5 p-1">
+        <div className="h-6 bg-gray-200 rounded-full w-3/4" />
+        <div className="h-6 bg-gray-200 rounded-full w-1/2" />
+        <div className="h-6 bg-gray-200 rounded-full w-2/3" />
+      </div>
+      {/* Slot overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 bg-white/80 backdrop-blur-[2px]">
+        <div className="w-9 h-9 bg-gray-100 rounded-full flex items-center justify-center">
+          <Lock className="w-4 h-4 text-gray-400" />
+        </div>
+        <p className="text-xs text-gray-500 font-semibold text-center leading-tight">
+          Volg {firstName} om dit te zien
+        </p>
+        <button
+          onClick={onUnlock}
+          className="text-[10px] font-bold text-[#E87722] hover:underline"
+        >
+          Stuur verzoek
+        </button>
+      </div>
+    </div>
+  )
+}
+
+// ── Locked tijdlijn ───────────────────────────────────────────────────────────
+function LockedFeed({ firstName, onUnlock }: { firstName: string; onUnlock: () => void }) {
+  return (
+    <div className="relative rounded-2xl overflow-hidden border border-gray-100 min-h-[220px] bg-white">
+      {/* Vage nep-post */}
+      <div className="blur-md select-none pointer-events-none p-5">
+        <div className="h-32 bg-gray-100 rounded-xl mb-4" />
+        <div className="h-4 bg-gray-200 rounded w-full mb-2" />
+        <div className="h-4 bg-gray-200 rounded w-3/4" />
+      </div>
+      {/* Slot overlay */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-white/70 backdrop-blur-[2px]">
+        <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center">
+          <Lock className="w-5 h-5 text-gray-400" />
+        </div>
+        <div className="text-center">
+          <p className="font-bold text-black text-sm">Activiteit vergrendeld</p>
+          <p className="text-xs text-gray-400 mt-1">Volg {firstName} om posts en trainingen te zien</p>
+        </div>
+        <button
+          onClick={onUnlock}
+          className="px-4 py-2 bg-[#E87722] text-white text-xs font-bold rounded-xl hover:bg-[#d06a1a] transition-colors"
+        >
+          Stuur volgverzoek
+        </button>
+      </div>
+    </div>
+  )
 }
 
 // ── Verzoek modal ─────────────────────────────────────────────────────────────
@@ -148,6 +219,11 @@ export default function PublicProfilePage() {
     )
   }
 
+  // Inhoud is vergrendeld totdat je wordt gevolgd/geaccepteerd (tenzij open profiel)
+  const isLocked = !following
+
+  const firstName = profile.name.split(' ')[0]
+
   function handleFollowClick() {
     if (following || requested) return
     if (profile!.openFollow) {
@@ -172,53 +248,65 @@ export default function PublicProfilePage() {
         <ArrowLeft className="w-4 h-4" /> Terug naar zoeken
       </Link>
 
-      {/* Profiel header kaart */}
-      <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-        <ProfileHeader
-          name={profile.name}
-          avatarUrl={profile.avatarUrl}
-          bannerUrl={profile.bannerUrl}
-          editable={false}
-          size="md"
-        />
-        <div className="px-6 pb-6">
-          <div className="flex items-start justify-between mt-1">
-            <div className="flex-1">
+      {/* Profiel header — oranje */}
+      <div className="rounded-2xl overflow-hidden shadow-sm">
+        {/* Banner + avatar via ProfileHeader (avatar heeft witte rand) */}
+        <div className="bg-[#E87722]">
+          <ProfileHeader
+            name={profile.name}
+            avatarUrl={profile.avatarUrl}
+            bannerUrl={profile.bannerUrl}
+            editable={false}
+            size="md"
+          />
+        </div>
+
+        {/* Oranje info sectie */}
+        <div className="bg-[#E87722] px-6 pb-6 -mt-2">
+          <div className="flex items-start justify-between gap-4">
+            <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 className="text-2xl font-black text-black">{profile.name}</h1>
+                <h1 className="text-2xl font-black text-white">{profile.name}</h1>
                 {profile.openFollow && (
-                  <span className="text-[10px] font-bold bg-amber-100 text-amber-700 px-2 py-0.5 rounded-full">Open profiel</span>
+                  <span className="text-[10px] font-bold bg-white/20 text-white px-2 py-0.5 rounded-full">Open profiel</span>
                 )}
               </div>
-              <div className="flex items-center gap-3 text-sm text-gray-400 mt-1">
+              <div className="flex items-center gap-3 text-sm text-white/70 mt-1">
                 <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" />{profile.region}</span>
                 <span>{profile.age} jaar</span>
               </div>
-              <p className="text-sm text-gray-600 mt-3 max-w-lg leading-relaxed">{profile.bio}</p>
+              <p className="text-sm text-white/80 mt-3 leading-relaxed max-w-lg">{profile.bio}</p>
             </div>
 
             {/* Actieknopen */}
-            <div className="flex items-center gap-2 ml-4 shrink-0">
+            <div className="flex items-center gap-2 shrink-0 mt-1">
               {following && (
-                <button className="w-10 h-10 border border-gray-200 rounded-xl flex items-center justify-center hover:bg-gray-50 transition-colors" title="Bericht sturen">
-                  <MessageCircle className="w-4 h-4 text-gray-500" />
+                <button className="w-10 h-10 bg-white/20 rounded-xl flex items-center justify-center hover:bg-white/30 transition-colors" title="Bericht sturen">
+                  <MessageCircle className="w-4 h-4 text-white" />
                 </button>
               )}
               <button
                 onClick={handleFollowClick}
                 className={`flex items-center gap-2 px-4 py-2 rounded-xl font-bold text-sm transition-colors ${
-                  following ? 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  : requested ? 'bg-gray-100 text-gray-400 cursor-default'
-                  : 'bg-[#E87722] text-white hover:bg-[#d06a1a]'
+                  following
+                    ? 'bg-white/20 text-white hover:bg-white/30'
+                    : requested
+                    ? 'bg-white/10 text-white/50 cursor-default'
+                    : 'bg-white text-[#E87722] hover:bg-white/90'
                 }`}
               >
-                {following ? <><Check className="w-4 h-4" /> Volgend</> : requested ? 'Verzonden' : <><UserPlus className="w-4 h-4" /> {profile.openFollow ? 'Volgen' : 'Stuur verzoek'}</>}
+                {following
+                  ? <><Check className="w-4 h-4" /> Volgend</>
+                  : requested
+                  ? 'Verzonden'
+                  : <><UserPlus className="w-4 h-4" />{profile.openFollow ? 'Volgen' : 'Stuur verzoek'}</>
+                }
               </button>
             </div>
           </div>
 
           {/* Stats balk */}
-          <div className="flex gap-6 mt-6 pt-6 border-t border-gray-50">
+          <div className="flex gap-6 mt-5 pt-5 border-t border-white/20">
             {[
               { label: 'Volgers', value: following ? stats.volgers + 1 : stats.volgers },
               { label: 'Volgend', value: stats.volgend },
@@ -226,13 +314,41 @@ export default function PublicProfilePage() {
               { label: 'Groepen', value: stats.groepen },
             ].map(s => (
               <div key={s.label} className="text-center">
-                <p className="text-xl font-black text-black">{s.value}</p>
-                <p className="text-xs text-gray-400 font-medium mt-0.5">{s.label}</p>
+                {isLocked ? (
+                  <Lock className="w-4 h-4 text-white/40 mx-auto mb-0.5" />
+                ) : (
+                  <p className="text-xl font-black text-white">{s.value}</p>
+                )}
+                <p className="text-xs text-white/60 font-medium mt-0.5">{s.label}</p>
               </div>
             ))}
           </div>
         </div>
       </div>
+
+      {/* Sporten badge als locked hint */}
+      {isLocked && !requested && (
+        <div className="bg-orange-50 border border-orange-100 rounded-2xl px-5 py-4 flex items-start gap-3">
+          <Lock className="w-4 h-4 text-[#E87722] mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-black">Profiel vergrendeld</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Stuur {firstName} een volgverzoek om sporten, groepen, prestaties en activiteiten te zien.
+            </p>
+          </div>
+        </div>
+      )}
+      {isLocked && requested && (
+        <div className="bg-gray-50 border border-gray-100 rounded-2xl px-5 py-4 flex items-start gap-3">
+          <Clock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-bold text-black">Verzoek verzonden</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Wacht tot {firstName} jouw verzoek accepteert om het volledige profiel te zien.
+            </p>
+          </div>
+        </div>
+      )}
 
       <div className="grid md:grid-cols-3 gap-6">
 
@@ -241,49 +357,67 @@ export default function PublicProfilePage() {
 
           {/* Sporten */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <h3 className="font-black text-black mb-4 flex items-center gap-2"><Award className="w-4 h-4 text-[#E87722]" /> Sporten</h3>
-            <div className="space-y-2.5">
-              {profile.sports.map(sport => (
-                <div key={sport.label} className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-gray-700">{sport.label}</span>
-                  <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${getLevelStyle(sport.level)}`}>{sport.level}</span>
-                </div>
-              ))}
-            </div>
+            <h3 className="font-black text-black mb-4 flex items-center gap-2">
+              <Award className="w-4 h-4 text-[#E87722]" /> Sporten
+            </h3>
+            {isLocked ? (
+              <LockedSection firstName={firstName} onUnlock={handleFollowClick} />
+            ) : (
+              <div className="space-y-2.5">
+                {profile.sports.map(sport => (
+                  <div key={sport.label} className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-gray-700">{sport.label}</span>
+                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${getLevelStyleCard(sport.level)}`}>{sport.level}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Groepen */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <h3 className="font-black text-black mb-4 flex items-center gap-2"><Users className="w-4 h-4 text-[#E87722]" /> Groepen</h3>
-            <div className="space-y-3">
-              {profile.groups.map(group => (
-                <div key={group.name} className="flex items-center gap-3">
-                  <div className="w-8 h-8 bg-[#E87722]/10 rounded-xl flex items-center justify-center shrink-0">
-                    <Users className="w-3.5 h-3.5 text-[#E87722]" />
+            <h3 className="font-black text-black mb-4 flex items-center gap-2">
+              <Users className="w-4 h-4 text-[#E87722]" /> Groepen
+            </h3>
+            {isLocked ? (
+              <LockedSection firstName={firstName} onUnlock={handleFollowClick} />
+            ) : (
+              <div className="space-y-3">
+                {profile.groups.map(group => (
+                  <div key={group.name} className="flex items-center gap-3">
+                    <div className="w-8 h-8 bg-[#E87722]/10 rounded-xl flex items-center justify-center shrink-0">
+                      <Users className="w-3.5 h-3.5 text-[#E87722]" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-bold text-black truncate">{group.name}</p>
+                      <p className="text-xs text-gray-400">{group.members} leden · {group.sport}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-black truncate">{group.name}</p>
-                    <p className="text-xs text-gray-400">{group.members} leden · {group.sport}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Prestaties */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
-            <h3 className="font-black text-black mb-4 flex items-center gap-2"><Trophy className="w-4 h-4 text-[#E87722]" /> Prestaties</h3>
-            <div className="space-y-2.5">
-              {profile.achievements.map(a => (
-                <div key={a.label} className="flex items-center gap-3">
-                  <span className="text-lg">{a.icon}</span>
-                  <span className="text-sm font-semibold text-gray-700">{a.label}</span>
-                </div>
-              ))}
-            </div>
+            <h3 className="font-black text-black mb-4 flex items-center gap-2">
+              <Trophy className="w-4 h-4 text-[#E87722]" /> Prestaties
+            </h3>
+            {isLocked ? (
+              <LockedSection firstName={firstName} onUnlock={handleFollowClick} />
+            ) : (
+              <div className="space-y-2.5">
+                {profile.achievements.map(a => (
+                  <div key={a.label} className="flex items-center gap-3">
+                    <span className="text-lg">{a.icon}</span>
+                    <span className="text-sm font-semibold text-gray-700">{a.label}</span>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
-          {/* Stuur buddy verzoek CTA — als nog niet volgend */}
+          {/* Word buddy CTA */}
           {!following && !requested && (
             <button
               onClick={handleFollowClick}
@@ -291,7 +425,7 @@ export default function PublicProfilePage() {
             >
               <div>
                 <p className="font-black">Word buddy</p>
-                <p className="text-sm text-white/70 mt-0.5">Stuur {profile.name.split(' ')[0]} een verzoek</p>
+                <p className="text-sm text-white/70 mt-0.5">Stuur {firstName} een verzoek</p>
               </div>
               <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </button>
@@ -304,55 +438,47 @@ export default function PublicProfilePage() {
             <Flame className="w-5 h-5 text-[#E87722]" /> Recente activiteit
           </h2>
 
-          {profile.recentPosts.map(post => (
-            <div key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-              {post.image && (
-                <img src={post.image} alt={post.sport} className="w-full h-44 object-cover" />
-              )}
-              <div className="p-5">
-                {/* Sport badge */}
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-xs font-bold bg-[#E87722]/10 text-[#E87722] px-2.5 py-1 rounded-full">{post.sport}</span>
-                  <span className="text-xs text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" />{post.time}</span>
-                </div>
-
-                {/* Stats als beschikbaar */}
-                {(post.distance || post.duration) && (
-                  <div className="flex gap-4 mb-3">
-                    {post.distance && (
-                      <div className="flex items-center gap-1.5 bg-gray-50 rounded-xl px-3 py-2">
-                        <MapPin className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-sm font-black text-black">{post.distance} km</span>
-                      </div>
-                    )}
-                    {post.duration && (
-                      <div className="flex items-center gap-1.5 bg-gray-50 rounded-xl px-3 py-2">
-                        <Calendar className="w-3.5 h-3.5 text-gray-400" />
-                        <span className="text-sm font-black text-black">{post.duration} min</span>
-                      </div>
-                    )}
-                  </div>
+          {isLocked ? (
+            <LockedFeed firstName={firstName} onUnlock={handleFollowClick} />
+          ) : (
+            profile.recentPosts.map(post => (
+              <div key={post.id} className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+                {post.image && (
+                  <img src={post.image} alt={post.sport} className="w-full h-44 object-cover" />
                 )}
-
-                <p className="text-sm text-gray-700 leading-relaxed">{post.content}</p>
-
-                {/* Reacties balk */}
-                <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-50">
-                  <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-pink-500 transition-colors">
-                    <Heart className="w-4 h-4" /> {post.likes}
-                  </button>
-                  <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-blue-500 transition-colors">
-                    <MessageCircle className="w-4 h-4" /> {post.comments}
-                  </button>
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-3">
+                    <span className="text-xs font-bold bg-[#E87722]/10 text-[#E87722] px-2.5 py-1 rounded-full">{post.sport}</span>
+                    <span className="text-xs text-gray-400 flex items-center gap-1"><Clock className="w-3 h-3" />{post.time}</span>
+                  </div>
+                  {(post.distance || post.duration) && (
+                    <div className="flex gap-4 mb-3">
+                      {post.distance && (
+                        <div className="flex items-center gap-1.5 bg-gray-50 rounded-xl px-3 py-2">
+                          <MapPin className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-sm font-black text-black">{post.distance} km</span>
+                        </div>
+                      )}
+                      {post.duration && (
+                        <div className="flex items-center gap-1.5 bg-gray-50 rounded-xl px-3 py-2">
+                          <Calendar className="w-3.5 h-3.5 text-gray-400" />
+                          <span className="text-sm font-black text-black">{post.duration} min</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-700 leading-relaxed">{post.content}</p>
+                  <div className="flex items-center gap-4 mt-4 pt-4 border-t border-gray-50">
+                    <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-pink-500 transition-colors">
+                      <Heart className="w-4 h-4" /> {post.likes}
+                    </button>
+                    <button className="flex items-center gap-1.5 text-sm text-gray-400 hover:text-blue-500 transition-colors">
+                      <MessageCircle className="w-4 h-4" /> {post.comments}
+                    </button>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-
-          {profile.recentPosts.length === 0 && (
-            <div className="bg-white rounded-2xl border border-gray-100 p-10 text-center">
-              <p className="text-gray-400 text-sm">Nog geen activiteit gedeeld.</p>
-            </div>
+            ))
           )}
         </div>
       </div>

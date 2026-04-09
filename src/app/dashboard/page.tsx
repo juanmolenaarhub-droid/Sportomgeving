@@ -67,16 +67,16 @@ import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
 
 const following = [
-  { name: 'Tim van Berg', sport: 'Hardlopen', region: 'Amsterdam', level: 'Gevorderd',
+  { id: '1', name: 'Tim van Berg', sport: 'Hardlopen', region: 'Amsterdam', level: 'Gevorderd',
     post: { id: 'p1', user: { name: 'Tim van Berg', region: 'Amsterdam' }, content: 'Geweldige ochtendrun door het Vondelpark.', activity_type: 'run', activity_label: 'Hardlopen', distance_km: 10.4, duration_minutes: 52, image_url: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80', likes_count: 24, comments_count: 5, created_at: '2 min geleden' } as StoryPost },
-  { name: 'Sarah Jansen', sport: 'Fietsen', region: 'Utrecht', level: 'Gemiddeld',
+  { id: '2', name: 'Sarah Jansen', sport: 'Fietsen', region: 'Utrecht', level: 'Gemiddeld',
     post: { id: 'p2', user: { name: 'Sarah Jansen', region: 'Utrecht' }, content: '45km gefietst langs de Vecht.', activity_type: 'cycle', activity_label: 'Fietsen', distance_km: 45, duration_minutes: 105, image_url: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&q=80', likes_count: 41, comments_count: 8, created_at: '1 uur geleden' } as StoryPost },
-  { name: 'Marco de Wit', sport: 'Gym', region: 'Rotterdam', level: 'Gevorderd',
+  { id: '3', name: 'Marco de Wit', sport: 'Gym', region: 'Rotterdam', level: 'Gevorderd',
     post: { id: 'p3', user: { name: 'Marco de Wit', region: 'Rotterdam' }, content: 'PR vandaag op deadlift: 160kg.', activity_type: 'gym', activity_label: 'Gym', likes_count: 67, comments_count: 12, created_at: '3 uur geleden' } as StoryPost },
-  { name: 'Lisa Hoek', sport: 'Yoga', region: 'Amsterdam', level: 'Gevorderd',
+  { id: '4', name: 'Lisa Hoek', sport: 'Yoga', region: 'Amsterdam', level: 'Gevorderd',
     post: { id: 'p4', user: { name: 'Lisa Hoek', region: 'Amsterdam' }, content: 'Yoga in het park. Wie wil volgende week ook komen?', activity_type: 'yoga', activity_label: 'Yoga', image_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', likes_count: 89, comments_count: 21, created_at: 'Gisteren' } as StoryPost },
-  { name: 'Kevin Smit', sport: 'Voetbal', region: 'Den Haag', level: 'Gemiddeld', post: null },
-  { name: 'Anna de Boer', sport: 'Zwemmen', region: 'Amsterdam', level: 'Gevorderd', post: null },
+  { id: '5', name: 'Kevin Smit', sport: 'Voetbal', region: 'Den Haag', level: 'Gemiddeld', post: null },
+  { id: '6', name: 'Anna de Boer', sport: 'Zwemmen', region: 'Amsterdam', level: 'Gevorderd', post: null },
 ]
 
 type Profile = {
@@ -353,7 +353,7 @@ export default function DashboardHomePage() {
 
         <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
           {following.map(person => (
-            <div key={person.name} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#E87722] hover:shadow-sm transition-all group">
+            <Link key={person.name} href={`/dashboard/profile/${person.id}`} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#E87722] hover:shadow-sm transition-all group block">
               <div className="flex items-start justify-between mb-4">
                 <StoryAvatar name={person.name} size="lg" posts={person.post ? [person.post] : []} />
                 <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${person.level === 'Gevorderd' ? 'bg-black text-white' : person.level === 'Gemiddeld' ? 'bg-[#E87722] text-white' : 'bg-gray-100 text-gray-500'}`}>
@@ -365,7 +365,7 @@ export default function DashboardHomePage() {
               <p className="text-xs font-semibold text-gray-500 mt-3 flex items-center gap-1.5">
                 <Award className="w-3.5 h-3.5 text-[#E87722]" />{person.sport}
               </p>
-            </div>
+            </Link>
           ))}
         </div>
 
@@ -376,14 +376,19 @@ export default function DashboardHomePage() {
           </div>
           <div className="space-y-4">
             {[
-              { name: 'Tim van Berg', action: 'heeft een 10km run gedeeld', sport: 'Hardlopen', time: '2 min geleden' },
-              { name: 'Sarah Jansen', action: 'heeft zich aangesloten bij Cycling Amsterdam', sport: 'Fietsen', time: '1 uur geleden' },
-              { name: 'Marco de Wit', action: 'heeft een nieuwe training gepost', sport: 'Gym', time: '3 uur geleden' },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0">
-                <StoryAvatar name={item.name} size="sm" />
+              { id: '1', name: 'Tim van Berg', action: 'heeft een 10km run gedeeld', sport: 'Hardlopen', time: '2 min geleden' },
+              { id: '2', name: 'Sarah Jansen', action: 'heeft zich aangesloten bij Cycling Amsterdam', sport: 'Fietsen', time: '1 uur geleden' },
+              { id: '3', name: 'Marco de Wit', action: 'heeft een nieuwe training gepost', sport: 'Gym', time: '3 uur geleden' },
+            ].map((item) => (
+              <div key={item.id} className="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0">
+                <Link href={`/dashboard/profile/${item.id}`}>
+                  <StoryAvatar name={item.name} size="sm" />
+                </Link>
                 <div className="flex-1">
-                  <p className="text-sm text-gray-700"><span className="font-bold text-black">{item.name}</span> {item.action}</p>
+                  <p className="text-sm text-gray-700">
+                    <Link href={`/dashboard/profile/${item.id}`} className="font-bold text-black hover:text-[#E87722] transition-colors">{item.name}</Link>
+                    {' '}{item.action}
+                  </p>
                   <p className="text-xs text-gray-400 mt-0.5">{item.time}</p>
                 </div>
                 <span className="text-xs font-semibold text-gray-400 hidden sm:block">{item.sport}</span>
