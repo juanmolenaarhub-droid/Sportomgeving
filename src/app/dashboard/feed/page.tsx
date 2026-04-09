@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import {
   Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Clock,
-  Flame, X, Send, Bookmark, Play, Camera, Video, Image as ImageIcon,
+  Flame, X, Send, Bookmark, Play, Camera, Video, Image as ImageIcon, Smile,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 
@@ -374,6 +374,7 @@ export default function FeedPage() {
   const [newDistance, setNewDistance] = useState('')
   const [newDuration, setNewDuration] = useState('')
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
+  const mediaRef = useRef<HTMLInputElement>(null)
 
   function toggleLike(id: string) {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, liked: !p.liked, likes_count: p.liked ? p.likes_count - 1 : p.likes_count + 1 } : p))
@@ -424,6 +425,55 @@ export default function FeedPage() {
   return (
     <div className="max-w-2xl mx-auto space-y-4">
 
+      {/* ── Post composer balk ── */}
+      <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        {/* Top row: avatar + text field */}
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 ring-2 ring-[#E87722]/20">
+            <Avatar name="Jouw Naam" size="md" className="w-full h-full" />
+          </div>
+          <button
+            onClick={() => setShowCreatePost(true)}
+            className="flex-1 bg-gray-100 rounded-full px-4 py-2.5 text-gray-400 text-sm text-left hover:bg-gray-200 transition-colors"
+          >
+            Wat ben je aan het doen, Jouw Naam?
+          </button>
+        </div>
+
+        {/* Bottom row: three action icons */}
+        <div className="flex items-center mt-3 pt-3 border-t border-gray-100">
+          <button
+            onClick={() => setUploadType('reel')}
+            className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-full bg-red-100 flex items-center justify-center shrink-0">
+              <Video className="w-3.5 h-3.5 text-red-500" />
+            </div>
+            <span className="text-[13px] font-semibold text-gray-600 hidden sm:inline">Video / Reel</span>
+          </button>
+
+          <button
+            onClick={() => setShowCreatePost(true)}
+            className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-full bg-green-100 flex items-center justify-center shrink-0">
+              <ImageIcon className="w-3.5 h-3.5 text-green-500" />
+            </div>
+            <span className="text-[13px] font-semibold text-gray-600 hidden sm:inline">Foto / Activiteit</span>
+          </button>
+
+          <button
+            onClick={() => setShowCreatePost(true)}
+            className="flex-1 flex items-center justify-center gap-2 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
+          >
+            <div className="w-7 h-7 rounded-full bg-yellow-100 flex items-center justify-center shrink-0">
+              <Smile className="w-3.5 h-3.5 text-yellow-500" />
+            </div>
+            <span className="text-[13px] font-semibold text-gray-600 hidden sm:inline">Gevoel</span>
+          </button>
+        </div>
+      </div>
+
       {/* ── Stories balk ── */}
       <div className="bg-white rounded-2xl border border-gray-100 p-4">
         <div className="flex gap-4 overflow-x-auto pb-0.5" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
@@ -442,7 +492,6 @@ export default function FeedPage() {
           {DEMO_STORIES.map((story, index) => (
             <div key={story.id} className="flex flex-col items-center gap-1.5 shrink-0">
               <button onClick={() => setStoryIndex(index)} className="relative w-[58px] h-[58px] rounded-full">
-                {/* Orange ring */}
                 <span className="absolute inset-0 rounded-full bg-gradient-to-tr from-[#E87722] to-orange-300 p-[2.5px]">
                   <span className="block w-full h-full rounded-full bg-white p-[2px]">
                     <span className="block w-full h-full rounded-full overflow-hidden">
@@ -464,21 +513,6 @@ export default function FeedPage() {
         <StoryViewer stories={DEMO_STORIES} startIndex={storyIndex} onClose={() => setStoryIndex(null)} />
       )}
 
-      {/* ── Post aanmaken balk ── */}
-      <div className="bg-white rounded-2xl border border-gray-100 p-4">
-        <div className="flex items-center gap-3">
-          <Avatar name="Jouw Naam" size="md" />
-          <button onClick={() => setShowCreatePost(true)}
-            className="flex-1 bg-gray-50 rounded-xl px-4 py-3 text-gray-400 text-sm text-left hover:bg-gray-100 transition-colors">
-            Deel een training of activiteit...
-          </button>
-          <button onClick={() => setShowUploadChoice(true)}
-            className="w-10 h-10 rounded-xl bg-[#E87722] flex items-center justify-center hover:bg-[#d06a1a] transition-colors shrink-0">
-            <Camera className="w-5 h-5 text-white" />
-          </button>
-        </div>
-      </div>
-
       {/* Upload keuze modal */}
       {showUploadChoice && (
         <UploadModal onClose={() => setShowUploadChoice(false)} onSelectType={handleUploadType} />
@@ -498,9 +532,23 @@ export default function FeedPage() {
               <button onClick={() => setShowCreatePost(false)} className="p-1.5 hover:bg-gray-100 rounded-lg"><X className="w-5 h-5 text-gray-500" /></button>
             </div>
             <div className="p-5 space-y-4">
-              <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} rows={4} autoFocus
+              <textarea value={newPostContent} onChange={e => setNewPostContent(e.target.value)} rows={3} autoFocus
                 placeholder="Wat heb je gedaan? Deel je training, resultaat of zoek een buddy..."
                 className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#E87722]" />
+
+              {/* Foto / video uploaden */}
+              <button
+                type="button"
+                onClick={() => mediaRef.current?.click()}
+                className="w-full flex items-center gap-3 border-2 border-dashed border-gray-200 hover:border-[#E87722] rounded-xl px-4 py-3 transition-colors group"
+              >
+                <div className="w-8 h-8 rounded-full bg-green-100 group-hover:bg-orange-50 flex items-center justify-center shrink-0 transition-colors">
+                  <ImageIcon className="w-4 h-4 text-green-500 group-hover:text-[#E87722] transition-colors" />
+                </div>
+                <span className="text-sm text-gray-400 group-hover:text-[#E87722] font-medium transition-colors">Foto of video toevoegen</span>
+              </button>
+              <input ref={mediaRef} type="file" accept="image/*,video/*" className="hidden" />
+
               <div>
                 <label className="block text-xs font-black text-gray-500 uppercase tracking-wide mb-2">Sport</label>
                 <div className="grid grid-cols-3 gap-2">
@@ -527,7 +575,7 @@ export default function FeedPage() {
             </div>
             <div className="p-5 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowCreatePost(false)} className="flex-1 border border-gray-200 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-50 text-sm">Annuleren</button>
-              <button onClick={createPost} disabled={!newPostContent.trim()} className="flex-1 bg-[#E87722] text-white font-bold py-2.5 rounded-xl hover:bg-[#d06a1a] disabled:opacity-40 text-sm">Plaatsen</button>
+              <button onClick={createPost} disabled={!newPostContent.trim()} className="flex-1 bg-[#E87722] text-white font-bold py-2.5 rounded-xl hover:bg-[#d06a1a] disabled:opacity-40 text-sm">Delen</button>
             </div>
           </div>
         </div>
