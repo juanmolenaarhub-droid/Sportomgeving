@@ -287,7 +287,7 @@ export default function LandingPage() {
             <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Pricing</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(40px,5vw,72px)] text-black mb-4">
-              Start gratis. Upgrade als je groeit.
+              Begin vandaag. Het kost je niets.
             </h2>
             <p className="text-gray-500 text-lg max-w-lg mx-auto font-light">Geen verrassingen. Geen verborgen kosten. Opzeggen wanneer je wil.</p>
           </div>
@@ -328,17 +328,14 @@ export default function LandingPage() {
             </div>
 
             {/* Pro — featured, taller */}
-            <div className="relative bg-black rounded-3xl p-8 border-2 border-[#E87722] flex flex-col -my-4 shadow-2xl">
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#E87722] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap" style={SYNE}>
-                Meest gekozen
-              </div>
-              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1 mt-2">Pro</h3>
-              <p className="text-gray-500 text-sm mb-7">Voor de serieuze sporter</p>
+            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl" style={{ background: '#FF5000' }}>
+              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Pro</h3>
+              <p className="text-white/70 text-sm mb-7">Voor de serieuze sporter</p>
               <div className="mb-7">
-                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#E87722]">€6,99</span>
-                <span className="text-gray-500 text-sm ml-1">/ maand</span>
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-white">€6,99</span>
+                <span className="text-white/70 text-sm ml-1">/ maand</span>
               </div>
-              <ul className="space-y-3.5 mb-8 text-sm text-gray-300 flex-1">
+              <ul className="space-y-3.5 mb-8 text-sm text-white flex-1">
                 {[
                   'Alles van Starter',
                   'Geen advertenties',
@@ -348,14 +345,14 @@ export default function LandingPage() {
                   'Strava en MyFitnessPal koppeling',
                 ].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-white/25 flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center bg-[#E87722] text-white font-semibold py-3.5 rounded-2xl hover:bg-white hover:text-black transition-all">
+              <Link href="/register" className="block text-center bg-white font-semibold py-3.5 rounded-2xl hover:bg-black hover:text-white transition-all" style={{ color: '#FF5000' }}>
                 Start met Pro
               </Link>
             </div>
