@@ -44,6 +44,7 @@ export default function OnboardingPage() {
   const [direction, setDirection] = useState<'forward' | 'back'>('forward')
   const [animating, setAnimating] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
   const [currentEmail, setCurrentEmail] = useState('')
 
   // Step 1
@@ -129,45 +130,54 @@ export default function OnboardingPage() {
 
   async function handleFinish() {
     setLoading(true)
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) { router.push('/login'); return }
+    setError('')
+    try {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) { router.push('/login'); return }
 
-    let avatarUrl = ''
-    if (avatarFile) {
-      const ext = avatarFile.name.split('.').pop()
-      const path = `avatars/${user.id}.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from('avatars').upload(path, avatarFile, { upsert: true })
-      if (!uploadError) {
-        const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-        avatarUrl = data.publicUrl
+      let avatarUrl = ''
+      if (avatarFile) {
+        const ext = avatarFile.name.split('.').pop()
+        const path = `avatars/${user.id}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('avatars').upload(path, avatarFile, { upsert: true })
+        if (!uploadError) {
+          const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+          avatarUrl = data.publicUrl
+        }
       }
+
+      const { error: profileError } = await supabase.from('profiles').update({
+        full_name:  sanitizeText(limitLength(fullName, 80)),
+        region:     sanitizeText(limitLength(region, 80)),
+        region_lat: regionLat ?? null,
+        region_lng: regionLng ?? null,
+        age:        age ? parseInt(age) : null,
+        bio:        sanitizeText(limitLength(bio, 500)),
+        avatar_url: avatarUrl || undefined,
+        goal:       geslacht,
+      }).eq('id', user.id)
+
+      if (profileError) throw new Error(`Profiel: ${profileError.message}`)
+
+      if (selectedSports.length > 0) {
+        const { error: sportsError } = await supabase.from('user_sports').upsert(
+          selectedSports.map(s => ({
+            user_id: user.id,
+            sport_id: s.sport_id,
+            level: niveau,
+            looking_for_partner: true,
+          }))
+        )
+        if (sportsError) throw new Error(`Sporten: ${sportsError.message}`)
+      }
+
+      router.push('/dashboard/feed')
+    } catch (e: unknown) {
+      setError(e instanceof Error ? e.message : 'Er is iets misgegaan. Probeer het opnieuw.')
+      setLoading(false)
     }
-
-    await supabase.from('profiles').update({
-      full_name:        sanitizeText(limitLength(fullName, 80)),
-      region:           sanitizeText(limitLength(region, 80)),
-      region_lat:       regionLat ?? null,
-      region_lng:       regionLng ?? null,
-      age:              age ? parseInt(age) : null,
-      bio:              sanitizeText(limitLength(bio, 500)),
-      avatar_url:       avatarUrl || undefined,
-      goal:             geslacht,
-    }).eq('id', user.id)
-
-    if (selectedSports.length > 0) {
-      await supabase.from('user_sports').upsert(
-        selectedSports.map(s => ({
-          user_id: user.id,
-          sport_id: s.sport_id,
-          level: niveau,
-          looking_for_partner: true,
-        }))
-      )
-    }
-
-    router.push('/dashboard/feed')
   }
 
   // Slide animation styles
@@ -670,6 +680,8 @@ export default function OnboardingPage() {
                       {loading ? 'Opslaan...' : 'Start met Buddys →'}
                     </button>
                   </div>
+
+                  {error && <p style={{ fontSize: 12, color: '#ef4444', textAlign: 'center', marginTop: 10 }}>{error}</p>}
 
                   <p style={{ fontSize: 12, color: '#aaa', textAlign: 'center', marginTop: 14 }}>
                     Je kan dit later aanpassen in je profiel
