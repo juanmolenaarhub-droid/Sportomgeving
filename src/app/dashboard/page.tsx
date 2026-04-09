@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { UserPlus, MapPin, Award, ArrowRight } from 'lucide-react'
+import { UserPlus, MapPin, Award, ArrowRight, MessageCircle, Heart, Bell } from 'lucide-react'
 import { StoryAvatar, type StoryPost } from '@/components/StoryAvatar'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
@@ -164,6 +164,53 @@ export default function DashboardHomePage() {
           ) : (
             <p className="text-sm text-gray-400">Nog geen sporten toegevoegd. <Link href="/onboarding" className="text-[#E87722] font-semibold hover:underline">Voeg ze toe</Link></p>
           )}
+        </div>
+
+        {/* Activiteit tellers */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <h3 className="font-black text-black mb-4">Activiteit</h3>
+          <div className="space-y-3">
+            <Link href="/dashboard/messages" className="flex items-center justify-between group hover:bg-gray-50 -mx-2 px-2 py-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                  <MessageCircle className="w-4 h-4 text-blue-500" />
+                </div>
+                <span className="text-sm font-semibold text-gray-700">Berichten</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-white bg-blue-500 px-2 py-0.5 rounded-full">2</span>
+              </div>
+            </Link>
+            <Link href="/dashboard/find" className="flex items-center justify-between group hover:bg-gray-50 -mx-2 px-2 py-2 rounded-xl transition-colors">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
+                  <UserPlus className="w-4 h-4 text-[#E87722]" />
+                </div>
+                <span className="text-sm font-semibold text-gray-700">Buddy verzoeken</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-black text-white bg-[#E87722] px-2 py-0.5 rounded-full">3</span>
+              </div>
+            </Link>
+            <div className="flex items-center justify-between -mx-2 px-2 py-2 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center">
+                  <Heart className="w-4 h-4 text-pink-500" />
+                </div>
+                <span className="text-sm font-semibold text-gray-700">Likes</span>
+              </div>
+              <span className="text-sm font-black text-gray-400">12</span>
+            </div>
+            <div className="flex items-center justify-between -mx-2 px-2 py-2 rounded-xl">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                  <Bell className="w-4 h-4 text-gray-400" />
+                </div>
+                <span className="text-sm font-semibold text-gray-700">Notificaties</span>
+              </div>
+              <span className="text-xs font-black text-white bg-gray-800 px-2 py-0.5 rounded-full">5</span>
+            </div>
+          </div>
         </div>
 
         <Link href="/dashboard/find" className="flex items-center justify-between bg-[#E87722] text-white rounded-2xl p-5 hover:bg-[#d06a1a] transition-colors group">
