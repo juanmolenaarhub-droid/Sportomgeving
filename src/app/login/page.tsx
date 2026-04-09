@@ -26,7 +26,7 @@ export default function LoginPage() {
       setError('E-mailadres of wachtwoord klopt niet.')
       setLoading(false)
     } else {
-      router.push('/dashboard')
+      router.push('/dashboard/feed')
     }
   }
 
