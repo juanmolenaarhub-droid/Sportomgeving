@@ -224,7 +224,7 @@ export default function LoginPage() {
               ].map(t => (
                 <div key={t.name} style={{ background: '#1A1A1A', borderRadius: 14, padding: '14px' }}>
                   <div style={{ color: '#E87722', fontSize: 10, marginBottom: 6, letterSpacing: '0.05em' }}>★★★★★</div>
-                  <p style={{ color: 'white', fontSize: 11, lineHeight: 1.5, fontWeight: 500, marginBottom: 8 }}>"{t.quote}"</p>
+                  <p style={{ color: 'white', fontSize: 11, lineHeight: 1.5, fontWeight: 500, marginBottom: 8 }}>&ldquo;{t.quote}&rdquo;</p>
                   <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: 500 }}>{t.name} · {t.sub}</p>
                 </div>
               ))}

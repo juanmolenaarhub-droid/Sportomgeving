@@ -20,43 +20,7 @@ type PlacesInputProps = {
 export function PlacesInput({ value, onChange, placeholder = 'Amsterdam', className = '', hasError = false }: PlacesInputProps) {
   const inputRef = useRef<HTMLInputElement>(null)
   const autocompleteRef = useRef<google.maps.places.Autocomplete | null>(null)
-  const [loaded, setLoaded] = useState(false)
-
-  useEffect(() => {
-    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
-    if (!apiKey) return
-
-    // If already loaded
-    if (window.google?.maps?.places) {
-      initAutocomplete()
-      setLoaded(true)
-      return
-    }
-
-    // Load script once
-    if (document.querySelector('#google-maps-script')) {
-      const interval = setInterval(() => {
-        if (window.google?.maps?.places) {
-          clearInterval(interval)
-          initAutocomplete()
-          setLoaded(true)
-        }
-      }, 100)
-      return
-    }
-
-    window.initPlacesAutocomplete = () => {
-      initAutocomplete()
-      setLoaded(true)
-    }
-
-    const script = document.createElement('script')
-    script.id = 'google-maps-script'
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initPlacesAutocomplete`
-    script.async = true
-    script.defer = true
-    document.head.appendChild(script)
-  }, [])
+  const [, setLoaded] = useState(false)
 
   function initAutocomplete() {
     if (!inputRef.current || !window.google?.maps?.places) return
@@ -75,6 +39,41 @@ export function PlacesInput({ value, onChange, placeholder = 'Amsterdam', classN
       onChange(name, lat, lng)
     })
   }
+
+  useEffect(() => {
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!apiKey) return
+
+    if (window.google?.maps?.places) {
+      initAutocomplete()
+      setLoaded(true)
+      return
+    }
+
+    if (document.querySelector('#google-maps-script')) {
+      const interval = setInterval(() => {
+        if (window.google?.maps?.places) {
+          clearInterval(interval)
+          initAutocomplete()
+          setLoaded(true)
+        }
+      }, 100)
+      return () => clearInterval(interval)
+    }
+
+    window.initPlacesAutocomplete = () => {
+      initAutocomplete()
+      setLoaded(true)
+    }
+
+    const script = document.createElement('script')
+    script.id = 'google-maps-script'
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${apiKey}&libraries=places&callback=initPlacesAutocomplete`
+    script.async = true
+    script.defer = true
+    document.head.appendChild(script)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const borderColor = hasError ? '#ef4444' : 'var(--ob-border, #E5E5E5)'
 
@@ -112,7 +111,7 @@ export function PlacesInput({ value, onChange, placeholder = 'Amsterdam', classN
         type="text"
         defaultValue={value}
         onChange={e => onChange(e.target.value)}
-        placeholder={!loaded && !process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY ? placeholder : placeholder}
+        placeholder={placeholder}
         className={`ob-field ${className}`}
         style={{ borderColor }}
         autoComplete="off"

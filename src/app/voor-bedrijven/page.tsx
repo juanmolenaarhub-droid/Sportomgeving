@@ -16,8 +16,8 @@ export default function VoorBedrijvenPage() {
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
           </Link>
           <nav className="hidden md:flex items-center gap-9 text-sm font-medium text-gray-500">
-            <a href="/#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</a>
-            <a href="/#community" className="hover:text-black transition-colors">Community</a>
+            <Link href="/#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</Link>
+            <Link href="/#community" className="hover:text-black transition-colors">Community</Link>
             <Link href="/voor-bedrijven" className="text-black font-semibold">Voor bedrijven</Link>
           </nav>
           <div className="flex items-center gap-4">
@@ -125,7 +125,7 @@ export default function VoorBedrijvenPage() {
                 </div>
               </div>
               <p className="text-gray-400 text-sm leading-relaxed mb-6 font-light">
-                "Wij bereiken wekelijks nieuwe leden via Buddys. De zakelijke pagina heeft onze zichtbaarheid enorm vergroot."
+                &ldquo;Wij bereiken wekelijks nieuwe leden via Buddys. De zakelijke pagina heeft onze zichtbaarheid enorm vergroot.&rdquo;
               </p>
               <div className="grid grid-cols-3 gap-3 mb-6">
                 {[
