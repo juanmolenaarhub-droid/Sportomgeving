@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Search, MapPin, Filter, X, UserPlus, Check, MessageCircle, ChevronDown, Send, Lock } from 'lucide-react'
+import Link from 'next/link'
+import { Search, MapPin, Filter, X, UserPlus, Check, MessageCircle, ChevronDown, Send, Lock, ArrowRight } from 'lucide-react'
 import { StoryAvatar, type StoryPost } from '@/components/StoryAvatar'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
@@ -271,6 +272,16 @@ function ProfileModal({
               ))}
             </div>
           </div>
+
+          {/* Volledig profiel knop */}
+          <Link
+            href={`/dashboard/profile/${buddy.id}`}
+            onClick={onClose}
+            className="mt-5 flex items-center justify-between w-full bg-gray-50 hover:bg-gray-100 transition-colors rounded-xl px-4 py-3 group"
+          >
+            <span className="text-sm font-bold text-black">Ga naar volledig profiel</span>
+            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+          </Link>
         </div>
       </div>
     </div>
