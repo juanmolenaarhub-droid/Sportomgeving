@@ -309,7 +309,7 @@ export default function LandingPage() {
                   { text: "Buddy's zoeken en matchen", check: true },
                   { text: 'Groepen joinen en aanmaken', check: true },
                   { text: 'Feed en verhalen bekijken', check: true },
-                  { text: 'Met advertenties', check: false },
+                  { text: 'Subtiele advertenties', check: false },
                 ].map(item => (
                   <li key={item.text} className="flex items-center gap-2.5">
                     <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.check ? 'bg-[#E87722]' : 'bg-gray-100'}`}>
@@ -332,8 +332,11 @@ export default function LandingPage() {
               <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Pro</h3>
               <p className="text-white/70 text-sm mb-7">Voor de serieuze sporter</p>
               <div className="mb-7">
-                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-white">€6,99</span>
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-white">€4,99</span>
                 <span className="text-white/70 text-sm ml-1">/ maand</span>
+              </div>
+              <div className="mb-7 -mt-5">
+                <span className="inline-block bg-white text-[#E87722] text-xs font-semibold px-3 py-1 rounded-full">Early adopter prijs — straks €6,99</span>
               </div>
               <ul className="space-y-3.5 mb-8 text-sm text-white flex-1">
                 {[
