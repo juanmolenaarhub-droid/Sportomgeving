@@ -282,53 +282,71 @@ export default function LandingPage() {
 
       {/* ── PRIJZEN ── */}
       <section id="prijzen" className="py-32 bg-[#edece8]">
-        <div className="max-w-5xl mx-auto px-8">
+        <div className="max-w-6xl mx-auto px-8">
           <div className="text-center mb-16">
-            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Kies je plan</p>
+            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Pricing</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(40px,5vw,72px)] text-black mb-4">
-              Eenvoudige prijzen
+              Start gratis. Upgrade als je groeit.
             </h2>
-            <p className="text-gray-500 text-lg max-w-md mx-auto font-light">Start gratis en upgrade wanneer jij er klaar voor bent.</p>
+            <p className="text-gray-500 text-lg max-w-lg mx-auto font-light">Geen verrassingen. Geen verborgen kosten. Opzeggen wanneer je wil.</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
-            <div className="bg-white rounded-3xl p-8 border border-gray-100 hover:border-gray-200 transition-all">
-              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-black mb-1">Gratis</h3>
-              <p className="text-gray-400 text-sm mb-7">Voor iedereen die wil beginnen</p>
+
+          {/* 3-column grid — Pro card is taller via self-stretch trick */}
+          <div className="grid md:grid-cols-3 gap-5 items-center">
+
+            {/* Starter */}
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 hover:border-gray-200 transition-all flex flex-col">
+              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-black mb-1">Starter</h3>
+              <p className="text-gray-400 text-sm mb-7">Perfect om te beginnen</p>
               <div className="mb-7">
-                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-black">0</span>
-                <span className="text-gray-400 text-sm ml-1">euro / maand</span>
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-black">€0</span>
+                <span className="text-gray-400 text-sm ml-1">/ maand</span>
               </div>
-              <ul className="space-y-3.5 mb-8 text-sm text-gray-500">
-                {['Profiel aanmaken', 'Buddies zoeken & contacten', 'Groepen joinen', 'Met advertenties'].map((item, i) => (
-                  <li key={item} className="flex items-center gap-2.5">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${i === 3 ? 'bg-gray-100' : 'bg-[#E87722]'}`}>
-                      {i === 3
-                        ? <span className="text-gray-400 text-[9px] font-bold">—</span>
-                        : <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+              <ul className="space-y-3.5 mb-8 text-sm text-gray-500 flex-1">
+                {[
+                  { text: 'Profiel en sport-tags aanmaken', check: true },
+                  { text: "Buddy's zoeken en matchen", check: true },
+                  { text: 'Groepen joinen en aanmaken', check: true },
+                  { text: 'Feed en verhalen bekijken', check: true },
+                  { text: 'Met advertenties', check: false },
+                ].map(item => (
+                  <li key={item.text} className="flex items-center gap-2.5">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.check ? 'bg-[#E87722]' : 'bg-gray-100'}`}>
+                      {item.check
+                        ? <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                        : <span className="text-gray-400 text-[9px] font-bold">—</span>
                       }
                     </div>
-                    {item}
+                    {item.text}
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center border-2 border-black/10 text-black font-semibold py-3.5 rounded-2xl hover:bg-black hover:text-white hover:border-black transition-all">
+              <Link href="/register" className="block text-center bg-white border-2 border-black/10 text-black font-semibold py-3.5 rounded-2xl hover:bg-black hover:text-white hover:border-black transition-all">
                 Start gratis
               </Link>
             </div>
 
-            <div className="relative bg-black rounded-3xl p-8 border-2 border-[#E87722]">
-              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#E87722] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap" style={SYNE}>
+            {/* Pro — featured, taller */}
+            <div className="relative bg-black rounded-3xl p-8 border-2 border-[#E87722] flex flex-col -my-4 shadow-2xl">
+              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-[#E87722] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap" style={SYNE}>
                 Meest gekozen
               </div>
-              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Premium</h3>
+              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1 mt-2">Pro</h3>
               <p className="text-gray-500 text-sm mb-7">Voor de serieuze sporter</p>
               <div className="mb-7">
-                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#E87722]">10</span>
-                <span className="text-gray-500 text-sm ml-1">euro / maand</span>
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#E87722]">€6,99</span>
+                <span className="text-gray-500 text-sm ml-1">/ maand</span>
               </div>
-              <ul className="space-y-3.5 mb-8 text-sm text-gray-300">
-                {['Alles van Gratis', 'Geen advertenties', 'AI Matching — geavanceerd', 'Voorrang in zoekresultaten', 'Uitgebreide statistieken'].map(item => (
+              <ul className="space-y-3.5 mb-8 text-sm text-gray-300 flex-1">
+                {[
+                  'Alles van Starter',
+                  'Geen advertenties',
+                  'Geavanceerde filters en AI matching',
+                  'Onbeperkte buddy-verzoeken',
+                  'Verified badge op je profiel',
+                  'Strava en MyFitnessPal koppeling',
+                ].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
                     <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
@@ -338,10 +356,46 @@ export default function LandingPage() {
                 ))}
               </ul>
               <Link href="/register" className="block text-center bg-[#E87722] text-white font-semibold py-3.5 rounded-2xl hover:bg-white hover:text-black transition-all">
-                Start met Premium
+                Start met Pro
               </Link>
             </div>
+
+            {/* Business */}
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 hover:border-gray-200 transition-all flex flex-col">
+              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-black mb-1">Business</h3>
+              <p className="text-gray-400 text-sm mb-7">Voor clubs, trainers en creators</p>
+              <div className="mb-7">
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-black">€19,99</span>
+                <span className="text-gray-400 text-sm ml-1">/ maand</span>
+              </div>
+              <ul className="space-y-3.5 mb-8 text-sm text-gray-500 flex-1">
+                {[
+                  'Alles van Pro',
+                  'Eigen bedrijfs- of creatorpagina',
+                  'Producten en diensten verkopen',
+                  'Challenges en events hosten',
+                  'Analytics dashboard',
+                  'Directe zichtbaarheid bij jouw doelgroep',
+                ].map(item => (
+                  <li key={item} className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/register" className="block text-center bg-white border-2 border-black/10 text-black font-semibold py-3.5 rounded-2xl hover:bg-black hover:text-white hover:border-black transition-all">
+                Start met Business
+              </Link>
+            </div>
+
           </div>
+
+          {/* Trust line */}
+          <p className="text-center text-xs text-gray-400 mt-10 font-light">
+            Meer dan 2.400 sporters gingen je voor · Geen creditcard nodig voor Starter · Altijd opzegbaar
+          </p>
         </div>
       </section>
 
