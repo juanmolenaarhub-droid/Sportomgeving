@@ -319,7 +319,7 @@ export default function OnboardingPage() {
               {/* ── STAP 1 ── */}
               {step === 1 && (
                 <div>
-                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6 }}>
+                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6, width: 'fit-content' }}>
                     Vertel iets over jezelf.
                   </h1>
                   <p style={{ fontSize: 14, color: '#666', marginBottom: 28, fontWeight: 400 }}>
