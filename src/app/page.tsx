@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Play, Sparkles, ChevronRight, Building2, TrendingUp, Shield } from 'lucide-react'
+import { ArrowRight, MapPin, Play, Sparkles, ChevronRight, Building2 } from 'lucide-react'
 
 const SYNE = { fontFamily: "'Syne', sans-serif" }
 const DM = { fontFamily: "'DM Sans', sans-serif" }
@@ -58,28 +58,11 @@ const testimonials = [
   },
 ]
 
-const AI_QUERIES = [
-  'Een hardloper in Amsterdam die 3x per week traint op gevorderd niveau...',
-  'Iemand voor ochtend-gym sessies in Rotterdam, minimaal 4x per week...',
-  'Een fietsmaatje voor lange afstandsritten in de weekenden rond Utrecht...',
-  'Een zwempartner voor baantraining, donderdag en zaterdag vroeg...',
-]
-
-const AI_RESULTS = [
-  { initials: 'TvB', name: 'Tim van Berg', region: 'Amsterdam', sport: 'Hardlopen', level: 'Gevorderd', match: '97%' },
-  { initials: 'SJ', name: 'Sarah Jansen', region: 'Amsterdam', sport: 'Hardlopen', level: 'Gevorderd', match: '94%' },
-  { initials: 'PK', name: 'Peter Kok', region: 'Amstelveen', sport: 'Hardlopen', level: 'Gevorderd', match: '91%' },
-]
 
 export default function LandingPage() {
   const [visible, setVisible] = useState(false)
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
-  const [aiQuery, setAiQuery] = useState('')
-  const [aiSearching, setAiSearching] = useState(false)
-  const [aiResults, setAiResults] = useState(false)
-  const [typingIndex, setTypingIndex] = useState(0)
-  const [charIndex, setCharIndex] = useState(0)
 
   useEffect(() => {
     const t = setTimeout(() => setVisible(true), 80)
@@ -97,32 +80,6 @@ export default function LandingPage() {
     return () => clearInterval(interval)
   }, [])
 
-  // Auto-type demo in AI box
-  useEffect(() => {
-    const query = AI_QUERIES[typingIndex]
-    if (charIndex < query.length) {
-      const t = setTimeout(() => {
-        setAiQuery(query.slice(0, charIndex + 1))
-        setCharIndex(c => c + 1)
-      }, 38)
-      return () => clearTimeout(t)
-    } else {
-      const t = setTimeout(() => {
-        setAiSearching(true)
-        setTimeout(() => {
-          setAiSearching(false)
-          setAiResults(true)
-          setTimeout(() => {
-            setAiResults(false)
-            setAiQuery('')
-            setCharIndex(0)
-            setTypingIndex(i => (i + 1) % AI_QUERIES.length)
-          }, 3200)
-        }, 1200)
-      }, 900)
-      return () => clearTimeout(t)
-    }
-  }, [charIndex, typingIndex])
 
   return (
     <div style={DM} className="bg-[#edece8] overflow-x-hidden">
@@ -135,8 +92,7 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden md:flex items-center gap-9 text-sm font-medium text-gray-500">
             <a href="#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</a>
-            <a href="#ai-matching" className="hover:text-black transition-colors">AI Matching</a>
-            <a href="#community" className="hover:text-black transition-colors">Community</a>
+<a href="#community" className="hover:text-black transition-colors">Community</a>
             <a href="#bedrijven" className="hover:text-black transition-colors">Voor bedrijven</a>
           </nav>
           <div className="flex items-center gap-4">
@@ -273,112 +229,6 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── AI MATCHING ── */}
-      <section id="ai-matching" className="py-32 bg-black relative overflow-hidden">
-        {/* Subtle radial glow */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
-          style={{ background: 'radial-gradient(circle, rgba(232,119,34,0.08) 0%, transparent 65%)' }} />
-
-        <div className="relative max-w-7xl mx-auto px-8">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-
-            {/* Left */}
-            <div>
-              <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-[#E87722]/30 text-[#E87722] mb-8 bg-[#E87722]/5">
-                <Sparkles className="w-3 h-3" />
-                Nieuw — AI Matching
-              </div>
-              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
-                className="text-[clamp(40px,5vw,72px)] text-white mb-6">
-                Beschrijf wie je zoekt. Wij regelen de rest.
-              </h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8 font-light">
-                Typ in gewone taal wie jouw ideale sportmaatje is — welk niveau, welke tijden, welke ambities. Onze AI analyseert duizenden profielen en stelt de beste matches voor.
-              </p>
-              <ul className="space-y-4 mb-10">
-                {[
-                  { icon: Sparkles, text: 'Begrijpt context, niet alleen trefwoorden' },
-                  { icon: TrendingUp, text: 'Leert van jouw gedrag en voorkeuren' },
-                  { icon: Shield, text: 'Alleen serieuze sporters — geverifieerde profielen' },
-                ].map(({ icon: Icon, text }) => (
-                  <li key={text} className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-xl bg-[#E87722]/10 flex items-center justify-center shrink-0">
-                      <Icon className="w-4 h-4 text-[#E87722]" />
-                    </div>
-                    <span className="text-gray-300 font-medium">{text}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/register"
-                className="inline-flex items-center gap-2 bg-[#E87722] text-white font-semibold px-7 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200">
-                Probeer AI Matching <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-
-            {/* Right: AI demo */}
-            <div className="relative">
-              <div className="bg-[#111] rounded-3xl border border-white/8 overflow-hidden shadow-2xl">
-                {/* Header */}
-                <div className="px-6 py-4 border-b border-white/6 flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-red-500/60" />
-                  <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
-                  <div className="w-2 h-2 rounded-full bg-green-500/60" />
-                  <span className="ml-3 text-xs text-gray-600 font-mono">buddys — ai matching</span>
-                </div>
-
-                <div className="p-6">
-                  <p className="text-xs text-gray-500 mb-3 font-medium tracking-wide uppercase">Beschrijf jouw ideale sportmaatje</p>
-
-                  {/* Input */}
-                  <div className="relative bg-black rounded-2xl border border-white/10 p-4 mb-4 min-h-[72px]">
-                    <p className="text-white/90 text-sm leading-relaxed font-light">
-                      {aiQuery}
-                      <span className="inline-block w-0.5 h-4 bg-[#E87722] ml-0.5 align-middle"
-                        style={{ animation: 'blink 1s step-end infinite' }} />
-                    </p>
-                  </div>
-
-                  {/* Searching state */}
-                  {aiSearching && (
-                    <div className="flex items-center gap-3 py-3 px-4 bg-[#E87722]/10 rounded-xl border border-[#E87722]/20 mb-4">
-                      <div className="flex gap-1">
-                        {[0, 1, 2].map(i => (
-                          <div key={i} className="w-1.5 h-1.5 bg-[#E87722] rounded-full"
-                            style={{ animation: `bounce-dot 1.2s ease-in-out infinite`, animationDelay: `${i * 0.15}s` }} />
-                        ))}
-                      </div>
-                      <span className="text-[#E87722] text-sm font-medium">AI analyseert profielen...</span>
-                    </div>
-                  )}
-
-                  {/* Results */}
-                  {aiResults && (
-                    <div className="space-y-2">
-                      <p className="text-xs text-gray-500 font-medium mb-3">3 matches gevonden</p>
-                      {AI_RESULTS.map((r, i) => (
-                        <div key={r.name}
-                          className="flex items-center gap-3 bg-white/5 rounded-xl p-3 border border-white/6 hover:border-[#E87722]/30 transition-all"
-                          style={{ animation: `slideIn 0.3s ease forwards`, animationDelay: `${i * 0.08}s`, opacity: 0 }}>
-                          <div className="w-9 h-9 bg-[#E87722] rounded-xl flex items-center justify-center text-white text-xs font-bold shrink-0" style={SYNE}>{r.initials}</div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-semibold" style={SYNE}>{r.name}</p>
-                            <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-2.5 h-2.5" />{r.region} · {r.sport}</p>
-                          </div>
-                          <span className="text-xs font-bold text-[#E87722] bg-[#E87722]/10 px-2.5 py-1 rounded-full shrink-0">{r.match}</span>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Glow */}
-              <div className="absolute -inset-1 -z-10 rounded-3xl opacity-20 blur-xl"
-                style={{ background: 'radial-gradient(ellipse, #E87722 0%, transparent 70%)' }} />
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── HOE HET WERKT ── */}
       <section id="hoe-het-werkt" className="py-32 bg-[#edece8]">
