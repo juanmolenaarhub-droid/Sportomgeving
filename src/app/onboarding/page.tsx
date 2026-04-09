@@ -55,6 +55,8 @@ export default function OnboardingPage() {
   const [age, setAge]               = useState('')
   const [geslacht1, setGeslacht1]   = useState('')
   const [andersOptie, setAndersOptie] = useState('')
+  const [andersOpen, setAndersOpen]   = useState(false)
+  const andersRef = useRef<HTMLDivElement>(null)
   const [bio, setBio]               = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
@@ -76,6 +78,16 @@ export default function OnboardingPage() {
     createClient().auth.getUser().then(({ data }) => {
       if (data.user?.email) setCurrentEmail(data.user.email)
     })
+  }, [])
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (andersRef.current && !andersRef.current.contains(e.target as Node)) {
+        setAndersOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [])
 
   function goTo(next: number, dir: 'forward' | 'back') {
@@ -222,6 +234,10 @@ export default function OnboardingPage() {
         .ob-field::placeholder { color: #aaa; }
         .ob-field:focus { border-color: #E87722; }
         .ob-field-error { border-color: #ef4444 !important; }
+        @keyframes ob-anders-in {
+          from { opacity: 0; transform: translateY(-6px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
         input[type='range'] {
           -webkit-appearance: none;
           width: 100%;
@@ -382,54 +398,59 @@ export default function OnboardingPage() {
                   </div>
 
                   {/* Geslacht */}
-                  <div className="mb-5">
+                  <div className="mb-5" ref={andersRef}>
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
                       Geslacht <span style={{ color: '#E87722' }}>*</span>
                     </label>
                     <div className="flex gap-2">
-                      {[
-                        { val: 'Man',   label: 'Man' },
-                        { val: 'Vrouw', label: 'Vrouw' },
-                        { val: 'Anders', label: andersOptie && geslacht1 === 'Anders' ? andersOptie : 'Anders' },
-                      ].map(g => (
-                        <button
-                          key={g.val}
-                          onClick={() => {
-                            setGeslacht1(g.val)
-                            if (g.val !== 'Anders') setAndersOptie('')
-                            setErrors1(p => ({ ...p, geslacht: '' }))
-                          }}
-                          style={{
-                            flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-                            border: 'none', cursor: 'pointer', transition: 'all .15s',
-                            background: geslacht1 === g.val ? '#E87722' : '#EDEDED',
-                            color: geslacht1 === g.val ? 'white' : '#555',
-                          }}
-                        >
-                          {g.label}
-                        </button>
-                      ))}
+                      {/* Man */}
+                      <button
+                        onClick={() => { setGeslacht1('Man'); setAndersOptie(''); setAndersOpen(false); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Man' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Man' ? 'white' : '#555' }}
+                      >Man</button>
+
+                      {/* Vrouw */}
+                      <button
+                        onClick={() => { setGeslacht1('Vrouw'); setAndersOptie(''); setAndersOpen(false); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Vrouw' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Vrouw' ? 'white' : '#555' }}
+                      >Vrouw</button>
+
+                      {/* Anders */}
+                      <button
+                        onClick={() => { setGeslacht1('Anders'); setAndersOpen(o => !o); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Anders' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Anders' ? 'white' : '#555' }}
+                      >
+                        {andersOptie && geslacht1 === 'Anders' ? andersOptie : 'Anders'}
+                      </button>
                     </div>
 
-                    {/* Dropdown verschijnt onder de pills als Anders geselecteerd is */}
-                    {geslacht1 === 'Anders' && (
-                      <select
-                        value={andersOptie}
-                        onChange={e => { setAndersOptie(e.target.value); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                        className="ob-field"
-                        style={{
-                          marginTop: 8,
-                          appearance: 'none',
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23999' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E")`,
-                          backgroundRepeat: 'no-repeat', backgroundPosition: 'right 14px center',
-                        }}
-                        autoFocus
-                      >
-                        <option value="">Kies een optie</option>
-                        {['Non-binair','Genderqueer','Genderfluid','Agender','Bigender','Transgender man','Transgender vrouw','Liever niet zeggen'].map(o => (
-                          <option key={o} value={o}>{o}</option>
+                    {/* Custom dropdown */}
+                    {geslacht1 === 'Anders' && andersOpen && (
+                      <div style={{
+                        marginTop: 8, background: 'white', border: '1.5px solid #E5E5E5',
+                        borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+                        overflow: 'hidden',
+                        animation: 'ob-anders-in .18s ease both',
+                      }}>
+                        {['Non-binair','Genderqueer','Genderfluid','Agender','Bigender','Transgender man','Transgender vrouw','Intersekse','Two-spirit','Liever niet zeggen'].map(o => (
+                          <button
+                            key={o}
+                            onClick={() => { setAndersOptie(o); setAndersOpen(false); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                            style={{
+                              display: 'block', width: '100%', textAlign: 'left',
+                              padding: '12px 16px', minHeight: 44, fontSize: 13, fontWeight: 500,
+                              border: 'none', borderBottom: '1px solid #F5F5F5',
+                              background: andersOptie === o ? '#FFF5EE' : 'white',
+                              color: andersOptie === o ? '#E87722' : '#333',
+                              cursor: 'pointer', transition: 'background .12s',
+                            }}
+                            onMouseEnter={e => { if (andersOptie !== o) (e.target as HTMLElement).style.background = '#FFF5EE' }}
+                            onMouseLeave={e => { if (andersOptie !== o) (e.target as HTMLElement).style.background = 'white' }}
+                          >
+                            {o}
+                          </button>
                         ))}
-                      </select>
+                      </div>
                     )}
 
                     {errors1.geslacht && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>{errors1.geslacht}</p>}
