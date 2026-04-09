@@ -3,7 +3,8 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Play, Sparkles, ChevronRight } from 'lucide-react'
+import { ArrowRight, MapPin, Play, Sparkles } from 'lucide-react'
+import { TestimonialV2 } from '@/components/ui/testimonial-v2'
 
 const SYNE = { fontFamily: "'Syne', sans-serif" }
 const DM = { fontFamily: "'DM Sans', sans-serif" }
@@ -37,26 +38,6 @@ const steps = [
   },
 ]
 
-const testimonials = [
-  {
-    name: 'Daan V.',
-    region: 'Amsterdam',
-    sport: 'Hardlopen',
-    quote: 'Via Buddys vond ik binnen een week iemand met dezelfde trainingsambities. Nu lopen we drie keer per week samen.',
-  },
-  {
-    name: 'Lisa M.',
-    region: 'Utrecht',
-    sport: 'Fietsen',
-    quote: 'Eindelijk iemand met hetzelfde niveau en dezelfde doelen. We doen nu samen een sportief weekend in de Ardennen.',
-  },
-  {
-    name: 'Marco R.',
-    region: 'Rotterdam',
-    sport: 'Triathlon',
-    quote: 'Als triatleet zocht ik iemand voor de zwemtraining. Na twee dagen had ik drie serieuze reacties.',
-  },
-]
 
 
 export default function LandingPage() {
@@ -297,47 +278,7 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── TESTIMONIALS ── */}
-      <section id="community" className="py-32 bg-black">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="flex items-end justify-between mb-16 flex-wrap gap-6">
-            <div>
-              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Community</p>
-              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
-                className="text-[clamp(40px,5vw,72px)] text-white">
-                Wat sporters zeggen
-              </h2>
-            </div>
-            <Link href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:text-white transition-colors">
-              Sluit je aan <ChevronRight className="w-4 h-4" />
-            </Link>
-          </div>
-          <div className="grid md:grid-cols-3 gap-5">
-            {testimonials.map((t) => (
-              <div key={t.name}
-                className="bg-white/4 border border-white/8 rounded-3xl p-8 hover:border-[#E87722]/30 hover:bg-white/6 transition-all duration-300 flex flex-col">
-                <div className="flex mb-5">
-                  {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-[#E87722]">★</span>
-                  ))}
-                </div>
-                <p className="text-gray-300 leading-relaxed flex-1 text-[15px] font-light">"{t.quote}"</p>
-                <div className="flex items-center gap-3 mt-7 pt-7 border-t border-white/8">
-                  <div className="w-10 h-10 bg-[#E87722] rounded-xl flex items-center justify-center text-white font-bold text-sm" style={SYNE}>
-                    {t.name.split(' ').map(n => n[0]).join('')}
-                  </div>
-                  <div>
-                    <p className="font-bold text-white text-sm" style={SYNE}>{t.name}</p>
-                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                      <MapPin className="w-3 h-3" />{t.region} · {t.sport}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
+      <TestimonialV2 />
 
       {/* ── PRIJZEN ── */}
       <section id="prijzen" className="py-32 bg-[#edece8]">
