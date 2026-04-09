@@ -50,8 +50,6 @@ export default function OnboardingPage() {
   // Step 1
   const [fullName, setFullName]     = useState('')
   const [region, setRegion]         = useState('')
-  const [regionLat, setRegionLat]   = useState<number | undefined>()
-  const [regionLng, setRegionLng]   = useState<number | undefined>()
   const [age, setAge]               = useState('')
   const [geslacht1, setGeslacht1]   = useState('')
   const [andersOptie, setAndersOptie] = useState('')
@@ -164,8 +162,8 @@ export default function OnboardingPage() {
       const { error: profileError } = await supabase.from('profiles').update({
         full_name:  sanitizeText(limitLength(fullName, 80)),
         region:     sanitizeText(limitLength(region, 80)),
-        region_lat: regionLat ?? null,
-        region_lng: regionLng ?? null,
+        region_lat: null,
+        region_lng: null,
         age:        age ? parseInt(age) : null,
         bio:        sanitizeText(limitLength(bio, 500)),
         avatar_url: avatarUrl || undefined,
@@ -429,10 +427,8 @@ export default function OnboardingPage() {
                       </label>
                       <PlacesInput
                         value={region}
-                        onChange={(val, lat, lng) => {
+                        onChange={(val) => {
                           setRegion(val)
-                          setRegionLat(lat)
-                          setRegionLng(lng)
                           setErrors1(p => ({ ...p, region: '' }))
                         }}
                         hasError={!!errors1.region}
