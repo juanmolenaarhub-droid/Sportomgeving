@@ -415,7 +415,7 @@ export default function LandingPage() {
               <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Zakelijk</p>
               <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
                 className="text-[clamp(36px,4.5vw,64px)] text-white mb-6">
-                Ben je een club, gym of personal trainer?
+                Ben je een club, gym, sportvoedingsbedrijf of personal trainer?
               </h2>
               <p className="text-gray-400 text-lg leading-relaxed font-light mb-9">
                 Maak een premium bedrijfsprofiel en bereik duizenden sporters in jouw regio. Directe zichtbaarheid in de community die jou aansluit.
