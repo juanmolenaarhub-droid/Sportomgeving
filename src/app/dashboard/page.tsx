@@ -169,30 +169,17 @@ export default function DashboardHomePage() {
         {/* Activiteit tellers */}
         <div className="bg-white rounded-2xl border border-gray-100 p-5">
           <h3 className="font-black text-black mb-4">Activiteit</h3>
-          <div className="space-y-3">
-            <Link href="/dashboard/messages" className="flex items-center justify-between group hover:bg-gray-50 -mx-2 px-2 py-2 rounded-xl transition-colors">
+          <div className="space-y-1.5">
+            <Link href="/dashboard/messages" className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-2.5 rounded-xl transition-colors">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
                   <MessageCircle className="w-4 h-4 text-blue-500" />
                 </div>
                 <span className="text-sm font-semibold text-gray-700">Berichten</span>
               </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-white bg-blue-500 px-2 py-0.5 rounded-full">2</span>
-              </div>
+              <span className="text-xs font-black text-white bg-blue-500 px-2 py-0.5 rounded-full">2</span>
             </Link>
-            <Link href="/dashboard/find" className="flex items-center justify-between group hover:bg-gray-50 -mx-2 px-2 py-2 rounded-xl transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-orange-50 rounded-lg flex items-center justify-center">
-                  <UserPlus className="w-4 h-4 text-[#E87722]" />
-                </div>
-                <span className="text-sm font-semibold text-gray-700">Buddy verzoeken</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-white bg-[#E87722] px-2 py-0.5 rounded-full">3</span>
-              </div>
-            </Link>
-            <div className="flex items-center justify-between -mx-2 px-2 py-2 rounded-xl">
+            <div className="flex items-center justify-between -mx-2 px-2 py-2.5 rounded-xl">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center">
                   <Heart className="w-4 h-4 text-pink-500" />
@@ -201,7 +188,7 @@ export default function DashboardHomePage() {
               </div>
               <span className="text-sm font-black text-gray-400">12</span>
             </div>
-            <div className="flex items-center justify-between -mx-2 px-2 py-2 rounded-xl">
+            <div className="flex items-center justify-between -mx-2 px-2 py-2.5 rounded-xl">
               <div className="flex items-center gap-3">
                 <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
                   <Bell className="w-4 h-4 text-gray-400" />
@@ -210,6 +197,42 @@ export default function DashboardHomePage() {
               </div>
               <span className="text-xs font-black text-white bg-gray-800 px-2 py-0.5 rounded-full">5</span>
             </div>
+          </div>
+        </div>
+
+        {/* Inkomende volgverzoeken */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-black text-black">Volgverzoeken</h3>
+            <span className="text-xs font-black text-white bg-[#E87722] px-2 py-0.5 rounded-full">3</span>
+          </div>
+          <div className="space-y-3">
+            {[
+              { name: 'Kevin Smit', region: 'Den Haag', sport: 'Voetbal', msg: 'Hey! Ik zoek iemand voor weekendmatches.' },
+              { name: 'Anna de Boer', region: 'Amsterdam', sport: 'Zwemmen', msg: 'Zin om samen te trainen?' },
+              { name: 'Daan Bakker', region: 'Haarlem', sport: 'Tennis', msg: '' },
+            ].map((req) => (
+              <div key={req.name} className="border border-gray-100 rounded-xl p-3">
+                <div className="flex items-center gap-2.5 mb-2">
+                  <StoryAvatar name={req.name} size="sm" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-black leading-none">{req.name}</p>
+                    <p className="text-xs text-gray-400 mt-0.5">{req.region} · {req.sport}</p>
+                  </div>
+                </div>
+                {req.msg && (
+                  <p className="text-xs text-gray-500 italic mb-2.5 leading-relaxed px-1">&ldquo;{req.msg}&rdquo;</p>
+                )}
+                <div className="flex gap-2">
+                  <button className="flex-1 py-1.5 bg-[#E87722] text-white text-xs font-bold rounded-lg hover:bg-[#d06a1a] transition-colors">
+                    Accepteren
+                  </button>
+                  <button className="flex-1 py-1.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">
+                    Weigeren
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
 
