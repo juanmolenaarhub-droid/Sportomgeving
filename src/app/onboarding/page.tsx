@@ -58,6 +58,8 @@ export default function OnboardingPage() {
   const [bio, setBio]               = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
+  const [bannerFile, setBannerFile] = useState<File | null>(null)
+  const [bannerPreview, setBannerPreview] = useState('')
   const [errors1, setErrors1]       = useState<Record<string, string>>({})
 
   // Step 2
@@ -71,6 +73,7 @@ export default function OnboardingPage() {
   const [geslacht, setGeslacht]                 = useState('geen')
 
   const fileRef = useRef<HTMLInputElement>(null)
+  const bannerRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     createClient().auth.getUser().then(({ data }) => {
@@ -96,6 +99,15 @@ export default function OnboardingPage() {
     if (err) { alert(err); return }
     setAvatarFile(file)
     setAvatarPreview(URL.createObjectURL(file))
+  }
+
+  function handleBannerChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const err = validateImageFile(file)
+    if (err) { alert(err); return }
+    setBannerFile(file)
+    setBannerPreview(URL.createObjectURL(file))
   }
 
   function toggleSport(id: number) {
@@ -125,7 +137,7 @@ export default function OnboardingPage() {
     }).eq('id', user.id)
     await supabase.from('user_sports').delete().eq('user_id', user.id)
     setStep(1); setFullName(''); setRegion(''); setAge(''); setBio('')
-    setAvatarFile(null); setAvatarPreview(''); setSelectedSports([])
+    setAvatarFile(null); setAvatarPreview(''); setBannerFile(null); setBannerPreview(''); setSelectedSports([])
     setGeslacht1(''); setAndersOptie(''); setRadius(25); setGeslacht('geen')
   }
 
@@ -316,25 +328,82 @@ export default function OnboardingPage() {
                     Hoe beter je profiel, hoe beter je match.
                   </p>
 
-                  {/* Avatar */}
-                  <div className="flex flex-col items-center mb-8">
+                  {/* Banner + Avatar */}
+                  <div className="mb-8" style={{ position: 'relative', paddingBottom: 44 }}>
+                    {/* Banner zone */}
                     <button
                       type="button"
-                      onClick={() => fileRef.current?.click()}
-                      className="flex flex-col items-center gap-2 group"
+                      onClick={() => bannerRef.current?.click()}
+                      className="group"
+                      style={{
+                        display: 'block',
+                        width: '100%',
+                        height: 120,
+                        borderRadius: 14,
+                        overflow: 'hidden',
+                        background: bannerPreview ? 'transparent' : '#F0EFED',
+                        border: bannerPreview ? 'none' : '2px dashed #D5D3CF',
+                        position: 'relative',
+                        cursor: 'pointer',
+                      }}
                     >
-                      <div
-                        className="w-24 h-24 rounded-full overflow-hidden flex items-center justify-center"
-                        style={{ background: '#F5F5F5', border: '2px dashed #E5E5E5' }}
-                      >
-                        {avatarPreview
-                          ? <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
-                          : <Camera className="w-7 h-7" style={{ color: '#ccc' }} />
-                        }
+                      {bannerPreview
+                        ? <img src={bannerPreview} alt="banner" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                        : (
+                          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', height: '100%', gap: 6 }}>
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#bbb" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                              <rect x="3" y="3" width="18" height="18" rx="3" />
+                              <circle cx="8.5" cy="8.5" r="1.5" />
+                              <polyline points="21 15 16 10 5 21" />
+                            </svg>
+                            <span style={{ fontSize: 11, fontWeight: 600, color: '#bbb' }}>Bannerafbeelding toevoegen</span>
+                          </div>
+                        )
+                      }
+                      {/* Hover overlay */}
+                      <div className="group-hover:opacity-100" style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.25)', opacity: 0, transition: 'opacity .15s', display: 'flex', alignItems: 'center', justifyContent: 'center', borderRadius: 14 }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: 'white' }}>Wijzigen</span>
                       </div>
-                      <span style={{ fontSize: 12, fontWeight: 700, color: '#E87722' }}>Foto toevoegen</span>
                     </button>
-                    <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                    <input ref={bannerRef} type="file" accept="image/*" className="hidden" onChange={handleBannerChange} />
+
+                    {/* Avatar overlapping banner */}
+                    <div style={{ position: 'absolute', bottom: 0, left: '50%', transform: 'translateX(-50%)' }}>
+                      <button
+                        type="button"
+                        onClick={() => fileRef.current?.click()}
+                        className="group"
+                        style={{ display: 'block', position: 'relative', borderRadius: '50%', cursor: 'pointer' }}
+                      >
+                        <div style={{
+                          width: 88,
+                          height: 88,
+                          borderRadius: '50%',
+                          overflow: 'hidden',
+                          border: '4px solid white',
+                          background: '#F0EFED',
+                          display: 'flex',
+                          alignItems: 'center',
+                          justifyContent: 'center',
+                          boxShadow: '0 2px 8px rgba(0,0,0,0.10)',
+                        }}>
+                          {avatarPreview
+                            ? <img src={avatarPreview} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                            : <Camera style={{ width: 26, height: 26, color: '#ccc' }} />
+                          }
+                        </div>
+                        {/* Camera badge */}
+                        <div style={{
+                          position: 'absolute', bottom: 2, right: 2,
+                          width: 24, height: 24, borderRadius: '50%',
+                          background: '#E87722', border: '2px solid white',
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        }}>
+                          <Camera style={{ width: 11, height: 11, color: 'white' }} />
+                        </div>
+                      </button>
+                      <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
+                    </div>
                   </div>
 
                   {/* Naam */}
