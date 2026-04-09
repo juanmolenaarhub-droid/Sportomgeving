@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -48,6 +48,13 @@ export default function OnboardingPage() {
   const [step, setStep] = useState(1)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [currentEmail, setCurrentEmail] = useState('')
+
+  useEffect(() => {
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user?.email) setCurrentEmail(data.user.email)
+    })
+  }, [])
 
   const [fullName, setFullName] = useState('')
   const [region, setRegion] = useState('')
@@ -187,12 +194,14 @@ export default function OnboardingPage() {
             <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
               Stap {step} van {TOTAL_STEPS}
             </span>
-            <button
-              onClick={handleReset}
-              style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
-            >
-              ↺ Reset test
-            </button>
+            {currentEmail === 'juanmolenaarhub@gmail.com' && (
+              <button
+                onClick={handleReset}
+                style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+              >
+                ↺ Reset test
+              </button>
+            )}
           </div>
         </div>
 
