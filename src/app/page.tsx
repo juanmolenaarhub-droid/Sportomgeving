@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Play, Sparkles, ChevronRight, Building2 } from 'lucide-react'
+import { ArrowRight, MapPin, Play, Sparkles, ChevronRight } from 'lucide-react'
 
 const SYNE = { fontFamily: "'Syne', sans-serif" }
 const DM = { fontFamily: "'DM Sans', sans-serif" }
@@ -93,7 +93,7 @@ export default function LandingPage() {
           <nav className="hidden md:flex items-center gap-9 text-sm font-medium text-gray-500">
             <a href="#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</a>
 <a href="#community" className="hover:text-black transition-colors">Community</a>
-            <a href="#bedrijven" className="hover:text-black transition-colors">Voor bedrijven</a>
+            <Link href="/voor-bedrijven" className="hover:text-black transition-colors">Voor bedrijven</Link>
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>
@@ -404,79 +404,12 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ── VOOR BEDRIJVEN ── */}
-      <section id="bedrijven" className="py-32 bg-black">
-        <div className="max-w-7xl mx-auto px-8">
-          <div className="grid lg:grid-cols-2 gap-20 items-center">
-            <div>
-              <div className="w-12 h-12 bg-[#E87722]/10 border border-[#E87722]/20 rounded-2xl flex items-center justify-center mb-8">
-                <Building2 className="w-5 h-5 text-[#E87722]" />
-              </div>
-              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Voor merken & ondernemers in de sport</p>
-              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
-                className="text-[clamp(36px,4.5vw,64px)] text-white mb-6">
-                Jouw merk. Duizenden sporters. Één platform.
-              </h2>
-              <p className="text-gray-400 text-lg leading-relaxed font-light mb-9">
-                Buddys is waar sporters dagelijks komen om te connecten, te trainen en te kopen. Plaats jouw merk precies daar waar jouw doelgroep al actief is — niet ernaast, maar er middenin.
-              </p>
-              <ul className="space-y-4 mb-6">
-                {[
-                  'Eigen brandpagina met producten, diensten en reviews',
-                  'Zichtbaar bij de juiste sporters op het juiste moment',
-                  'Verkoop direct via het platform — geen externe webshop nodig',
-                  'Bouw een community van vaste klanten en volgers',
-                  'Betaal alleen voor resultaat — commissie op wat je verkoopt',
-                ].map(item => (
-                  <li key={item} className="flex items-start gap-3">
-                    <div className="w-5 h-5 rounded-full bg-[#E87722] flex items-center justify-center shrink-0 mt-0.5">
-                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
-                    </div>
-                    <span className="text-gray-300 font-light">{item}</span>
-                  </li>
-                ))}
-              </ul>
-              <p className="text-gray-600 text-sm mb-8 leading-relaxed">
-                Geschikt voor: <span className="text-gray-500">sportkleding · voeding & supplements · gyms & clubs · personal trainers · sportscholen · fysiotherapeuten · sporteventen</span>
-              </p>
-              <Link href="/register"
-                className="inline-flex items-center gap-2 bg-white text-black font-semibold px-7 py-4 rounded-2xl hover:bg-[#E87722] hover:text-white transition-all duration-200">
-                Gratis zakelijk profiel aanmaken <ArrowRight className="w-4 h-4" />
-              </Link>
-              <p className="text-gray-600 text-xs mt-4">Geen maandelijkse kosten · Alleen commissie op verkoop · Direct live</p>
-            </div>
-
-            {/* Business card mockup */}
-            <div className="bg-[#111] rounded-3xl border border-white/8 p-8 shadow-2xl">
-              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/6">
-                <div className="w-12 h-12 bg-[#E87722] rounded-xl flex items-center justify-center text-white font-bold" style={SYNE}>RC</div>
-                <div className="flex-1">
-                  <div className="flex items-center gap-2">
-                    <p className="font-bold text-white" style={SYNE}>RunClub Amsterdam</p>
-                    <span className="text-xs bg-[#E87722] text-white font-bold px-2 py-0.5 rounded-full">Pro</span>
-                  </div>
-                  <p className="text-xs text-gray-500 mt-0.5">4.9 beoordeling · 238 leden</p>
-                </div>
-              </div>
-              <p className="text-gray-400 text-sm leading-relaxed mb-6 font-light">
-                "Wij bereiken wekelijks nieuwe leden via Buddys. De zakelijke pagina heeft onze zichtbaarheid enorm vergroot."
-              </p>
-              <div className="grid grid-cols-3 gap-3">
-                {[
-                  { label: 'Nieuwe leden/mnd', val: '+24' },
-                  { label: 'Profielviews', val: '1.2k' },
-                  { label: 'Reviews', val: '87' },
-                ].map(s => (
-                  <div key={s.label} className="bg-white/5 rounded-xl p-4 text-center">
-                    <p style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-[#E87722]">{s.val}</p>
-                    <p className="text-xs text-gray-500 mt-1 leading-tight">{s.label}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* ── ZAKELIJKE CTA (subtiel) ── */}
+      <div className="max-w-7xl mx-auto px-8 py-6 text-center">
+        <Link href="/voor-bedrijven" className="text-sm text-gray-400 hover:text-gray-600 transition-colors">
+          Ben je een club, gym of merk? Bekijk onze zakelijke opties →
+        </Link>
+      </div>
 
       {/* ── FINAL CTA ── */}
       <section className="relative py-36 bg-[#E87722] overflow-hidden">
