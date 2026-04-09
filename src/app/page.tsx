@@ -3,52 +3,77 @@
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, MapPin, Users, Zap, ChevronDown, Building2, Star } from 'lucide-react'
+import { ArrowRight, MapPin, Play, Sparkles, ChevronRight, Building2, TrendingUp, Shield } from 'lucide-react'
 
-const FREDOKA = { fontFamily: "'Fredoka', sans-serif" }
-const JAKARTA = { fontFamily: "'Plus Jakarta Sans', sans-serif" }
+const SYNE = { fontFamily: "'Syne', sans-serif" }
+const DM = { fontFamily: "'DM Sans', sans-serif" }
 
 const ROTATING_WORDS = ['sportmaatje', 'fietsbuddy', 'zwempartner', 'gymmaatje']
 
-const sports = [
-  { name: 'Hardlopen', img: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=400&q=80' },
-  { name: 'Fietsen', img: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=400&q=80' },
-  { name: 'Gym', img: 'https://images.unsplash.com/photo-1534438327276-14e5300c3a48?w=400&q=80' },
-  { name: 'Yoga', img: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=400&q=80' },
-  { name: 'Zwemmen', img: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=400&q=80' },
-  { name: 'Voetbal', img: 'https://images.unsplash.com/photo-1575361204480-aadea25e6e68?w=400&q=80' },
-  { name: 'Tennis', img: 'https://images.unsplash.com/photo-1554068865-24cecd4e34b8?w=400&q=80' },
-  { name: 'Padel', img: 'https://images.unsplash.com/photo-1612534542-4d3a30e14db5?w=400&q=80' },
-]
-
-const sportTags = ['Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal', 'Tennis', 'Golf', 'Yoga', 'Wandelen', 'Triathlon', 'Padel', 'Basketbal', 'Boksen', 'Klimmen', 'Roeien']
-
 const steps = [
-  { num: '01', emoji: '👤', title: 'Maak je profiel', desc: 'Voeg je sporten toe, kies je niveau en geef je regio op. Klaar in 2 minuten.' },
-  { num: '02', emoji: '🔍', title: 'Vind je match', desc: 'Filter op sport, niveau, leeftijd en beschikbaarheid. Geen datingsfeer — gewoon sporten.' },
-  { num: '03', emoji: '⚡', title: 'Ga samen', desc: 'Stuur een verzoek, word geaccepteerd en spreek af. Zo simpel is het.' },
+  {
+    num: '01',
+    title: 'Bouw je profiel',
+    desc: 'Voeg je sporten, niveau en beschikbaarheid toe. Klaar in twee minuten.',
+  },
+  {
+    num: '02',
+    title: 'Vind je match',
+    desc: 'Filter op sport, niveau, locatie en tijdstip — of laat onze AI het voor jou doen.',
+  },
+  {
+    num: '03',
+    title: 'Sport samen',
+    desc: 'Stuur een verzoek, word geaccepteerd en spreek af. Direct. Zonder gedoe.',
+  },
 ]
 
 const testimonials = [
-  { name: 'Daan V.', region: 'Amsterdam', sport: 'Hardlopen', quote: 'Via Buddys vond ik binnen een week een hardloopmaatje op mijn niveau. Nu trainen we 3x per week samen.' },
-  { name: 'Lisa M.', region: 'Utrecht', sport: 'Fietsen', quote: 'Eindelijk iemand gevonden om mee te fietsen. We doen nu samen een sportief weekend in de Ardennen.' },
-  { name: 'Marco R.', region: 'Rotterdam', sport: 'Triathlon', quote: 'Als triatleet zocht ik iemand voor de zwemtraining. Na 2 dagen had ik al 3 reacties.' },
+  {
+    name: 'Daan V.',
+    region: 'Amsterdam',
+    sport: 'Hardlopen',
+    quote: 'Via Buddys vond ik binnen een week iemand met dezelfde trainingsambities. Nu lopen we drie keer per week samen.',
+  },
+  {
+    name: 'Lisa M.',
+    region: 'Utrecht',
+    sport: 'Fietsen',
+    quote: 'Eindelijk iemand met hetzelfde niveau en dezelfde doelen. We doen nu samen een sportief weekend in de Ardennen.',
+  },
+  {
+    name: 'Marco R.',
+    region: 'Rotterdam',
+    sport: 'Triathlon',
+    quote: 'Als triatleet zocht ik iemand voor de zwemtraining. Na twee dagen had ik drie serieuze reacties.',
+  },
 ]
 
-const stats = [
-  { value: '2.400+', label: 'Actieve sporters', emoji: '🏃‍♂️' },
-  { value: '40+', label: 'Sporten', emoji: '🏅' },
-  { value: '850+', label: 'Matches gemaakt', emoji: '🤝' },
-  { value: '4.8/5', label: 'Beoordeling', emoji: '⭐' },
+const AI_QUERIES = [
+  'Een hardloper in Amsterdam die 3x per week traint op gevorderd niveau...',
+  'Iemand voor ochtend-gym sessies in Rotterdam, minimaal 4x per week...',
+  'Een fietsmaatje voor lange afstandsritten in de weekenden rond Utrecht...',
+  'Een zwempartner voor baantraining, donderdag en zaterdag vroeg...',
+]
+
+const AI_RESULTS = [
+  { initials: 'TvB', name: 'Tim van Berg', region: 'Amsterdam', sport: 'Hardlopen', level: 'Gevorderd', match: '97%' },
+  { initials: 'SJ', name: 'Sarah Jansen', region: 'Amsterdam', sport: 'Hardlopen', level: 'Gevorderd', match: '94%' },
+  { initials: 'PK', name: 'Peter Kok', region: 'Amstelveen', sport: 'Hardlopen', level: 'Gevorderd', match: '91%' },
 ]
 
 export default function LandingPage() {
   const [visible, setVisible] = useState(false)
   const [wordIndex, setWordIndex] = useState(0)
   const [wordVisible, setWordVisible] = useState(true)
+  const [aiQuery, setAiQuery] = useState('')
+  const [aiSearching, setAiSearching] = useState(false)
+  const [aiResults, setAiResults] = useState(false)
+  const [typingIndex, setTypingIndex] = useState(0)
+  const [charIndex, setCharIndex] = useState(0)
 
   useEffect(() => {
-    const t = setTimeout(() => setVisible(true), 100)
+    const t = setTimeout(() => setVisible(true), 80)
     return () => clearTimeout(t)
   }, [])
 
@@ -58,29 +83,56 @@ export default function LandingPage() {
       setTimeout(() => {
         setWordIndex(i => (i + 1) % ROTATING_WORDS.length)
         setWordVisible(true)
-      }, 400)
+      }, 350)
     }, 3000)
     return () => clearInterval(interval)
   }, [])
 
+  // Auto-type demo in AI box
+  useEffect(() => {
+    const query = AI_QUERIES[typingIndex]
+    if (charIndex < query.length) {
+      const t = setTimeout(() => {
+        setAiQuery(query.slice(0, charIndex + 1))
+        setCharIndex(c => c + 1)
+      }, 38)
+      return () => clearTimeout(t)
+    } else {
+      const t = setTimeout(() => {
+        setAiSearching(true)
+        setTimeout(() => {
+          setAiSearching(false)
+          setAiResults(true)
+          setTimeout(() => {
+            setAiResults(false)
+            setAiQuery('')
+            setCharIndex(0)
+            setTypingIndex(i => (i + 1) % AI_QUERIES.length)
+          }, 3200)
+        }, 1200)
+      }, 900)
+      return () => clearTimeout(t)
+    }
+  }, [charIndex, typingIndex])
+
   return (
-    <div style={JAKARTA} className="bg-[#edece8] overflow-x-hidden">
+    <div style={DM} className="bg-[#edece8] overflow-x-hidden">
 
       {/* ── NAVBAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#edece8]/90 backdrop-blur-md border-b border-black/5">
-        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#edece8]/95 backdrop-blur-sm border-b border-black/8">
+        <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/">
-            <Image src="/logo.png" alt="Buddys" height={32} width={110} className="object-contain" />
+            <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
           </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm font-medium text-gray-600">
+          <nav className="hidden md:flex items-center gap-9 text-sm font-medium text-gray-500">
             <a href="#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</a>
-            <a href="#sporten" className="hover:text-black transition-colors">Sporten</a>
+            <a href="#ai-matching" className="hover:text-black transition-colors">AI Matching</a>
             <a href="#community" className="hover:text-black transition-colors">Community</a>
             <a href="#bedrijven" className="hover:text-black transition-colors">Voor bedrijven</a>
           </nav>
-          <div className="flex items-center gap-3">
-            <Link href="/login" className="text-sm font-semibold text-gray-600 hover:text-black transition-colors">Inloggen</Link>
-            <Link href="/register" className="bg-black text-white text-sm font-bold px-5 py-2.5 rounded-xl hover:bg-[#E87722] transition-colors flex items-center gap-1.5">
+          <div className="flex items-center gap-4">
+            <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>
+            <Link href="/register" className="bg-black text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#E87722] transition-all duration-200 flex items-center gap-1.5">
               Gratis starten <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -88,233 +140,326 @@ export default function LandingPage() {
       </header>
 
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex flex-col justify-center pt-16 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]"
-          style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '60px 60px' }} />
-        <div className="absolute top-20 right-[-10%] w-[600px] h-[600px] bg-[#E87722] rounded-full opacity-10 blur-3xl pointer-events-none" />
-        <div className="absolute bottom-0 left-[-5%] w-[400px] h-[400px] bg-[#E87722] rounded-full opacity-5 blur-3xl pointer-events-none" />
+      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+        {/* Subtle grain overlay */}
+        <div className="absolute inset-0 opacity-[0.025] pointer-events-none"
+          style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 512 512\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '200px' }} />
 
-        <div className="max-w-7xl mx-auto px-6 w-full py-20">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+        {/* Oranje glow rechtsboven */}
+        <div className="absolute -top-32 right-[-15%] w-[700px] h-[700px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(232,119,34,0.12) 0%, transparent 70%)' }} />
 
-            {/* Left */}
-            <div className="transition-all duration-1000"
-              style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(40px)' }}>
-              <div className="inline-flex items-center gap-2 bg-black text-white text-xs font-bold px-3 py-1.5 rounded-full mb-6 tracking-widest uppercase">
-                <span className="w-1.5 h-1.5 bg-[#E87722] rounded-full animate-pulse" />
+        <div className="max-w-7xl mx-auto px-8 w-full py-24">
+          <div className="grid lg:grid-cols-5 gap-16 items-center">
+
+            {/* Left: 3/5 */}
+            <div className="lg:col-span-3"
+              style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'all 0.9s cubic-bezier(0.16,1,0.3,1)' }}>
+
+              <div className="inline-flex items-center gap-2.5 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-8 border border-black/10 bg-white/60 text-gray-600 tracking-wide">
+                <span className="w-1.5 h-1.5 bg-[#E87722] rounded-full" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
                 2.400+ sporters actief in Nederland
               </div>
 
-              <h1 style={{ ...FREDOKA, fontWeight: 700, lineHeight: 1.05 }}
-                className="text-[clamp(56px,8vw,120px)] text-black">
+              <h1 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+                className="text-[clamp(56px,7.5vw,116px)] text-black">
                 Vind je<br />
                 <span className="text-[#E87722]">perfecte</span><br />
-                <span
-                  className="inline-block transition-all duration-400"
+                <span className="inline-block transition-all duration-350"
                   style={{
                     opacity: wordVisible ? 1 : 0,
-                    transform: wordVisible ? 'translateY(0)' : 'translateY(12px)',
-                    transition: 'opacity 0.4s ease, transform 0.4s ease',
-                  }}
-                >
+                    transform: wordVisible ? 'translateY(0) skewX(0deg)' : 'translateY(14px) skewX(-2deg)',
+                    transition: 'opacity 0.35s ease, transform 0.35s ease',
+                  }}>
                   {ROTATING_WORDS[wordIndex]}.
                 </span>
               </h1>
 
-              <p className="text-lg text-gray-600 mt-6 max-w-md leading-relaxed">
-                Buddys koppelt sporters op niveau, locatie en beschikbaarheid. Of je nu hardloopt, fietst of traint — vind iemand die écht bij jou past.
+              <p className="text-lg text-gray-500 mt-7 max-w-lg leading-relaxed font-light">
+                Buddys koppelt sporters met dezelfde interesses, hetzelfde niveau en dezelfde ambities. Geen toevalligheden — slimme matching die echt werkt.
               </p>
-              <div className="flex flex-wrap gap-3 mt-8">
+
+              <div className="flex flex-wrap gap-3 mt-9">
                 <Link href="/register"
-                  className="group flex items-center gap-2 bg-[#E87722] text-white font-bold px-7 py-4 rounded-2xl hover:bg-black transition-all duration-300 text-base">
+                  className="group inline-flex items-center gap-2 bg-[#E87722] text-white font-semibold px-8 py-4 rounded-2xl hover:bg-black transition-all duration-250 text-[15px]">
                   Start gratis account
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
                 <a href="#hoe-het-werkt"
-                  className="flex items-center gap-2 border-2 border-black/10 text-gray-700 font-bold px-7 py-4 rounded-2xl hover:border-black hover:text-black transition-all duration-300 text-base">
+                  className="inline-flex items-center gap-2 border border-black/12 text-gray-600 font-semibold px-8 py-4 rounded-2xl hover:border-black hover:text-black transition-all duration-200 text-[15px] bg-white/50">
                   Hoe werkt het?
                 </a>
               </div>
+
+              <div className="flex items-center gap-8 mt-10 pt-10 border-t border-black/6">
+                {[
+                  { val: '2.400+', lbl: 'Actieve sporters' },
+                  { val: '850+', lbl: 'Matches gemaakt' },
+                  { val: '4.8', lbl: 'Gemiddelde score' },
+                ].map(s => (
+                  <div key={s.lbl}>
+                    <p style={SYNE} className="text-2xl font-bold text-black">{s.val}</p>
+                    <p className="text-xs text-gray-400 mt-0.5 font-medium">{s.lbl}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {/* Right: floating cards */}
-            <div className="relative h-[480px] hidden lg:block"
-              style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(60px)', transition: 'all 1.2s ease 0.2s' }}>
-              <div className="absolute top-0 right-8 w-64 bg-white rounded-3xl shadow-2xl p-5 border border-gray-100"
-                style={{ animation: 'float1 6s ease-in-out infinite' }}>
-                <div className="w-14 h-14 bg-[#E87722] rounded-2xl mb-3 flex items-center justify-center text-white font-bold text-xl" style={FREDOKA}>TvB</div>
-                <p className="font-bold text-black" style={FREDOKA}>Tim van Berg</p>
+            {/* Right: 2/5 — floating cards */}
+            <div className="lg:col-span-2 relative h-[460px] hidden lg:block"
+              style={{ opacity: visible ? 1 : 0, transition: 'all 1.1s cubic-bezier(0.16,1,0.3,1) 0.15s' }}>
+
+              <div className="absolute top-0 right-0 w-64 bg-white rounded-3xl shadow-xl p-5 border border-gray-100/80"
+                style={{ animation: 'float1 7s ease-in-out infinite' }}>
+                <div className="w-12 h-12 bg-[#E87722] rounded-2xl mb-3 flex items-center justify-center text-white font-bold text-base" style={SYNE}>TvB</div>
+                <p className="font-bold text-black text-sm" style={SYNE}>Tim van Berg</p>
                 <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />Amsterdam</p>
                 <div className="flex gap-1.5 mt-3">
-                  <span className="text-xs bg-black text-white font-bold px-2.5 py-1 rounded-full">🏃 Hardlopen</span>
-                  <span className="text-xs bg-orange-50 text-[#E87722] font-bold px-2.5 py-1 rounded-full">Gevorderd</span>
+                  <span className="text-xs bg-black text-white font-semibold px-2.5 py-1 rounded-full">Hardlopen</span>
+                  <span className="text-xs bg-orange-50 text-[#E87722] font-semibold px-2.5 py-1 rounded-full">Gevorderd</span>
                 </div>
-                <div className="mt-3 text-xs text-gray-500 bg-gray-50 rounded-xl p-2.5 leading-relaxed">
-                  "Zoek iemand voor ochtendtraining, 3x per week 🌅"
-                </div>
+                <p className="text-xs text-gray-400 mt-3 leading-relaxed bg-gray-50 rounded-xl p-2.5">
+                  Zoek iemand voor ochtendtraining, 3x per week — snelheid en consistentie zijn mijn prioriteit.
+                </p>
               </div>
 
-              <div className="absolute bottom-16 left-0 w-60 bg-black rounded-3xl shadow-2xl p-5"
-                style={{ animation: 'float2 7s ease-in-out infinite' }}>
-                <div className="w-12 h-12 bg-[#E87722] rounded-2xl mb-3 flex items-center justify-center text-white font-bold text-lg" style={FREDOKA}>SJ</div>
-                <p className="font-bold text-white" style={FREDOKA}>Sarah Jansen</p>
-                <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />Utrecht</p>
+              <div className="absolute bottom-20 left-0 w-56 bg-black rounded-3xl shadow-xl p-5"
+                style={{ animation: 'float2 8s ease-in-out infinite 0.5s' }}>
+                <div className="w-11 h-11 bg-[#E87722] rounded-xl mb-3 flex items-center justify-center text-white font-bold text-sm" style={SYNE}>SJ</div>
+                <p className="font-bold text-white text-sm" style={SYNE}>Sarah Jansen</p>
+                <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />Utrecht</p>
                 <div className="flex gap-1.5 mt-3">
-                  <span className="text-xs bg-[#E87722] text-white font-bold px-2.5 py-1 rounded-full">🚴 Fietsen</span>
-                  <span className="text-xs bg-white/10 text-white font-bold px-2.5 py-1 rounded-full">Gemiddeld</span>
+                  <span className="text-xs bg-[#E87722] text-white font-semibold px-2.5 py-1 rounded-full">Fietsen</span>
+                  <span className="text-xs bg-white/10 text-white font-semibold px-2.5 py-1 rounded-full">Gemiddeld</span>
                 </div>
               </div>
 
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#E87722] text-white rounded-2xl px-4 py-2.5 shadow-xl z-10"
-                style={{ animation: 'float3 5s ease-in-out infinite' }}>
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#E87722] text-white rounded-2xl px-4 py-2.5 shadow-lg z-10 whitespace-nowrap"
+                style={{ animation: 'float3 5.5s ease-in-out infinite' }}>
                 <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4" fill="white" />
-                  <span className="font-bold text-sm" style={FREDOKA}>Match gevonden! 🎉</span>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  <span className="font-semibold text-sm" style={SYNE}>97% match</span>
                 </div>
               </div>
 
-              <div className="absolute bottom-0 right-0 bg-white rounded-2xl shadow-xl p-4 border border-gray-100"
-                style={{ animation: 'float2 8s ease-in-out infinite 1s' }}>
-                <div className="flex items-center gap-2">
-                  <Users className="w-4 h-4 text-[#E87722]" />
-                  <div>
-                    <p className="font-bold text-black text-sm" style={FREDOKA}>24 leden online 🟢</p>
-                    <p className="text-xs text-gray-400">in Amsterdam</p>
-                  </div>
-                </div>
+              <div className="absolute bottom-4 right-4 bg-white rounded-2xl shadow-lg p-3.5 border border-gray-100"
+                style={{ animation: 'float2 9s ease-in-out infinite 1s' }}>
+                <p className="font-bold text-black text-xs" style={SYNE}>24 leden online</p>
+                <p className="text-xs text-gray-400 mt-0.5">in jouw regio</p>
               </div>
             </div>
           </div>
         </div>
-
-        <a href="#stats" className="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-400 hover:text-black transition-colors"
-          style={{ animation: 'bounce 2s ease-in-out infinite' }}>
-          <span className="text-xs font-semibold tracking-widest uppercase">Scroll</span>
-          <ChevronDown className="w-4 h-4" />
-        </a>
       </section>
 
-      {/* ── STATS BAR ── */}
-      <section id="stats" className="relative py-14 overflow-hidden" style={{ background: '#E87722' }}>
-        <div className="absolute inset-0 opacity-10"
-          style={{ backgroundImage: 'radial-gradient(circle, #000 1.5px, transparent 1.5px)', backgroundSize: '28px 28px' }} />
-        <span className="absolute text-5xl opacity-10 top-2 left-8 rotate-12 select-none">🏆</span>
-        <span className="absolute text-5xl opacity-10 bottom-2 left-1/4 -rotate-6 select-none">⚡</span>
-        <span className="absolute text-5xl opacity-10 top-1 right-1/4 rotate-6 select-none">🎯</span>
-        <span className="absolute text-5xl opacity-10 bottom-1 right-10 -rotate-12 select-none">🔥</span>
+      {/* ── AI MATCHING ── */}
+      <section id="ai-matching" className="py-32 bg-black relative overflow-hidden">
+        {/* Subtle radial glow */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] rounded-full pointer-events-none"
+          style={{ background: 'radial-gradient(circle, rgba(232,119,34,0.08) 0%, transparent 65%)' }} />
 
-        <div className="relative max-w-5xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            {stats.map((s) => (
-              <div key={s.label}
-                className="text-center bg-white/15 backdrop-blur-sm rounded-3xl py-6 px-4 border border-white/20 hover:bg-white/25 transition-all duration-300 hover:-translate-y-1">
-                <div className="text-4xl mb-2">{s.emoji}</div>
-                <p style={{ ...FREDOKA, fontWeight: 700 }} className="text-4xl text-white leading-none">{s.value}</p>
-                <p className="text-sm text-white/80 mt-1.5 font-semibold">{s.label}</p>
+        <div className="relative max-w-7xl mx-auto px-8">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
+
+            {/* Left */}
+            <div>
+              <div className="inline-flex items-center gap-2 text-xs font-semibold px-3 py-1.5 rounded-full border border-[#E87722]/30 text-[#E87722] mb-8 bg-[#E87722]/5">
+                <Sparkles className="w-3 h-3" />
+                Nieuw — AI Matching
               </div>
-            ))}
+              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+                className="text-[clamp(40px,5vw,72px)] text-white mb-6">
+                Beschrijf wie je zoekt. Wij regelen de rest.
+              </h2>
+              <p className="text-gray-400 text-lg leading-relaxed mb-8 font-light">
+                Typ in gewone taal wie jouw ideale sportmaatje is — welk niveau, welke tijden, welke ambities. Onze AI analyseert duizenden profielen en stelt de beste matches voor.
+              </p>
+              <ul className="space-y-4 mb-10">
+                {[
+                  { icon: Sparkles, text: 'Begrijpt context, niet alleen trefwoorden' },
+                  { icon: TrendingUp, text: 'Leert van jouw gedrag en voorkeuren' },
+                  { icon: Shield, text: 'Alleen serieuze sporters — geverifieerde profielen' },
+                ].map(({ icon: Icon, text }) => (
+                  <li key={text} className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-xl bg-[#E87722]/10 flex items-center justify-center shrink-0">
+                      <Icon className="w-4 h-4 text-[#E87722]" />
+                    </div>
+                    <span className="text-gray-300 font-medium">{text}</span>
+                  </li>
+                ))}
+              </ul>
+              <Link href="/register"
+                className="inline-flex items-center gap-2 bg-[#E87722] text-white font-semibold px-7 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200">
+                Probeer AI Matching <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            {/* Right: AI demo */}
+            <div className="relative">
+              <div className="bg-[#111] rounded-3xl border border-white/8 overflow-hidden shadow-2xl">
+                {/* Header */}
+                <div className="px-6 py-4 border-b border-white/6 flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-red-500/60" />
+                  <div className="w-2 h-2 rounded-full bg-yellow-500/60" />
+                  <div className="w-2 h-2 rounded-full bg-green-500/60" />
+                  <span className="ml-3 text-xs text-gray-600 font-mono">buddys — ai matching</span>
+                </div>
+
+                <div className="p-6">
+                  <p className="text-xs text-gray-500 mb-3 font-medium tracking-wide uppercase">Beschrijf jouw ideale sportmaatje</p>
+
+                  {/* Input */}
+                  <div className="relative bg-black rounded-2xl border border-white/10 p-4 mb-4 min-h-[72px]">
+                    <p className="text-white/90 text-sm leading-relaxed font-light">
+                      {aiQuery}
+                      <span className="inline-block w-0.5 h-4 bg-[#E87722] ml-0.5 align-middle"
+                        style={{ animation: 'blink 1s step-end infinite' }} />
+                    </p>
+                  </div>
+
+                  {/* Searching state */}
+                  {aiSearching && (
+                    <div className="flex items-center gap-3 py-3 px-4 bg-[#E87722]/10 rounded-xl border border-[#E87722]/20 mb-4">
+                      <div className="flex gap-1">
+                        {[0, 1, 2].map(i => (
+                          <div key={i} className="w-1.5 h-1.5 bg-[#E87722] rounded-full"
+                            style={{ animation: `bounce-dot 1.2s ease-in-out infinite`, animationDelay: `${i * 0.15}s` }} />
+                        ))}
+                      </div>
+                      <span className="text-[#E87722] text-sm font-medium">AI analyseert profielen...</span>
+                    </div>
+                  )}
+
+                  {/* Results */}
+                  {aiResults && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-gray-500 font-medium mb-3">3 matches gevonden</p>
+                      {AI_RESULTS.map((r, i) => (
+                        <div key={r.name}
+                          className="flex items-center gap-3 bg-white/5 rounded-xl p-3 border border-white/6 hover:border-[#E87722]/30 transition-all"
+                          style={{ animation: `slideIn 0.3s ease forwards`, animationDelay: `${i * 0.08}s`, opacity: 0 }}>
+                          <div className="w-9 h-9 bg-[#E87722] rounded-xl flex items-center justify-center text-white text-xs font-bold shrink-0" style={SYNE}>{r.initials}</div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white text-sm font-semibold" style={SYNE}>{r.name}</p>
+                            <p className="text-xs text-gray-500 flex items-center gap-1"><MapPin className="w-2.5 h-2.5" />{r.region} · {r.sport}</p>
+                          </div>
+                          <span className="text-xs font-bold text-[#E87722] bg-[#E87722]/10 px-2.5 py-1 rounded-full shrink-0">{r.match}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Glow */}
+              <div className="absolute -inset-1 -z-10 rounded-3xl opacity-20 blur-xl"
+                style={{ background: 'radial-gradient(ellipse, #E87722 0%, transparent 70%)' }} />
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── HOE HET WERKT ── */}
-      <section id="hoe-het-werkt" className="py-28 bg-[#edece8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
-            <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Simpel en snel</p>
-            <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(44px,6vw,80px)] text-black leading-tight">
-              In 3 stappen je<br />buddy gevonden 🚀
-            </h2>
-          </div>
-          <div className="grid md:grid-cols-3 gap-6">
-            {steps.map((step, i) => (
-              <div key={step.num}
-                className="group relative bg-white rounded-3xl p-8 border border-gray-100 hover:border-[#E87722] hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="absolute top-0 right-0 w-32 h-32 bg-orange-50 rounded-full -translate-y-1/2 translate-x-1/2 transition-all duration-300 group-hover:bg-orange-100" />
-                <div className="text-5xl mb-4">{step.emoji}</div>
-                <p style={{ ...FREDOKA, fontWeight: 700 }} className="text-6xl text-[#E87722]/20 leading-none mb-4">{step.num}</p>
-                <h3 style={{ ...FREDOKA, fontWeight: 600 }} className="text-xl text-black mb-3">{step.title}</h3>
-                <p className="text-gray-500 leading-relaxed text-sm">{step.desc}</p>
-                {i < steps.length - 1 && (
-                  <div className="hidden md:flex absolute -right-3 top-1/2 -translate-y-1/2 z-10 w-6 h-6 bg-[#E87722] rounded-full items-center justify-center shadow-md">
-                    <ArrowRight className="w-3 h-3 text-white" />
+      <section id="hoe-het-werkt" className="py-32 bg-[#edece8]">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="grid lg:grid-cols-2 gap-20 items-start">
+            <div>
+              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Simpel en direct</p>
+              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+                className="text-[clamp(40px,5vw,72px)] text-black mb-6">
+                In 3 stappen je buddy gevonden
+              </h2>
+              <p className="text-gray-500 text-lg leading-relaxed font-light">
+                Geen ingewikkeld systeem. Geen lange vragenlijsten. Gewoon sporten met iemand die dezelfde doelen heeft als jij.
+              </p>
+              <Link href="/register" className="inline-flex items-center gap-2 mt-10 bg-black text-white font-semibold px-7 py-4 rounded-2xl hover:bg-[#E87722] transition-all duration-200">
+                Direct beginnen <ArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
+
+            <div className="space-y-4">
+              {steps.map((step) => (
+                <div key={step.num}
+                  className="group bg-white rounded-2xl p-7 border border-gray-100 hover:border-[#E87722]/40 hover:shadow-lg transition-all duration-300 flex items-start gap-6">
+                  <span style={{ ...SYNE, fontWeight: 800 }} className="text-4xl text-[#E87722]/25 leading-none shrink-0 group-hover:text-[#E87722]/50 transition-colors">{step.num}</span>
+                  <div>
+                    <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-xl text-black mb-2">{step.title}</h3>
+                    <p className="text-gray-500 leading-relaxed font-light">{step.desc}</p>
                   </div>
-                )}
-              </div>
-            ))}
-          </div>
-          <div className="mt-10 text-center">
-            <Link href="/register" className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-8 py-4 rounded-2xl hover:bg-black transition-colors text-base">
-              Direct beginnen <ArrowRight className="w-4 h-4" />
-            </Link>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ── SPORTEN ── */}
-      <section id="sporten" className="py-28 bg-black overflow-hidden">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="flex items-end justify-between mb-6 flex-wrap gap-4">
-            <div>
-              <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Voor elke sporter</p>
-              <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(44px,6vw,80px)] text-white leading-tight">
-                Voor elke sport<br />een buddy 🏅
-              </h2>
-            </div>
-            <Link href="/register" className="text-sm font-semibold text-[#E87722] hover:text-white transition-colors flex items-center gap-1">
-              Alle sporten bekijken <ArrowRight className="w-4 h-4" />
-            </Link>
+      {/* ── VIDEO SECTIE ── */}
+      <section className="py-24 bg-[#edece8]">
+        <div className="max-w-5xl mx-auto px-8">
+          <div className="text-center mb-10">
+            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Bekijk hoe het werkt</p>
+            <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+              className="text-[clamp(36px,4.5vw,64px)] text-black">
+              Zie Buddys in actie
+            </h2>
           </div>
-          <p className="text-gray-400 mb-10 text-base">Van hardlopen tot golf, van zwemmen tot gym — Buddys dekt meer dan 40 sporten.</p>
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-8">
-            {sports.map((sport) => (
-              <div key={sport.name} className="group relative rounded-2xl overflow-hidden aspect-square cursor-pointer">
-                <img src={sport.img} alt={sport.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                <div className="absolute inset-0 bg-[#E87722]/0 group-hover:bg-[#E87722]/20 transition-colors duration-300" />
-                <p style={{ ...FREDOKA, fontWeight: 600 }} className="absolute bottom-4 left-4 text-white text-xl">{sport.name}</p>
+          {/* Video placeholder */}
+          <div className="relative aspect-video bg-black rounded-3xl overflow-hidden group cursor-pointer shadow-2xl">
+            {/* Gradient achtergrond als placeholder */}
+            <div className="absolute inset-0"
+              style={{ background: 'linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 50%, #1a1a1a 100%)' }} />
+            {/* Subtiel grid patroon */}
+            <div className="absolute inset-0 opacity-[0.04]"
+              style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '40px 40px' }} />
+            {/* Oranje glow */}
+            <div className="absolute inset-0"
+              style={{ background: 'radial-gradient(ellipse at center, rgba(232,119,34,0.08) 0%, transparent 60%)' }} />
+            {/* Play button */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="w-20 h-20 bg-[#E87722] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300 mb-6">
+                <Play className="w-8 h-8 text-white ml-1" fill="white" />
               </div>
-            ))}
-          </div>
-          {/* Sport tags */}
-          <div className="flex flex-wrap gap-2">
-            {sportTags.map(tag => (
-              <span key={tag} className="bg-white/10 text-white text-sm font-semibold px-4 py-2 rounded-full border border-white/10 hover:bg-[#E87722] hover:border-[#E87722] transition-all cursor-pointer">
-                {tag}
-              </span>
-            ))}
-            <span className="bg-[#E87722]/20 text-[#E87722] text-sm font-bold px-4 py-2 rounded-full border border-[#E87722]/30">
-              + nog veel meer
-            </span>
+              <p style={{ ...SYNE, fontWeight: 700 }} className="text-white text-xl">Bekijk de introductievideo</p>
+              <p className="text-gray-500 text-sm mt-2">Video komt binnenkort beschikbaar</p>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── TESTIMONIALS ── */}
-      <section id="community" className="py-28 bg-[#edece8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="mb-16">
-            <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Community</p>
-            <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(44px,6vw,80px)] text-black leading-tight">
-              Wat sporters<br />zeggen 💬
-            </h2>
+      <section id="community" className="py-32 bg-black">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="flex items-end justify-between mb-16 flex-wrap gap-6">
+            <div>
+              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Community</p>
+              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+                className="text-[clamp(40px,5vw,72px)] text-white">
+                Wat sporters zeggen
+              </h2>
+            </div>
+            <Link href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:text-white transition-colors">
+              Sluit je aan <ChevronRight className="w-4 h-4" />
+            </Link>
           </div>
-          <div className="grid md:grid-cols-3 gap-6">
+          <div className="grid md:grid-cols-3 gap-5">
             {testimonials.map((t) => (
-              <div key={t.name} className="bg-white rounded-3xl p-8 border border-gray-100 hover:shadow-lg hover:border-[#E87722]/30 transition-all duration-300 flex flex-col">
-                <div className="flex mb-3">
+              <div key={t.name}
+                className="bg-white/4 border border-white/8 rounded-3xl p-8 hover:border-[#E87722]/30 hover:bg-white/6 transition-all duration-300 flex flex-col">
+                <div className="flex mb-5">
                   {[...Array(5)].map((_, i) => (
-                    <span key={i} className="text-[#E87722] text-lg">★</span>
+                    <span key={i} className="text-[#E87722]">★</span>
                   ))}
                 </div>
-                <p className="text-gray-700 leading-relaxed flex-1 text-[15px]">"{t.quote}"</p>
-                <div className="flex items-center gap-3 mt-6 pt-6 border-t border-gray-50">
-                  <div className="w-10 h-10 bg-[#E87722] rounded-xl flex items-center justify-center text-white font-bold" style={FREDOKA}>
+                <p className="text-gray-300 leading-relaxed flex-1 text-[15px] font-light">"{t.quote}"</p>
+                <div className="flex items-center gap-3 mt-7 pt-7 border-t border-white/8">
+                  <div className="w-10 h-10 bg-[#E87722] rounded-xl flex items-center justify-center text-white font-bold text-sm" style={SYNE}>
                     {t.name.split(' ').map(n => n[0]).join('')}
                   </div>
                   <div>
-                    <p className="font-bold text-black text-sm" style={FREDOKA}>{t.name}</p>
-                    <p className="text-xs text-gray-400 flex items-center gap-1"><MapPin className="w-3 h-3" />{t.region} · {t.sport}</p>
+                    <p className="font-bold text-white text-sm" style={SYNE}>{t.name}</p>
+                    <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
+                      <MapPin className="w-3 h-3" />{t.region} · {t.sport}
+                    </p>
                   </div>
                 </div>
               </div>
@@ -324,51 +469,63 @@ export default function LandingPage() {
       </section>
 
       {/* ── PRIJZEN ── */}
-      <section id="prijzen" className="py-28 bg-black">
-        <div className="max-w-5xl mx-auto px-6">
+      <section id="prijzen" className="py-32 bg-[#edece8]">
+        <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-16">
-            <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Kies je plan</p>
-            <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(44px,6vw,80px)] text-white leading-tight">
-              Simpele prijzen 💸
+            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Kies je plan</p>
+            <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+              className="text-[clamp(40px,5vw,72px)] text-black mb-4">
+              Eenvoudige prijzen
             </h2>
-            <p className="text-gray-400 mt-4 text-lg max-w-md mx-auto">Start gratis en upgrade wanneer jij er klaar voor bent.</p>
+            <p className="text-gray-500 text-lg max-w-md mx-auto font-light">Start gratis en upgrade wanneer jij er klaar voor bent.</p>
           </div>
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
-            <div className="bg-white/5 border border-white/10 rounded-3xl p-8 hover:border-white/20 transition-all">
-              <div className="text-4xl mb-4">🆓</div>
-              <h3 style={{ ...FREDOKA, fontWeight: 700 }} className="text-2xl text-white mb-1">Gratis</h3>
-              <p className="text-gray-400 text-sm mb-6">Voor iedereen die wil beginnen</p>
-              <div className="mb-6">
-                <span style={{ ...FREDOKA, fontWeight: 700 }} className="text-5xl text-white">€0</span>
-                <span className="text-gray-400 text-sm ml-1">/ maand</span>
+          <div className="grid md:grid-cols-2 gap-5 max-w-3xl mx-auto">
+            <div className="bg-white rounded-3xl p-8 border border-gray-100 hover:border-gray-200 transition-all">
+              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-black mb-1">Gratis</h3>
+              <p className="text-gray-400 text-sm mb-7">Voor iedereen die wil beginnen</p>
+              <div className="mb-7">
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-black">0</span>
+                <span className="text-gray-400 text-sm ml-1">euro / maand</span>
               </div>
-              <ul className="space-y-3 mb-8 text-sm text-gray-300">
-                {['✅ Profiel aanmaken', '✅ Buddies zoeken', '✅ Berichten sturen', '✅ Groepen joinen', '📢 Met advertenties'].map(item => (
-                  <li key={item}>{item}</li>
+              <ul className="space-y-3.5 mb-8 text-sm text-gray-500">
+                {['Profiel aanmaken', 'Buddies zoeken & contacten', 'Groepen joinen', 'Met advertenties'].map((item, i) => (
+                  <li key={item} className="flex items-center gap-2.5">
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${i === 3 ? 'bg-gray-100' : 'bg-[#E87722]'}`}>
+                      {i === 3
+                        ? <span className="text-gray-400 text-[9px] font-bold">—</span>
+                        : <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                      }
+                    </div>
+                    {item}
+                  </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center border-2 border-white/20 text-white font-bold py-3 rounded-2xl hover:bg-white hover:text-black transition-all">
+              <Link href="/register" className="block text-center border-2 border-black/10 text-black font-semibold py-3.5 rounded-2xl hover:bg-black hover:text-white hover:border-black transition-all">
                 Start gratis
               </Link>
             </div>
 
-            <div className="relative bg-white rounded-3xl p-8 border-2 border-[#E87722] shadow-xl">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-[#E87722] text-white text-xs font-bold px-4 py-1.5 rounded-full">
-                ⭐ Meest gekozen
+            <div className="relative bg-black rounded-3xl p-8 border-2 border-[#E87722]">
+              <div className="absolute -top-3.5 left-1/2 -translate-x-1/2 bg-[#E87722] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap" style={SYNE}>
+                Meest gekozen
               </div>
-              <div className="text-4xl mb-4">👑</div>
-              <h3 style={{ ...FREDOKA, fontWeight: 700 }} className="text-2xl text-black mb-1">Premium</h3>
-              <p className="text-gray-400 text-sm mb-6">Voor de serieuze sporter</p>
-              <div className="mb-6">
-                <span style={{ ...FREDOKA, fontWeight: 700 }} className="text-5xl text-[#E87722]">€10</span>
-                <span className="text-gray-400 text-sm ml-1">/ maand</span>
+              <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Premium</h3>
+              <p className="text-gray-500 text-sm mb-7">Voor de serieuze sporter</p>
+              <div className="mb-7">
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#E87722]">10</span>
+                <span className="text-gray-500 text-sm ml-1">euro / maand</span>
               </div>
-              <ul className="space-y-3 mb-8 text-sm text-gray-700">
-                {['✅ Alles van Gratis', '🚫 Geen advertenties', '⚡ Voorrang in zoekresultaten', '📊 Uitgebreide statistieken', '🎯 Geavanceerde filters'].map(item => (
-                  <li key={item}>{item}</li>
+              <ul className="space-y-3.5 mb-8 text-sm text-gray-300">
+                {['Alles van Gratis', 'Geen advertenties', 'AI Matching — geavanceerd', 'Voorrang in zoekresultaten', 'Uitgebreide statistieken'].map(item => (
+                  <li key={item} className="flex items-center gap-2.5">
+                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
+                      <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    {item}
+                  </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center bg-[#E87722] text-white font-bold py-3 rounded-2xl hover:bg-black transition-all">
+              <Link href="/register" className="block text-center bg-[#E87722] text-white font-semibold py-3.5 rounded-2xl hover:bg-white hover:text-black transition-all">
                 Start met Premium
               </Link>
             </div>
@@ -377,193 +534,155 @@ export default function LandingPage() {
       </section>
 
       {/* ── VOOR BEDRIJVEN ── */}
-      <section id="bedrijven" className="py-28 bg-[#edece8]">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
+      <section id="bedrijven" className="py-32 bg-black">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
-              <div className="w-14 h-14 bg-black rounded-2xl flex items-center justify-center mb-6">
-                <Building2 className="w-7 h-7 text-[#E87722]" />
+              <div className="w-12 h-12 bg-[#E87722]/10 border border-[#E87722]/20 rounded-2xl flex items-center justify-center mb-8">
+                <Building2 className="w-5 h-5 text-[#E87722]" />
               </div>
-              <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Zakelijk</p>
-              <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(36px,4vw,64px)] text-black leading-tight mb-4">
+              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Zakelijk</p>
+              <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
+                className="text-[clamp(36px,4.5vw,64px)] text-white mb-6">
                 Ben je een club, gym of personal trainer?
               </h2>
-              <p className="text-gray-500 text-lg leading-relaxed mb-8">
-                Maak een premium bedrijfsprofiel en bereik duizenden sporters in jouw regio.
+              <p className="text-gray-400 text-lg leading-relaxed font-light mb-9">
+                Maak een premium bedrijfsprofiel en bereik duizenden sporters in jouw regio. Directe zichtbaarheid in de community die jou aansluit.
               </p>
-              <ul className="space-y-4 mb-8">
+              <ul className="space-y-4 mb-10">
                 {[
-                  { emoji: '🏢', text: 'Eigen bedrijfspagina met reviews' },
-                  { emoji: '🎯', text: 'Directe ledenwerving via het platform' },
-                  { emoji: '👁️', text: 'Zichtbaarheid in de juiste sport-community' },
+                  'Eigen bedrijfspagina met reviews en statistieken',
+                  'Directe ledenwerving via het platform',
+                  'Zichtbaarheid in de juiste sport-community',
                 ].map(item => (
-                  <li key={item.text} className="flex items-center gap-3">
-                    <span className="w-9 h-9 bg-orange-50 rounded-xl flex items-center justify-center text-lg shrink-0">{item.emoji}</span>
-                    <span className="font-semibold text-gray-700">{item.text}</span>
+                  <li key={item} className="flex items-start gap-3">
+                    <div className="w-5 h-5 rounded-full bg-[#E87722] flex items-center justify-center shrink-0 mt-0.5">
+                      <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
+                    </div>
+                    <span className="text-gray-300 font-light">{item}</span>
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="inline-flex items-center gap-2 bg-black text-white font-bold px-7 py-4 rounded-2xl hover:bg-[#E87722] transition-colors">
+              <Link href="/register"
+                className="inline-flex items-center gap-2 bg-white text-black font-semibold px-7 py-4 rounded-2xl hover:bg-[#E87722] hover:text-white transition-all duration-200">
                 Bekijk zakelijke opties <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
-            <div className="relative">
-              <div className="bg-black rounded-3xl p-8 text-white">
-                <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/10">
-                  <div className="w-12 h-12 bg-[#E87722] rounded-xl flex items-center justify-center text-white font-bold text-lg" style={FREDOKA}>RC</div>
-                  <div>
-                    <p className="font-bold" style={FREDOKA}>RunClub Amsterdam</p>
-                    <p className="text-xs text-gray-400">⭐ 4.9 · 238 leden</p>
-                  </div>
-                  <span className="ml-auto bg-[#E87722] text-white text-xs font-bold px-2.5 py-1 rounded-full">Premium</span>
-                </div>
-                <p className="text-gray-300 text-sm leading-relaxed mb-5">"Wij bereiken wekelijks nieuwe leden via Buddys. De zakelijke pagina heeft onze zichtbaarheid enorm vergroot."</p>
-                <div className="grid grid-cols-3 gap-3">
-                  {[{ label: 'Nieuwe leden/mnd', val: '+24' }, { label: 'Profielviews', val: '1.2k' }, { label: 'Reviews', val: '87' }].map(s => (
-                    <div key={s.label} className="bg-white/5 rounded-xl p-3 text-center">
-                      <p style={{ ...FREDOKA, fontWeight: 700 }} className="text-2xl text-[#E87722]">{s.val}</p>
-                      <p className="text-xs text-gray-400 mt-0.5">{s.label}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
 
-      {/* ── CREATOR SECTIE ── */}
-      <section className="py-28 bg-black overflow-hidden relative">
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'radial-gradient(circle, #E87722 1.5px, transparent 1.5px)', backgroundSize: '32px 32px' }} />
-        <div className="relative max-w-7xl mx-auto px-6">
-          <div className="grid lg:grid-cols-2 gap-16 items-center">
-            <div className="lg:order-2">
-              <div className="w-14 h-14 bg-[#E87722] rounded-2xl flex items-center justify-center mb-6">
-                <Star className="w-7 h-7 text-white" fill="white" />
-              </div>
-              <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Voor creators</p>
-              <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(36px,4vw,64px)] text-white leading-tight mb-4">
-                Ben jij een sport-creator? 🎥
-              </h2>
-              <p className="text-gray-400 text-lg leading-relaxed mb-8">
-                Organiseer challenges, bouw een community en monetiseer je publiek — allemaal op één plek.
-              </p>
-              <ul className="space-y-4 mb-8">
-                {[
-                  { emoji: '✅', text: 'Verified creator badge' },
-                  { emoji: '💰', text: 'Host betaalde challenges en groepsreizen' },
-                  { emoji: '🔗', text: 'Affiliate inkomsten via jouw sport-niche' },
-                ].map(item => (
-                  <li key={item.text} className="flex items-center gap-3">
-                    <span className="w-9 h-9 bg-white/10 rounded-xl flex items-center justify-center text-lg shrink-0">{item.emoji}</span>
-                    <span className="font-semibold text-gray-300">{item.text}</span>
-                  </li>
-                ))}
-              </ul>
-              <Link href="/register" className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-7 py-4 rounded-2xl hover:bg-white hover:text-black transition-colors">
-                Aanmelden als creator <ArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
-            <div className="lg:order-1 grid grid-cols-2 gap-3">
-              {[
-                { name: 'FitWithSara', followers: '12.4k', sport: 'Gym', emoji: '💪' },
-                { name: 'RunnerDaan', followers: '8.1k', sport: 'Hardlopen', emoji: '🏃' },
-                { name: 'YogaByLisa', followers: '19.2k', sport: 'Yoga', emoji: '🧘' },
-                { name: 'CyclistMike', followers: '5.7k', sport: 'Fietsen', emoji: '🚴' },
-              ].map(c => (
-                <div key={c.name} className="bg-white/5 border border-white/10 rounded-2xl p-4 hover:border-[#E87722]/40 transition-all">
-                  <div className="text-3xl mb-2">{c.emoji}</div>
-                  <p className="font-bold text-white text-sm flex items-center gap-1.5" style={FREDOKA}>
-                    {c.name}
-                    <span className="text-[#E87722] text-xs">✓</span>
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{c.sport}</p>
-                  <p className="text-xs text-[#E87722] font-bold mt-2">{c.followers} volgers</p>
+            {/* Business card mockup */}
+            <div className="bg-[#111] rounded-3xl border border-white/8 p-8 shadow-2xl">
+              <div className="flex items-center gap-3 mb-6 pb-6 border-b border-white/6">
+                <div className="w-12 h-12 bg-[#E87722] rounded-xl flex items-center justify-center text-white font-bold" style={SYNE}>RC</div>
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <p className="font-bold text-white" style={SYNE}>RunClub Amsterdam</p>
+                    <span className="text-xs bg-[#E87722] text-white font-bold px-2 py-0.5 rounded-full">Pro</span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-0.5">4.9 beoordeling · 238 leden</p>
                 </div>
-              ))}
+              </div>
+              <p className="text-gray-400 text-sm leading-relaxed mb-6 font-light">
+                "Wij bereiken wekelijks nieuwe leden via Buddys. De zakelijke pagina heeft onze zichtbaarheid enorm vergroot."
+              </p>
+              <div className="grid grid-cols-3 gap-3">
+                {[
+                  { label: 'Nieuwe leden/mnd', val: '+24' },
+                  { label: 'Profielviews', val: '1.2k' },
+                  { label: 'Reviews', val: '87' },
+                ].map(s => (
+                  <div key={s.label} className="bg-white/5 rounded-xl p-4 text-center">
+                    <p style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-[#E87722]">{s.val}</p>
+                    <p className="text-xs text-gray-500 mt-1 leading-tight">{s.label}</p>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="relative bg-[#E87722] py-28 overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.06]"
-          style={{ backgroundImage: 'radial-gradient(circle, #000 1.5px, transparent 1.5px)', backgroundSize: '28px 28px' }} />
-        <span className="absolute text-[120px] opacity-10 -top-6 -left-6 select-none">🏆</span>
-        <span className="absolute text-[120px] opacity-10 -bottom-6 -right-6 select-none">🚀</span>
-        <div className="relative max-w-4xl mx-auto px-6 text-center">
-          <h2 style={{ ...FREDOKA, fontWeight: 700 }} className="text-[clamp(52px,7vw,100px)] text-white leading-tight mb-4">
-            Klaar om je sportmaatje<br />te vinden? 💪
+      <section className="relative py-36 bg-[#E87722] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.05]"
+          style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+        <div className="relative max-w-4xl mx-auto px-8 text-center">
+          <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 0.95, letterSpacing: '-0.02em' }}
+            className="text-[clamp(52px,7vw,104px)] text-white mb-5">
+            Klaar om je sportmaatje te vinden?
           </h2>
-          <p className="text-white font-bold text-xl mb-10">Gratis. Altijd. Voor iedereen.</p>
-          <div className="flex flex-wrap gap-4 justify-center mb-6">
+          <p className="text-white/70 text-xl mb-3 font-light">Gratis. Altijd. Voor iedereen.</p>
+          <div className="flex flex-wrap gap-4 justify-center mt-10 mb-7">
             <Link href="/register"
-              className="group inline-flex items-center gap-2 bg-black text-white font-bold px-10 py-5 rounded-2xl hover:bg-white hover:text-black transition-all duration-300 text-lg">
+              className="group inline-flex items-center gap-2 bg-black text-white font-semibold px-10 py-5 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-lg">
               Start nu gratis
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
           </div>
-          <p className="text-white/70 text-sm">Geen creditcard nodig · Direct actief · Opzeggen wanneer je wil</p>
+          <p className="text-white/50 text-sm">Geen creditcard nodig · Direct actief · Opzeggen wanneer je wil</p>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-black pt-16 pb-8">
-        <div className="max-w-7xl mx-auto px-6">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-12">
+      <footer className="bg-black pt-16 pb-10">
+        <div className="max-w-7xl mx-auto px-8">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
             <div className="col-span-2 md:col-span-1">
-              <Image src="/logo.png" alt="Buddys" height={28} width={90} className="object-contain brightness-0 invert mb-4" />
-              <p className="text-sm text-gray-500 leading-relaxed">Vind je perfecte sportmaatje. Gemaakt in Nederland 🇳🇱</p>
+              <Image src="/logo.png" alt="Buddys" height={26} width={88} className="object-contain brightness-0 invert mb-5" />
+              <p className="text-sm text-gray-600 leading-relaxed font-light">Vind je perfecte sportmaatje. Gemaakt in Nederland.</p>
             </div>
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Product</p>
-              <ul className="space-y-2.5">
-                {['Hoe het werkt', 'Sporten', 'Community', 'Prijzen'].map(l => (
-                  <li key={l}><a href="#" className="text-sm text-gray-500 hover:text-white transition-colors">{l}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Bedrijf</p>
-              <ul className="space-y-2.5">
-                {['Over ons', 'Blog', 'Pers', 'Vacatures'].map(l => (
-                  <li key={l}><a href="#" className="text-sm text-gray-500 hover:text-white transition-colors">{l}</a></li>
-                ))}
-              </ul>
-            </div>
-            <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Support</p>
-              <ul className="space-y-2.5">
-                {['Helpcentrum', 'Contact', 'Privacy', 'Voorwaarden'].map(l => (
-                  <li key={l}><a href="#" className="text-sm text-gray-500 hover:text-white transition-colors">{l}</a></li>
-                ))}
-              </ul>
-            </div>
+            {[
+              { title: 'Product', links: ['Hoe het werkt', 'AI Matching', 'Community', 'Prijzen'] },
+              { title: 'Bedrijf', links: ['Over ons', 'Blog', 'Pers', 'Vacatures'] },
+              { title: 'Support', links: ['Helpcentrum', 'Contact', 'Privacy', 'Voorwaarden'] },
+            ].map(col => (
+              <div key={col.title}>
+                <p className="text-xs font-semibold text-gray-600 uppercase tracking-widest mb-5">{col.title}</p>
+                <ul className="space-y-3">
+                  {col.links.map(l => (
+                    <li key={l}><a href="#" className="text-sm text-gray-600 hover:text-white transition-colors font-light">{l}</a></li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
           <div className="border-t border-white/5 pt-8">
-            <p className="text-sm text-gray-600 text-center">© 2025 Buddys · Gemaakt in Nederland 🇳🇱</p>
+            <p className="text-sm text-gray-700 text-center">© 2025 Buddys · Gemaakt in Nederland</p>
           </div>
         </div>
       </footer>
 
       <style jsx global>{`
         @keyframes float1 {
-          0%, 100% { transform: translateY(0px) rotate(-1deg); }
-          50% { transform: translateY(-16px) rotate(1deg); }
+          0%, 100% { transform: translateY(0px) rotate(-0.5deg); }
+          50% { transform: translateY(-14px) rotate(0.5deg); }
         }
         @keyframes float2 {
-          0%, 100% { transform: translateY(0px) rotate(1deg); }
-          50% { transform: translateY(-12px) rotate(-1deg); }
+          0%, 100% { transform: translateY(0px) rotate(0.5deg); }
+          50% { transform: translateY(-10px) rotate(-0.5deg); }
         }
         @keyframes float3 {
           0%, 100% { transform: translate(-50%, -50%) scale(1); }
-          50% { transform: translate(-50%, -60%) scale(1.05); }
+          50% { transform: translate(-50%, -58%) scale(1.04); }
         }
         @keyframes bounce {
           0%, 100% { transform: translate(-50%, 0); }
-          50% { transform: translate(-50%, 6px); }
+          50% { transform: translate(-50%, 5px); }
+        }
+        @keyframes blink {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0; }
+        }
+        @keyframes bounce-dot {
+          0%, 100% { transform: translateY(0); }
+          50% { transform: translateY(-5px); }
+        }
+        @keyframes slideIn {
+          from { opacity: 0; transform: translateY(8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes pulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
         }
         html { scroll-behavior: smooth; }
       `}</style>
