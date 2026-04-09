@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search } from 'lucide-react'
+import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play, Send } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const navItems = [
@@ -96,49 +96,63 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* Pagina inhoud */}
-      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-24 md:pb-8">
+      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-28 md:pb-8">
         {children}
       </div>
 
-      {/* Mobiele bottom navigation */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 z-30">
-        <div className="flex items-center">
-          {navItems.map(({ href, label, icon: Icon, badge }) => {
+      {/* Floating pill navigatie — alleen mobiel */}
+      <style>{`
+        @keyframes float-up {
+          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        .floating-nav {
+          animation: float-up 0.35s cubic-bezier(.16,1,.3,1) both;
+        }
+      `}</style>
+      <nav
+        className="floating-nav md:hidden fixed z-50"
+        style={{
+          bottom: 16,
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: 320,
+          background: 'rgba(17,17,17,0.92)',
+          backdropFilter: 'blur(16px)',
+          WebkitBackdropFilter: 'blur(16px)',
+          borderRadius: 999,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
+          padding: '10px 20px',
+        }}
+      >
+        <div className="flex items-center justify-between">
+          {[
+            { href: '/dashboard/feed', icon: Home, label: 'feed' },
+            { href: '/dashboard/groups', icon: Play, label: 'reels' },
+            { href: '/dashboard/notifications', icon: Send, label: 'verzoeken', dot: true },
+            { href: '/dashboard/find', icon: Search, label: 'zoeken' },
+            { href: '/dashboard/profile/me', icon: User, label: 'profiel', dot: true },
+          ].map(({ href, icon: Icon, dot }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
                 key={href}
                 href={href}
-                className={`flex-1 flex flex-col items-center gap-1 py-3 transition-colors relative ${
-                  active ? 'text-[#E87722]' : 'text-gray-400 hover:text-[#E87722]'
-                }`}
+                className="relative flex items-center justify-center w-11 h-11"
               >
-                <div className="relative">
-                  <Icon className="w-5 h-5" />
-                  {badge && !active && (
-                    <span className="absolute -top-1 -right-1.5 w-3.5 h-3.5 bg-[#E87722] text-white text-[9px] font-black rounded-full flex items-center justify-center">
-                      {badge}
-                    </span>
-                  )}
-                </div>
-                <span className="text-[10px] font-semibold">{label}</span>
+                <Icon
+                  className="w-5 h-5 transition-colors duration-200"
+                  style={{ color: active ? '#E87722' : 'rgba(255,255,255,0.6)' }}
+                />
+                {dot && !active && (
+                  <span
+                    className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
+                    style={{ background: '#E87722' }}
+                  />
+                )}
               </Link>
             )
           })}
-          {/* Zoek buddies — prominente CTA in mobiele nav */}
-          <Link
-            href="/dashboard/find"
-            className={`flex-1 flex flex-col items-center gap-1 py-2.5 transition-colors relative ${
-              pathname.startsWith('/dashboard/find') ? 'text-[#E87722]' : 'text-white'
-            }`}
-          >
-            <div className={`flex flex-col items-center gap-0.5 px-3 py-1.5 rounded-xl ${
-              pathname.startsWith('/dashboard/find') ? 'bg-[#111]' : 'bg-[#E87722]'
-            }`}>
-              <Search className="w-5 h-5" />
-              <span className="text-[9px] font-black" style={{ fontFamily: "'Syne', sans-serif" }}>Zoek buddies</span>
-            </div>
-          </Link>
         </div>
       </nav>
     </div>
