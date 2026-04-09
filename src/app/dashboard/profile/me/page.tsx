@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { MapPin, Award, Settings, UserPlus, Users } from 'lucide-react'
+import { MapPin, Award, Settings, UserPlus, Users, MessageCircle, Heart, Bell, Lightbulb, ThumbsUp, Bug } from 'lucide-react'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
 
@@ -32,6 +32,65 @@ const recentPosts = [
   { id: 1, content: 'Geweldige ochtendrun door het park. 10km in 52 minuten!', sport: 'Hardlopen', time: '2 dagen geleden', likes: 14 },
   { id: 2, content: 'Eindelijk die 100km op de fiets gehaald. Uitgeput maar blij!', sport: 'Fietsen', time: '1 week geleden', likes: 28 },
 ]
+
+function ProfileFeedbackWidget() {
+  const [selected, setSelected] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
+
+  if (sent) {
+    return (
+      <div className="flex flex-col items-center py-4 gap-2 text-center">
+        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+          <ThumbsUp className="w-5 h-5 text-green-600" />
+        </div>
+        <p className="text-sm font-bold text-black">Bedankt!</p>
+        <p className="text-xs text-gray-400">We nemen je feedback mee.</p>
+      </div>
+    )
+  }
+
+  const options = [
+    { key: 'idea', label: 'Idee delen', icon: Lightbulb, color: 'text-yellow-500 bg-yellow-50' },
+    { key: 'good', label: 'Werkt goed', icon: ThumbsUp, color: 'text-green-600 bg-green-50' },
+    { key: 'bug', label: 'Bug melden', icon: Bug, color: 'text-red-500 bg-red-50' },
+  ]
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        {options.map(({ key, label, icon: Icon, color }) => (
+          <button
+            key={key}
+            onClick={() => setSelected(selected === key ? null : key)}
+            className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all text-center ${
+              selected === key ? 'border-[#E87722] bg-[#E87722]/5' : 'border-gray-100 hover:border-gray-200'
+            }`}
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color}`}>
+              <Icon className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-[10px] font-bold text-gray-600 leading-tight">{label}</span>
+          </button>
+        ))}
+      </div>
+      {selected && (
+        <div className="space-y-2">
+          <textarea
+            rows={3}
+            placeholder="Schrijf hier je feedback..."
+            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#E87722] transition-colors"
+          />
+          <button
+            onClick={() => setSent(true)}
+            className="w-full py-2 bg-[#E87722] text-white text-xs font-bold rounded-xl hover:bg-[#d06a1a] transition-colors"
+          >
+            Versturen
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function MyProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
@@ -153,8 +212,10 @@ export default function MyProfilePage() {
           )}
         </div>
 
-        {/* Snelle acties */}
-        <div className="md:col-span-2 space-y-3">
+        {/* Rechter kolom: acties + activiteit + groepen + feedback */}
+        <div className="md:col-span-2 space-y-4">
+
+          {/* Zoek een buddy */}
           <Link href="/dashboard/find" className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#E87722] hover:shadow-sm transition-all group">
             <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
               <UserPlus className="w-5 h-5 text-[#E87722]" />
@@ -164,15 +225,75 @@ export default function MyProfilePage() {
               <p className="text-xs text-gray-400 mt-0.5">Vind sporters op jouw niveau in jouw buurt</p>
             </div>
           </Link>
-          <Link href="/dashboard/groups" className="flex items-center gap-4 bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#E87722] hover:shadow-sm transition-all group">
-            <div className="w-10 h-10 bg-orange-50 rounded-xl flex items-center justify-center">
-              <Users className="w-5 h-5 text-[#E87722]" />
+
+          {/* Activiteit */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <h3 className="font-black text-black mb-4">Activiteit</h3>
+            <div className="space-y-1.5">
+              <Link href="/dashboard/messages" className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-2.5 rounded-xl transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
+                    <MessageCircle className="w-4 h-4 text-blue-500" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700">Berichten</span>
+                </div>
+                <span className="text-xs font-black text-white bg-blue-500 px-2 py-0.5 rounded-full">2</span>
+              </Link>
+              <div className="flex items-center justify-between -mx-2 px-2 py-2.5 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-pink-500" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700">Likes</span>
+                </div>
+                <span className="text-sm font-black text-gray-400">12</span>
+              </div>
+              <div className="flex items-center justify-between -mx-2 px-2 py-2.5 rounded-xl">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
+                    <Bell className="w-4 h-4 text-gray-400" />
+                  </div>
+                  <span className="text-sm font-semibold text-gray-700">Notificaties</span>
+                </div>
+                <span className="text-xs font-black text-white bg-gray-800 px-2 py-0.5 rounded-full">5</span>
+              </div>
             </div>
-            <div>
-              <p className="font-black text-black group-hover:text-[#E87722] transition-colors">Mijn groepen</p>
-              <p className="text-xs text-gray-400 mt-0.5">Bekijk de groepen waar je lid van bent</p>
+          </div>
+
+          {/* Mijn groepen */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="font-black text-black">Mijn groepen</h3>
+              <Link href="/dashboard/groups" className="text-xs text-[#E87722] font-semibold hover:underline">Alle groepen</Link>
             </div>
-          </Link>
+            <div className="space-y-3">
+              {[
+                { name: 'Cycling Amsterdam', members: 24, sport: 'Fietsen' },
+                { name: 'Vondelpark Runners', members: 41, sport: 'Hardlopen' },
+              ].map(group => (
+                <div key={group.name} className="flex items-center gap-3">
+                  <div className="w-9 h-9 bg-[#E87722]/10 rounded-xl flex items-center justify-center shrink-0">
+                    <Users className="w-4 h-4 text-[#E87722]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-bold text-black truncate">{group.name}</p>
+                    <p className="text-xs text-gray-400">{group.members} leden · {group.sport}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Feedback & ideeën */}
+          <div className="bg-white rounded-2xl border border-gray-100 p-5">
+            <div className="flex items-center gap-2 mb-1">
+              <h3 className="font-black text-black">Feedback & ideeën</h3>
+              <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Nieuw</span>
+            </div>
+            <p className="text-xs text-gray-400 mb-4 leading-relaxed">Help ons Buddys beter te maken. Wat mist er? Wat kan beter?</p>
+            <ProfileFeedbackWidget />
+          </div>
+
         </div>
       </div>
 

@@ -2,7 +2,66 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { UserPlus, MapPin, Award, ArrowRight, MessageCircle, Heart, Bell } from 'lucide-react'
+import { UserPlus, MapPin, Award, ArrowRight, MessageCircle, Heart, Bell, Users, Lightbulb, ThumbsUp, Bug } from 'lucide-react'
+
+function FeedbackWidget() {
+  const [selected, setSelected] = useState<string | null>(null)
+  const [sent, setSent] = useState(false)
+
+  if (sent) {
+    return (
+      <div className="flex flex-col items-center py-4 gap-2 text-center">
+        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
+          <ThumbsUp className="w-5 h-5 text-green-600" />
+        </div>
+        <p className="text-sm font-bold text-black">Bedankt!</p>
+        <p className="text-xs text-gray-400">We nemen je feedback mee.</p>
+      </div>
+    )
+  }
+
+  const options = [
+    { key: 'idea', label: 'Idee delen', icon: Lightbulb, color: 'text-yellow-500 bg-yellow-50' },
+    { key: 'good', label: 'Werkt goed', icon: ThumbsUp, color: 'text-green-600 bg-green-50' },
+    { key: 'bug', label: 'Bug melden', icon: Bug, color: 'text-red-500 bg-red-50' },
+  ]
+
+  return (
+    <div className="space-y-3">
+      <div className="grid grid-cols-3 gap-2">
+        {options.map(({ key, label, icon: Icon, color }) => (
+          <button
+            key={key}
+            onClick={() => setSelected(selected === key ? null : key)}
+            className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all text-center ${
+              selected === key ? 'border-[#E87722] bg-[#E87722]/5' : 'border-gray-100 hover:border-gray-200'
+            }`}
+          >
+            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color}`}>
+              <Icon className="w-3.5 h-3.5" />
+            </div>
+            <span className="text-[10px] font-bold text-gray-600 leading-tight">{label}</span>
+          </button>
+        ))}
+      </div>
+      {selected && (
+        <div className="space-y-2">
+          <textarea
+            rows={3}
+            placeholder="Schrijf hier je feedback..."
+            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#E87722] transition-colors"
+          />
+          <button
+            onClick={() => setSent(true)}
+            className="w-full py-2 bg-[#E87722] text-white text-xs font-bold rounded-xl hover:bg-[#d06a1a] transition-colors"
+          >
+            Versturen
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
 import { StoryAvatar, type StoryPost } from '@/components/StoryAvatar'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
@@ -243,6 +302,44 @@ export default function DashboardHomePage() {
           </div>
           <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
         </Link>
+
+        {/* Mijn groepen */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-black text-black">Mijn groepen</h3>
+            <Link href="/dashboard/groups" className="text-xs text-[#E87722] font-semibold hover:underline">Alle groepen</Link>
+          </div>
+          <div className="space-y-3">
+            {[
+              { name: 'Cycling Amsterdam', members: 24, sport: 'Fietsen' },
+              { name: 'Vondelpark Runners', members: 41, sport: 'Hardlopen' },
+            ].map(group => (
+              <div key={group.name} className="flex items-center gap-3">
+                <div className="w-9 h-9 bg-[#E87722]/10 rounded-xl flex items-center justify-center shrink-0">
+                  <Users className="w-4 h-4 text-[#E87722]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-black truncate">{group.name}</p>
+                  <p className="text-xs text-gray-400">{group.members} leden · {group.sport}</p>
+                </div>
+              </div>
+            ))}
+            <Link href="/dashboard/groups" className="flex items-center justify-center gap-2 w-full py-2 mt-1 border border-dashed border-gray-200 rounded-xl text-xs font-bold text-gray-400 hover:border-[#E87722] hover:text-[#E87722] transition-colors">
+              <Users className="w-3.5 h-3.5" /> Groep zoeken
+            </Link>
+          </div>
+        </div>
+
+        {/* Feedback & ideeën */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="flex items-center gap-2 mb-1">
+            <h3 className="font-black text-black">Feedback & ideeën</h3>
+            <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Nieuw</span>
+          </div>
+          <p className="text-xs text-gray-400 mb-4 leading-relaxed">Help ons Buddys beter te maken. Wat mist er? Wat kan beter?</p>
+          <FeedbackWidget />
+        </div>
+
       </div>
 
       {/* Rechter kolom */}
