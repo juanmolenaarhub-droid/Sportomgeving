@@ -99,49 +99,6 @@ export default function DashboardHomePage() {
   return (
     <div className="grid lg:grid-cols-3 gap-8">
 
-      {/* Activiteit tellers — alleen zichtbaar bovenaan op mobiel */}
-      <div className="lg:hidden bg-white rounded-2xl border border-gray-100 p-5">
-        <h3 className="font-black text-black mb-4">Activiteit</h3>
-        <div className="grid grid-cols-2 gap-3">
-          <Link href="/dashboard/messages" className="flex items-center gap-3 bg-blue-50 rounded-xl px-3 py-3 hover:bg-blue-100 transition-colors">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
-              <MessageCircle className="w-4 h-4 text-blue-500" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium">Berichten</p>
-              <p className="text-lg font-black text-blue-500">2</p>
-            </div>
-          </Link>
-          <Link href="/dashboard/notifications" className="flex items-center gap-3 bg-orange-50 rounded-xl px-3 py-3 hover:bg-orange-100 transition-colors">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
-              <UserPlus className="w-4 h-4 text-[#E87722]" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium">Verzoeken</p>
-              <p className="text-lg font-black text-[#E87722]">3</p>
-            </div>
-          </Link>
-          <div className="flex items-center gap-3 bg-pink-50 rounded-xl px-3 py-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
-              <Heart className="w-4 h-4 text-pink-500" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium">Likes</p>
-              <p className="text-lg font-black text-pink-500">12</p>
-            </div>
-          </div>
-          <div className="flex items-center gap-3 bg-gray-50 rounded-xl px-3 py-3">
-            <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center shrink-0">
-              <Bell className="w-4 h-4 text-gray-500" />
-            </div>
-            <div>
-              <p className="text-xs text-gray-500 font-medium">Notificaties</p>
-              <p className="text-lg font-black text-gray-700">5</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* Linker kolom: eigen profiel */}
       <div className="space-y-5">
         <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -210,7 +167,7 @@ export default function DashboardHomePage() {
         </div>
 
         {/* Activiteit tellers */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+        <div className="bg-white rounded-2xl border border-gray-100 p-5 order-first lg:order-none">
           <h3 className="font-black text-black mb-4">Activiteit</h3>
           <div className="space-y-1.5">
             <Link href="/dashboard/messages" className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-2.5 rounded-xl transition-colors">
