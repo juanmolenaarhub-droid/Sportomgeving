@@ -145,7 +145,7 @@ export function TestimonialV2() {
               style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(40px,5vw,72px)] text-white"
             >
-              Wat sporters zeggen
+              Zij vonden hun buddy
             </h2>
           </div>
           <a href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:text-white transition-colors">
