@@ -412,20 +412,21 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-[#E87722]/10 border border-[#E87722]/20 rounded-2xl flex items-center justify-center mb-8">
                 <Building2 className="w-5 h-5 text-[#E87722]" />
               </div>
-              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Voor ondernemers in de sport</p>
+              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Voor merken & ondernemers in de sport</p>
               <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
                 className="text-[clamp(36px,4.5vw,64px)] text-white mb-6">
-                Van Nike tot personal trainer — jouw merk hoort hier.
+                Jouw merk. Duizenden sporters. Één platform.
               </h2>
               <p className="text-gray-400 text-lg leading-relaxed font-light mb-9">
-                Of je nu sportvoeding verkoopt, een gym runt, kleding maakt of trainingen geeft — maak een zakelijk profiel op Buddys en kom direct in contact met jouw doelgroep. Verkoop producten, bouw een community en groei mee met de actieve sporters die elke dag inloggen.
+                Buddys is waar sporters dagelijks komen om te connecten, te trainen en te kopen. Plaats jouw merk precies daar waar jouw doelgroep al actief is — niet ernaast, maar er middenin.
               </p>
-              <ul className="space-y-4 mb-10">
+              <ul className="space-y-4 mb-6">
                 {[
-                  'Eigen merk- of bedrijfspagina met producten en diensten',
-                  'Directe zichtbaarheid bij duizenden actieve sporters',
-                  'Verkoop supplementen, kleding, trainingen en meer',
-                  'Reviews, statistieken en directe berichtenuitwisseling',
+                  'Eigen brandpagina met producten, diensten en reviews',
+                  'Zichtbaar bij de juiste sporters op het juiste moment',
+                  'Verkoop direct via het platform — geen externe webshop nodig',
+                  'Bouw een community van vaste klanten en volgers',
+                  'Betaal alleen voor resultaat — commissie op wat je verkoopt',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-[#E87722] flex items-center justify-center shrink-0 mt-0.5">
@@ -435,10 +436,14 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
+              <p className="text-gray-600 text-sm mb-8 leading-relaxed">
+                Geschikt voor: <span className="text-gray-500">sportkleding · voeding & supplements · gyms & clubs · personal trainers · sportscholen · fysiotherapeuten · sporteventen</span>
+              </p>
               <Link href="/register"
                 className="inline-flex items-center gap-2 bg-white text-black font-semibold px-7 py-4 rounded-2xl hover:bg-[#E87722] hover:text-white transition-all duration-200">
-                Maak zakelijk account aan <ArrowRight className="w-4 h-4" />
+                Gratis zakelijk profiel aanmaken <ArrowRight className="w-4 h-4" />
               </Link>
+              <p className="text-gray-600 text-xs mt-4">Geen maandelijkse kosten · Alleen commissie op verkoop · Direct live</p>
             </div>
 
             {/* Business card mockup */}
