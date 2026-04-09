@@ -55,8 +55,6 @@ export default function OnboardingPage() {
   const [age, setAge]               = useState('')
   const [geslacht1, setGeslacht1]   = useState('')
   const [andersOptie, setAndersOptie] = useState('')
-  const [andersOpen, setAndersOpen]   = useState(false)
-  const andersRef = useRef<HTMLDivElement>(null)
   const [bio, setBio]               = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
@@ -80,15 +78,6 @@ export default function OnboardingPage() {
     })
   }, [])
 
-  useEffect(() => {
-    function handleClickOutside(e: MouseEvent) {
-      if (andersRef.current && !andersRef.current.contains(e.target as Node)) {
-        setAndersOpen(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
 
   function goTo(next: number, dir: 'forward' | 'back') {
     if (animating) return
@@ -398,34 +387,34 @@ export default function OnboardingPage() {
                   </div>
 
                   {/* Geslacht */}
-                  <div className="mb-5" ref={andersRef}>
+                  <div className="mb-5">
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
                       Geslacht <span style={{ color: '#E87722' }}>*</span>
                     </label>
                     <div className="flex gap-2">
                       {/* Man */}
                       <button
-                        onClick={() => { setGeslacht1('Man'); setAndersOptie(''); setAndersOpen(false); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        onClick={() => { setGeslacht1('Man'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
                         style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Man' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Man' ? 'white' : '#555' }}
                       >Man</button>
 
                       {/* Vrouw */}
                       <button
-                        onClick={() => { setGeslacht1('Vrouw'); setAndersOptie(''); setAndersOpen(false); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        onClick={() => { setGeslacht1('Vrouw'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
                         style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Vrouw' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Vrouw' ? 'white' : '#555' }}
                       >Vrouw</button>
 
                       {/* Anders */}
                       <button
-                        onClick={() => { setGeslacht1('Anders'); setAndersOpen(o => !o); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                        onClick={() => { setGeslacht1('Anders'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
                         style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Anders' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Anders' ? 'white' : '#555' }}
                       >
                         {andersOptie && geslacht1 === 'Anders' ? andersOptie : 'Anders'}
                       </button>
                     </div>
 
-                    {/* Custom dropdown */}
-                    {geslacht1 === 'Anders' && andersOpen && (
+                    {/* Dropdown — altijd zichtbaar als Anders geselecteerd en nog geen keuze */}
+                    {geslacht1 === 'Anders' && !andersOptie && (
                       <div style={{
                         marginTop: 8, background: 'white', border: '1.5px solid #E5E5E5',
                         borderRadius: 12, boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
@@ -435,17 +424,16 @@ export default function OnboardingPage() {
                         {['Non-binair','Genderqueer','Genderfluid','Agender','Bigender','Transgender man','Transgender vrouw','Intersekse','Two-spirit','Liever niet zeggen'].map(o => (
                           <button
                             key={o}
-                            onClick={() => { setAndersOptie(o); setAndersOpen(false); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                            onClick={() => { setAndersOptie(o); setErrors1(p => ({ ...p, geslacht: '' })) }}
                             style={{
                               display: 'block', width: '100%', textAlign: 'left',
                               padding: '12px 16px', minHeight: 44, fontSize: 13, fontWeight: 500,
                               border: 'none', borderBottom: '1px solid #F5F5F5',
-                              background: andersOptie === o ? '#FFF5EE' : 'white',
-                              color: andersOptie === o ? '#E87722' : '#333',
+                              background: 'white', color: '#333',
                               cursor: 'pointer', transition: 'background .12s',
                             }}
-                            onMouseEnter={e => { if (andersOptie !== o) (e.target as HTMLElement).style.background = '#FFF5EE' }}
-                            onMouseLeave={e => { if (andersOptie !== o) (e.target as HTMLElement).style.background = 'white' }}
+                            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = '#FFF5EE' }}
+                            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'white' }}
                           >
                             {o}
                           </button>
