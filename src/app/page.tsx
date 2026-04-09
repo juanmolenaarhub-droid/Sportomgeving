@@ -412,19 +412,20 @@ export default function LandingPage() {
               <div className="w-12 h-12 bg-[#E87722]/10 border border-[#E87722]/20 rounded-2xl flex items-center justify-center mb-8">
                 <Building2 className="w-5 h-5 text-[#E87722]" />
               </div>
-              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Zakelijk</p>
+              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Voor ondernemers in de sport</p>
               <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
                 className="text-[clamp(36px,4.5vw,64px)] text-white mb-6">
-                Ben je een club, gym, sportvoedingsbedrijf of personal trainer?
+                Van Nike tot personal trainer — jouw merk hoort hier.
               </h2>
               <p className="text-gray-400 text-lg leading-relaxed font-light mb-9">
-                Maak een premium bedrijfsprofiel en bereik duizenden sporters in jouw regio. Directe zichtbaarheid in de community die jou aansluit.
+                Of je nu sportvoeding verkoopt, een gym runt, kleding maakt of trainingen geeft — maak een zakelijk profiel op Buddys en kom direct in contact met jouw doelgroep. Verkoop producten, bouw een community en groei mee met de actieve sporters die elke dag inloggen.
               </p>
               <ul className="space-y-4 mb-10">
                 {[
-                  'Eigen bedrijfspagina met reviews en statistieken',
-                  'Directe ledenwerving via het platform',
-                  'Zichtbaarheid in de juiste sport-community',
+                  'Eigen merk- of bedrijfspagina met producten en diensten',
+                  'Directe zichtbaarheid bij duizenden actieve sporters',
+                  'Verkoop supplementen, kleding, trainingen en meer',
+                  'Reviews, statistieken en directe berichtenuitwisseling',
                 ].map(item => (
                   <li key={item} className="flex items-start gap-3">
                     <div className="w-5 h-5 rounded-full bg-[#E87722] flex items-center justify-center shrink-0 mt-0.5">
@@ -436,7 +437,7 @@ export default function LandingPage() {
               </ul>
               <Link href="/register"
                 className="inline-flex items-center gap-2 bg-white text-black font-semibold px-7 py-4 rounded-2xl hover:bg-[#E87722] hover:text-white transition-all duration-200">
-                Bekijk zakelijke opties <ArrowRight className="w-4 h-4" />
+                Maak zakelijk account aan <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
 
