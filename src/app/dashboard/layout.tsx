@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           left: '50%',
           transform: 'translateX(-50%)',
           width: 320,
-          background: 'rgba(17,17,17,0.92)',
+          background: 'rgba(232,119,34,0.95)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderRadius: 999,
@@ -142,12 +142,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               >
                 <Icon
                   className="w-5 h-5 transition-colors duration-200"
-                  style={{ color: active ? '#E87722' : 'rgba(255,255,255,0.6)' }}
+                  style={{ color: active ? 'white' : 'rgba(255,255,255,0.6)' }}
                 />
                 {dot && !active && (
                   <span
                     className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-                    style={{ background: '#E87722' }}
+                    style={{ background: 'white' }}
                   />
                 )}
               </Link>
