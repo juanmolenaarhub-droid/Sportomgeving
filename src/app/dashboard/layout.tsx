@@ -127,7 +127,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <div className="flex items-center justify-between">
           {[
-            { href: '/dashboard/feed', icon: Home, label: 'feed' },
+            { href: '/dashboard', icon: Home, label: 'home' },
             { href: '/dashboard/groups', icon: Play, label: 'reels' },
             { href: '/dashboard/notifications', icon: Send, label: 'verzoeken', dot: true },
             { href: '/dashboard/find', icon: Search, label: 'zoeken' },
