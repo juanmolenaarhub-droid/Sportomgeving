@@ -328,7 +328,7 @@ export default function LandingPage() {
             </div>
 
             {/* Pro — featured, taller */}
-            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl" style={{ background: '#FF5000' }}>
+            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl bg-[#E87722]">
               <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Pro</h3>
               <p className="text-white/70 text-sm mb-7">Voor de serieuze sporter</p>
               <div className="mb-7">
@@ -352,7 +352,7 @@ export default function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center bg-white font-semibold py-3.5 rounded-2xl hover:bg-black hover:text-white transition-all" style={{ color: '#FF5000' }}>
+              <Link href="/register" className="block text-center font-semibold py-3.5 rounded-2xl hover:opacity-90 transition-all text-white" style={{ background: '#111111' }}>
                 Start met Pro
               </Link>
             </div>
