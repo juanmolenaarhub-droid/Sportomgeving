@@ -81,6 +81,19 @@ export default function OnboardingPage() {
     )
   }
 
+  async function handleReset() {
+    const supabase = createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    if (!user) return
+    await supabase.from('profiles').update({
+      full_name: null, region: null, age: null, bio: null, avatar_url: null, goal: null,
+    }).eq('id', user.id)
+    await supabase.from('user_sports').delete().eq('user_id', user.id)
+    setStep(1)
+    setFullName(''); setRegion(''); setAge(''); setBio('')
+    setAvatarFile(null); setAvatarPreview(''); setSelectedSports([]); setGoal('')
+  }
+
   async function handleFinish() {
     setLoading(true)
     setError('')
@@ -170,9 +183,17 @@ export default function OnboardingPage() {
           <Link href="/">
             <Image src="/logo.png" alt="Buddys" height={28} width={98} className="object-contain brightness-0 invert" />
           </Link>
-          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
-            Stap {step} van {TOTAL_STEPS}
-          </span>
+          <div className="flex items-center gap-4">
+            <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
+              Stap {step} van {TOTAL_STEPS}
+            </span>
+            <button
+              onClick={handleReset}
+              style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', background: 'rgba(255,255,255,0.06)', border: 'none', borderRadius: 8, padding: '4px 10px', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}
+            >
+              ↺ Reset test
+            </button>
+          </div>
         </div>
 
         {/* Progress bar */}
