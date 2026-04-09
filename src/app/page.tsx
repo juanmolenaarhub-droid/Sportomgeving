@@ -10,6 +10,15 @@ const DM = { fontFamily: "'DM Sans', sans-serif" }
 
 const ROTATING_WORDS = ['sportmaatje', 'fietsbuddy', 'zwempartner', 'gymmaatje']
 
+const TICKER_ITEMS = [
+  'Meer dan 1.000 sporters hebben hun buddy gevonden via Buddys',
+  'Samen trainen. Samen groeien. Samen presteren.',
+  'Van ochtendlopen tot avondritten — jouw buddy wacht op je',
+  'Onvergetelijke sportavonturen beginnen met de juiste persoon',
+  'Honderden nieuwe vriendschappen zijn hier gestart',
+  'Jij bepaalt het niveau. Wij vinden de match.',
+]
+
 const steps = [
   {
     num: '01',
@@ -139,8 +148,20 @@ export default function LandingPage() {
         </div>
       </header>
 
+      {/* ── TICKER ── */}
+      <div className="fixed top-16 left-0 right-0 z-40 bg-[#E87722] overflow-hidden" style={{ height: '36px' }}>
+        <div className="flex items-center h-full" style={{ animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', willChange: 'transform' }}>
+          {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
+            <span key={i} className="inline-flex items-center gap-3 text-white text-xs font-semibold px-8 tracking-wide">
+              <span className="w-1 h-1 bg-white/50 rounded-full shrink-0" />
+              {item}
+            </span>
+          ))}
+        </div>
+      </div>
+
       {/* ── HERO ── */}
-      <section className="relative min-h-screen flex items-center pt-16 overflow-hidden">
+      <section className="relative min-h-screen flex items-center pt-[100px] overflow-hidden">
         {/* Subtle grain overlay */}
         <div className="absolute inset-0 opacity-[0.025] pointer-events-none"
           style={{ backgroundImage: 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 512 512\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noise\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.9\' numOctaves=\'4\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noise)\'/%3E%3C/svg%3E")', backgroundRepeat: 'repeat', backgroundSize: '200px' }} />
@@ -685,6 +706,10 @@ export default function LandingPage() {
           50% { opacity: 0.4; }
         }
         html { scroll-behavior: smooth; }
+        @keyframes ticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
       `}</style>
     </div>
   )
