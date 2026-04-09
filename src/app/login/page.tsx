@@ -108,52 +108,129 @@ export default function LoginPage() {
           transition: border-color .2s, box-shadow .2s, transform .15s;
         }
         .lg-btn:hover { border-color: #d4d2cd; box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-1px); }
+
+        @keyframes lticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes lpulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
       `}</style>
 
       <div style={DM} className="min-h-screen flex">
 
         {/* ── LEFT: Black brand panel ── */}
-        <div className="hidden lg:flex flex-col w-[42%] bg-[#111] p-14 relative overflow-hidden select-none">
-
-          {/* Large jersey number in bg */}
-          <div aria-hidden className="absolute -bottom-6 -right-4 pointer-events-none"
-            style={{ ...SYNE, fontWeight: 900, fontSize: '38vw', lineHeight: 1, letterSpacing: '-0.06em', color: 'rgba(255,255,255,0.04)' }}>
-            02
-          </div>
-
-          {/* Thin orange accent line */}
-          <div className="absolute top-0 left-0 right-0 h-1 bg-[#E87722]" />
+        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#111111' }}>
 
           {/* Logo */}
-          <Link href="/" className="relative z-10 mt-1">
+          <Link href="/" className="relative z-10">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain brightness-0 invert" />
           </Link>
 
-          {/* Copy */}
-          <div className="relative z-10 flex-1 flex flex-col justify-center">
-            <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)' }} className="mb-7">
-              Welkom terug
-            </p>
-            <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.87, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.8vw, 66px)' }}>
-              <span style={{ color: 'white' }}>Jouw buddy</span><br />
-              <span style={{ color: '#E87722' }}>wacht</span><br />
-              <span style={{ color: 'white' }}>op je.</span>
-            </h2>
+          {/* Main content — vertically centered */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center gap-10">
+
+            {/* Label + Headline */}
+            <div>
+              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-6">
+                Welkom terug
+              </p>
+              <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.4vw, 64px)' }}>
+                <span style={{ color: 'white' }}>Jouw buddy</span><br />
+                <span style={{ color: '#E87722' }}>wacht</span>
+                <span style={{ color: 'white' }}> op je.</span>
+              </h2>
+            </div>
 
             {/* Stats */}
-            <div className="mt-12 flex gap-10">
+            <div className="flex gap-8 pt-8 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" style={{ animation: 'lpulse 2s ease-in-out infinite', boxShadow: '0 0 6px #4ade80' }} />
+                <div>
+                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 22, lineHeight: 1, color: 'white', letterSpacing: '-0.03em' }}>2.400+</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 3, fontWeight: 500 }}>Actieve sporters</p>
+                </div>
+              </div>
               {[
                 { val: '850+', lbl: 'Matches gemaakt' },
                 { val: '4.8', lbl: 'Gemiddelde score' },
               ].map(s => (
                 <div key={s.lbl}>
-                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 28, lineHeight: 1, color: 'white', letterSpacing: '-0.03em' }}>{s.val}</p>
-                  <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.35)', marginTop: 4, fontWeight: 500 }}>{s.lbl}</p>
+                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 22, lineHeight: 1, color: 'white', letterSpacing: '-0.03em' }}>{s.val}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 3, fontWeight: 500 }}>{s.lbl}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Scrolling sport tags */}
+            <div className="overflow-hidden" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
+              <div style={{ display: 'flex', gap: '8px', animation: 'lticker 22s linear infinite', whiteSpace: 'nowrap' }}>
+                {[
+                  { label: 'Hardlopen', highlight: false },
+                  { label: 'Fietsen', highlight: true },
+                  { label: 'Zwemmen', highlight: false },
+                  { label: 'Gym', highlight: false },
+                  { label: 'Voetbal', highlight: false },
+                  { label: 'Tennis', highlight: false },
+                  { label: 'Golf', highlight: false },
+                  { label: 'Yoga', highlight: true },
+                  { label: 'Padel', highlight: false },
+                  { label: 'Triathlon', highlight: false },
+                  { label: 'Wandelen', highlight: false },
+                  { label: 'Basketbal', highlight: false },
+                  { label: 'Boksen', highlight: false },
+                  { label: 'Klimmen', highlight: false },
+                  // duplicate for seamless loop
+                  { label: 'Hardlopen', highlight: false },
+                  { label: 'Fietsen', highlight: true },
+                  { label: 'Zwemmen', highlight: false },
+                  { label: 'Gym', highlight: false },
+                  { label: 'Voetbal', highlight: false },
+                  { label: 'Tennis', highlight: false },
+                  { label: 'Golf', highlight: false },
+                  { label: 'Yoga', highlight: true },
+                  { label: 'Padel', highlight: false },
+                  { label: 'Triathlon', highlight: false },
+                  { label: 'Wandelen', highlight: false },
+                  { label: 'Basketbal', highlight: false },
+                  { label: 'Boksen', highlight: false },
+                  { label: 'Klimmen', highlight: false },
+                ].map((tag, i) => (
+                  <span key={i} style={{
+                    display: 'inline-block',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    background: tag.highlight ? '#E87722' : '#222222',
+                    color: 'white',
+                    flexShrink: 0,
+                  }}>
+                    {tag.label}
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            {/* Testimonials */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { quote: 'Binnen een week mijn hardloopmaatje gevonden.', name: 'Daan V.', sub: 'Amsterdam' },
+                { quote: 'Eindelijk iemand op mijn niveau.', name: 'Lisa M.', sub: 'Utrecht' },
+                { quote: 'Drie reacties in twee dagen.', name: 'Marco R.', sub: 'Rotterdam' },
+              ].map(t => (
+                <div key={t.name} style={{ background: '#1A1A1A', borderRadius: 14, padding: '14px' }}>
+                  <div style={{ color: '#E87722', fontSize: 10, marginBottom: 6, letterSpacing: '0.05em' }}>★★★★★</div>
+                  <p style={{ color: 'white', fontSize: 11, lineHeight: 1.5, fontWeight: 500, marginBottom: 8 }}>"{t.quote}"</p>
+                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: 500 }}>{t.name} · {t.sub}</p>
                 </div>
               ))}
             </div>
           </div>
 
+          {/* Bottom link */}
           <p className="relative z-10" style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
             Nog geen account?{' '}
             <Link href="/register" style={{ color: '#E87722', fontWeight: 700 }}>Registreer gratis →</Link>
