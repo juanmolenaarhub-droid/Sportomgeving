@@ -8,25 +8,37 @@ import { createClient } from '@/lib/supabase'
 import { validateImageFile } from '@/lib/validateFile'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
 
+const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
+const DM: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
+
 const SPORTS = [
-  { id: 1, name: 'Hardlopen' },
-  { id: 2, name: 'Fietsen' },
-  { id: 3, name: 'Zwemmen' },
-  { id: 4, name: 'Gym / Fitness' },
-  { id: 5, name: 'Voetbal' },
-  { id: 6, name: 'Tennis' },
-  { id: 7, name: 'Golf' },
-  { id: 8, name: 'Yoga' },
-  { id: 9, name: 'Wandelen' },
-  { id: 10, name: 'Basketbal' },
-  { id: 11, name: 'Padel' },
-  { id: 12, name: 'Volleybal' },
+  { id: 1,  name: 'Hardlopen',   emoji: '🏃' },
+  { id: 2,  name: 'Fietsen',     emoji: '🚴' },
+  { id: 3,  name: 'Zwemmen',     emoji: '🏊' },
+  { id: 4,  name: 'Gym',         emoji: '🏋️' },
+  { id: 5,  name: 'Voetbal',     emoji: '⚽' },
+  { id: 6,  name: 'Tennis',      emoji: '🎾' },
+  { id: 7,  name: 'Golf',        emoji: '⛳' },
+  { id: 8,  name: 'Yoga',        emoji: '🧘' },
+  { id: 9,  name: 'Wandelen',    emoji: '🥾' },
+  { id: 10, name: 'Basketbal',   emoji: '🏀' },
+  { id: 11, name: 'Padel',       emoji: '🏓' },
+  { id: 12, name: 'Triathlon',   emoji: '🏅' },
+  { id: 13, name: 'Boksen',      emoji: '🥊' },
+  { id: 14, name: 'Klimmen',     emoji: '🧗' },
 ]
 
 const LEVELS = [
-  { value: 'beginner', label: 'Beginner' },
-  { value: 'intermediate', label: 'Gemiddeld' },
-  { value: 'advanced', label: 'Gevorderd' },
+  { value: 'beginner',     label: 'Beginner' },
+  { value: 'intermediate', label: 'Gevorderd' },
+  { value: 'advanced',     label: 'Competitief' },
+]
+
+const GOALS = [
+  { value: 'improve',  emoji: '🎯', title: 'Beter worden',    desc: 'Ik wil mijn niveau verhogen' },
+  { value: 'fitness',  emoji: '💪', title: 'Fit blijven',     desc: 'Voor conditie en gezondheid' },
+  { value: 'compete',  emoji: '🏆', title: 'Competitie',      desc: 'Ik doe aan wedstrijden' },
+  { value: 'social',   emoji: '🤝', title: 'Sociaal sporten', desc: 'Ik sport voor het gezelschap' },
 ]
 
 type SelectedSport = { sport_id: number; level: string }
@@ -44,8 +56,7 @@ export default function OnboardingPage() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
   const [selectedSports, setSelectedSports] = useState<SelectedSport[]>([])
-  const [relationshipStatus, setRelationshipStatus] = useState('')
-  const [availability, setAvailability] = useState<string[]>([])
+  const [goal, setGoal] = useState('')
 
   function handleAvatarChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
@@ -67,12 +78,6 @@ export default function OnboardingPage() {
   function setSportLevel(sportId: number, level: string) {
     setSelectedSports((prev) =>
       prev.map((s) => (s.sport_id === sportId ? { ...s, level } : s))
-    )
-  }
-
-  function toggleAvailability(val: string) {
-    setAvailability((prev) =>
-      prev.includes(val) ? prev.filter((v) => v !== val) : [...prev, val]
     )
   }
 
@@ -104,7 +109,7 @@ export default function OnboardingPage() {
         age: age ? parseInt(age) : null,
         bio: sanitizeText(limitLength(bio, 500)),
         avatar_url: avatarUrl || undefined,
-        relationship_status: relationshipStatus || null,
+        goal: goal || null,
       })
       .eq('id', user.id)
 
@@ -125,162 +130,226 @@ export default function OnboardingPage() {
       )
     }
 
-    router.push('/dashboard')
+    router.push('/dashboard/feed')
   }
 
-  const steps = [
-    { number: 1, label: 'Jouw profiel' },
-    { number: 2, label: 'Jouw sporten' },
-    { number: 3, label: 'Voorkeuren' },
-  ]
+  const TOTAL_STEPS = 3
+  const progress = (step / TOTAL_STEPS) * 100
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50">
-      {/* Navigatiebalk */}
-      <header className="border-b border-gray-100 bg-white">
-        <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
-          <Link href="/"><Image src="/logo.png" alt="Buddys" height={36} width={120} className="object-contain" /></Link>
-          <span className="text-sm text-gray-400">Stap {step} van 3</span>
+    <>
+      <style>{`
+        @keyframes ob-up {
+          from { opacity: 0; transform: translateY(20px); }
+          to   { opacity: 1; transform: translateY(0); }
+        }
+        .ob-fade { animation: ob-up .45s cubic-bezier(.16,1,.3,1) both; }
+
+        .ob-input {
+          display: block;
+          width: 100%;
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid rgba(255,255,255,0.12);
+          padding: 13px 0;
+          font-size: 15px;
+          color: white;
+          outline: none;
+          transition: border-color .2s;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 500;
+        }
+        .ob-input::placeholder { color: rgba(255,255,255,0.25); font-weight: 400; }
+        .ob-input:focus { border-bottom-color: #E87722; }
+      `}</style>
+
+      <div style={{ ...DM, background: '#111111', minHeight: '100vh', color: 'white' }}>
+
+        {/* Top bar */}
+        <div className="flex items-center justify-between px-8 py-5">
+          <Link href="/">
+            <Image src="/logo.png" alt="Buddys" height={28} width={98} className="object-contain brightness-0 invert" />
+          </Link>
+          <span style={{ fontSize: 12, color: 'rgba(255,255,255,0.3)', fontWeight: 500 }}>
+            Stap {step} van {TOTAL_STEPS}
+          </span>
         </div>
-      </header>
 
-      <main className="flex-1 max-w-4xl mx-auto w-full px-8 py-12">
-        {/* Stap indicator */}
-        <div className="flex items-center gap-0 mb-10">
-          {steps.map((s, i) => (
-            <div key={s.number} className="flex items-center flex-1">
-              <div className="flex items-center gap-3">
-                <div className={`w-9 h-9 rounded-full flex items-center justify-center text-sm font-bold shrink-0 transition-colors ${
-                  step === s.number ? 'bg-[#E87722] text-white' :
-                  step > s.number ? 'bg-black text-white' : 'bg-gray-200 text-gray-400'
-                }`}>{s.number}</div>
-                <span className={`text-sm font-semibold hidden sm:block ${step === s.number ? 'text-black' : 'text-gray-400'}`}>{s.label}</span>
-              </div>
-              {i < steps.length - 1 && (
-                <div className={`h-0.5 flex-1 mx-4 ${step > s.number ? 'bg-black' : 'bg-gray-200'}`} />
-              )}
-            </div>
-          ))}
+        {/* Progress bar */}
+        <div style={{ height: 3, background: 'rgba(255,255,255,0.06)' }}>
+          <div style={{ height: '100%', width: `${progress}%`, background: '#E87722', transition: 'width .4s cubic-bezier(.16,1,.3,1)' }} />
         </div>
 
-        <div className="grid lg:grid-cols-3 gap-8">
-          {/* Formulier kolom */}
-          <div className="lg:col-span-2 bg-white rounded-2xl border border-gray-100 shadow-sm p-8">
+        {/* Content */}
+        <div className="flex items-start justify-center px-6 py-14">
+          <div className="w-full max-w-xl">
 
-            {/* STAP 1 */}
+            {/* ── STAP 1: Profiel ── */}
             {step === 1 && (
-              <>
-                <h2 className="text-2xl font-black text-black mb-1">Vertel iets over jezelf</h2>
-                <p className="text-gray-400 text-sm mb-8">Dit is wat andere sporters als eerste zien op jouw profiel.</p>
+              <div className="ob-fade">
+                <p style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-5">
+                  Stap 1 — Jouw profiel
+                </p>
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 5vw, 56px)' }} className="mb-10">
+                  Vertel iets<br />over jezelf.
+                </h1>
 
-                <div className="flex items-start gap-6 mb-8">
+                {/* Avatar */}
+                <div className="flex items-center gap-5 mb-10">
                   <label className="cursor-pointer group shrink-0">
-                    <div className="w-24 h-24 rounded-2xl bg-gray-100 flex items-center justify-center overflow-hidden border-2 border-dashed border-gray-200 group-hover:border-[#E87722] transition-colors">
+                    <div
+                      className="w-20 h-20 rounded-2xl overflow-hidden flex items-center justify-center"
+                      style={{ background: avatarPreview ? 'transparent' : '#1A1A1A', border: '2px dashed rgba(255,255,255,0.12)', transition: 'border-color .2s' }}
+                    >
                       {avatarPreview
                         ? <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
-                        : <svg className="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M6.827 6.175A2.31 2.31 0 015.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 00-1.134-.175 2.31 2.31 0 01-1.64-1.055l-.822-1.316a2.192 2.192 0 00-1.736-1.039 48.774 48.774 0 00-5.232 0 2.192 2.192 0 00-1.736 1.039l-.821 1.316z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16.5 12.75a4.5 4.5 0 11-9 0 4.5 4.5 0 019 0zM18.75 10.5h.008v.008h-.008V10.5z" /></svg>
+                        : <svg width="24" height="24" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="1.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" /></svg>
                       }
                     </div>
-                    <p className="text-center text-xs text-[#E87722] font-semibold mt-2">Foto uploaden</p>
+                    <p style={{ fontSize: 11, color: '#E87722', fontWeight: 700, textAlign: 'center', marginTop: 6 }}>Foto toevoegen</p>
                     <input type="file" accept="image/*" className="hidden" onChange={handleAvatarChange} />
                   </label>
-                  <div className="flex-1">
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Volledige naam *</label>
+                  <div style={{ flex: 1 }}>
+                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 8 }}>
+                      Volledige naam *
+                    </label>
                     <input
+                      className="ob-input"
                       type="text"
                       value={fullName}
                       onChange={(e) => setFullName(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]"
                       placeholder="Jan de Vries"
                     />
                   </div>
                 </div>
 
-                <div className="grid sm:grid-cols-2 gap-5 mb-5">
+                <div className="grid grid-cols-2 gap-8 mb-8">
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Regio / Stad *</label>
+                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 8 }}>
+                      Stad / Regio *
+                    </label>
                     <input
+                      className="ob-input"
                       type="text"
                       value={region}
                       onChange={(e) => setRegion(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]"
                       placeholder="Amsterdam"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-semibold text-gray-700 mb-1.5">Leeftijd</label>
+                    <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 8 }}>
+                      Leeftijd
+                    </label>
                     <input
+                      className="ob-input"
                       type="number"
                       value={age}
                       onChange={(e) => setAge(e.target.value)}
                       min={16} max={99}
-                      className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]"
                       placeholder="25"
                     />
                   </div>
                 </div>
 
-                <div className="mb-8">
-                  <label className="block text-sm font-semibold text-gray-700 mb-1.5">Over mij</label>
+                <div className="mb-10">
+                  <label style={{ fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', display: 'block', marginBottom: 8 }}>
+                    Over mij
+                  </label>
                   <textarea
                     value={bio}
                     onChange={(e) => setBio(e.target.value)}
-                    rows={4}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722] resize-none"
-                    placeholder="Ik sport graag 3x per week en zoek iemand om mee te hardlopen in de ochtend..."
+                    rows={3}
+                    placeholder="Ik zoek iemand om mee te hardlopen 3x per week..."
+                    style={{
+                      display: 'block', width: '100%', background: 'transparent',
+                      border: 'none', borderBottom: '2px solid rgba(255,255,255,0.12)',
+                      padding: '13px 0', fontSize: 15, color: 'white', outline: 'none',
+                      resize: 'none', fontFamily: "'DM Sans', sans-serif", fontWeight: 500,
+                    }}
                   />
                 </div>
 
                 <button
                   onClick={() => setStep(2)}
                   disabled={!fullName || !region}
-                  className="bg-[#E87722] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#d06a1a] transition-colors disabled:opacity-40"
+                  style={{
+                    ...SYNE, width: '100%', padding: '17px 24px',
+                    background: !fullName || !region ? 'rgba(232,119,34,0.3)' : '#E87722',
+                    color: 'white', border: 'none', borderRadius: 14,
+                    fontWeight: 800, fontSize: 13, letterSpacing: '0.14em',
+                    textTransform: 'uppercase', cursor: !fullName || !region ? 'not-allowed' : 'pointer',
+                    transition: 'background .2s',
+                  }}
                 >
                   Volgende stap →
                 </button>
-              </>
+              </div>
             )}
 
-            {/* STAP 2 */}
+            {/* ── STAP 2: Sporten ── */}
             {step === 2 && (
-              <>
-                <h2 className="text-2xl font-black text-black mb-1">Welke sporten doe jij?</h2>
-                <p className="text-gray-400 text-sm mb-8">Selecteer alle sporten die je beoefent. Je kunt er altijd meer toevoegen later.</p>
+              <div className="ob-fade">
+                <p style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-5">
+                  Stap 2 — Jouw sporten
+                </p>
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 5vw, 56px)' }} className="mb-3">
+                  Welke sporten<br />doe jij?
+                </h1>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', fontWeight: 400, marginBottom: 32 }}>
+                  Selecteer alles wat je beoefent. Je kunt later altijd meer toevoegen.
+                </p>
 
-                <div className="grid grid-cols-4 gap-3 mb-8">
+                {/* Sport grid */}
+                <div className="grid grid-cols-4 gap-2.5 mb-8">
                   {SPORTS.map((sport) => {
                     const selected = selectedSports.find((s) => s.sport_id === sport.id)
                     return (
                       <button
                         key={sport.id}
                         onClick={() => toggleSport(sport.id)}
-                        className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
-                          selected ? 'border-[#E87722] bg-orange-50' : 'border-gray-100 hover:border-gray-300 bg-white'
-                        }`}
+                        style={{
+                          padding: '14px 8px',
+                          borderRadius: 12,
+                          border: `2px solid ${selected ? '#E87722' : 'rgba(255,255,255,0.08)'}`,
+                          background: selected ? 'rgba(232,119,34,0.12)' : '#1A1A1A',
+                          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
+                          cursor: 'pointer', transition: 'all .15s',
+                        }}
                       >
-                        <span className="text-xs font-semibold text-gray-700 text-center leading-tight">{sport.name}</span>
+                        <span style={{ fontSize: 20 }}>{sport.emoji}</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, color: selected ? '#E87722' : 'rgba(255,255,255,0.6)', textAlign: 'center', lineHeight: 1.3 }}>
+                          {sport.name}
+                        </span>
                       </button>
                     )
                   })}
                 </div>
 
+                {/* Niveau per geselecteerde sport */}
                 {selectedSports.length > 0 && (
-                  <div className="bg-gray-50 rounded-xl p-5 mb-8">
-                    <p className="text-sm font-bold text-gray-700 mb-4">Jouw niveau per sport</p>
+                  <div style={{ background: '#1A1A1A', borderRadius: 14, padding: '18px 20px', marginBottom: 32 }}>
+                    <p style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.4)', marginBottom: 14 }}>
+                      Jouw niveau
+                    </p>
                     <div className="space-y-3">
                       {selectedSports.map((s) => {
                         const sport = SPORTS.find((sp) => sp.id === s.sport_id)!
                         return (
-                          <div key={s.sport_id} className="flex items-center gap-4">
-                            <span className="text-sm font-medium text-gray-700 w-28">{sport.name}</span>
+                          <div key={s.sport_id} className="flex items-center justify-between gap-4">
+                            <span style={{ fontSize: 13, fontWeight: 600, color: 'white', minWidth: 90 }}>
+                              {sport.emoji} {sport.name}
+                            </span>
                             <div className="flex gap-2">
                               {LEVELS.map((l) => (
                                 <button
                                   key={l.value}
                                   onClick={() => setSportLevel(s.sport_id, l.value)}
-                                  className={`text-xs px-3 py-1.5 rounded-lg font-semibold transition-colors ${
-                                    s.level === l.value ? 'bg-[#E87722] text-white' : 'bg-white border border-gray-200 text-gray-500 hover:border-gray-400'
-                                  }`}
+                                  style={{
+                                    fontSize: 11, padding: '5px 12px', borderRadius: 20, fontWeight: 600,
+                                    border: `1.5px solid ${s.level === l.value ? '#E87722' : 'rgba(255,255,255,0.1)'}`,
+                                    background: s.level === l.value ? '#E87722' : 'transparent',
+                                    color: 'white', cursor: 'pointer', transition: 'all .15s',
+                                  }}
                                 >
                                   {l.label}
                                 </button>
@@ -294,87 +363,113 @@ export default function OnboardingPage() {
                 )}
 
                 <div className="flex gap-3">
-                  <button onClick={() => setStep(1)} className="border border-gray-200 text-gray-700 font-bold px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">← Terug</button>
+                  <button
+                    onClick={() => setStep(1)}
+                    style={{
+                      padding: '17px 24px', borderRadius: 14, border: '2px solid rgba(255,255,255,0.1)',
+                      background: 'transparent', color: 'white', fontFamily: "'Syne', sans-serif",
+                      fontWeight: 800, fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ← Terug
+                  </button>
                   <button
                     onClick={() => setStep(3)}
                     disabled={selectedSports.length === 0}
-                    className="bg-[#E87722] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#d06a1a] transition-colors disabled:opacity-40"
+                    style={{
+                      ...SYNE, flex: 1, padding: '17px 24px',
+                      background: selectedSports.length === 0 ? 'rgba(232,119,34,0.3)' : '#E87722',
+                      color: 'white', border: 'none', borderRadius: 14,
+                      fontWeight: 800, fontSize: 13, letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      cursor: selectedSports.length === 0 ? 'not-allowed' : 'pointer',
+                      transition: 'background .2s',
+                    }}
                   >
                     Volgende stap →
                   </button>
                 </div>
-              </>
+              </div>
             )}
 
-            {/* STAP 3 */}
+            {/* ── STAP 3: Doel ── */}
             {step === 3 && (
-              <>
-                <h2 className="text-2xl font-black text-black mb-1">Jouw voorkeuren</h2>
-                <p className="text-gray-400 text-sm mb-8">Wanneer ben jij beschikbaar om te sporten?</p>
+              <div className="ob-fade">
+                <p style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-5">
+                  Stap 3 — Jouw doel
+                </p>
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 5vw, 56px)' }} className="mb-3">
+                  Waarom<br />sport je?
+                </h1>
+                <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', fontWeight: 400, marginBottom: 32 }}>
+                  We gebruiken dit om je te matchen met sporters die hetzelfde nastreven.
+                </p>
 
-                <div className="mb-8">
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Beschikbaarheid</label>
-                  <div className="flex gap-3">
-                    {['Ochtend', 'Avond', 'Weekend'].map((slot) => (
-                      <button
-                        key={slot}
-                        onClick={() => toggleAvailability(slot)}
-                        className={`flex-1 py-3 rounded-xl text-sm font-semibold border-2 transition-all ${
-                          availability.includes(slot)
-                            ? 'border-[#E87722] bg-orange-50 text-[#E87722]'
-                            : 'border-gray-100 bg-white text-gray-500 hover:border-gray-300'
-                        }`}
-                      >
-                        {slot}
-                      </button>
-                    ))}
+                <div className="grid grid-cols-2 gap-3 mb-10">
+                  {GOALS.map((g) => (
+                    <button
+                      key={g.value}
+                      onClick={() => setGoal(g.value)}
+                      style={{
+                        padding: '20px 18px',
+                        borderRadius: 14,
+                        border: `2px solid ${goal === g.value ? '#E87722' : 'rgba(255,255,255,0.08)'}`,
+                        background: goal === g.value ? 'rgba(232,119,34,0.12)' : '#1A1A1A',
+                        textAlign: 'left', cursor: 'pointer', transition: 'all .15s',
+                      }}
+                    >
+                      <span style={{ fontSize: 26, display: 'block', marginBottom: 8 }}>{g.emoji}</span>
+                      <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: goal === g.value ? '#E87722' : 'white', marginBottom: 4 }}>
+                        {g.title}
+                      </p>
+                      <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.4)', fontWeight: 400, lineHeight: 1.4 }}>
+                        {g.desc}
+                      </p>
+                    </button>
+                  ))}
+                </div>
+
+                {error && (
+                  <div style={{ background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.2)', borderRadius: 12, padding: '12px 16px', marginBottom: 20 }}>
+                    <p style={{ color: '#f87171', fontSize: 13, fontWeight: 500 }}>{error}</p>
                   </div>
-                </div>
-
-                <div className="mb-8">
-                  <label className="block text-sm font-bold text-gray-700 mb-3">Relatiestatus <span className="text-gray-400 font-normal">(optioneel)</span></label>
-                  <select
-                    value={relationshipStatus}
-                    onChange={(e) => setRelationshipStatus(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white"
-                  >
-                    <option value="">Liever niet zeggen</option>
-                    <option value="single">Single</option>
-                    <option value="relationship">In een relatie</option>
-                  </select>
-                </div>
-
-                {error && <p className="text-red-500 text-sm font-medium mb-4">{error}</p>}
+                )}
 
                 <div className="flex gap-3">
-                  <button onClick={() => setStep(2)} className="border border-gray-200 text-gray-700 font-bold px-6 py-3 rounded-xl hover:bg-gray-50 transition-colors">← Terug</button>
+                  <button
+                    onClick={() => setStep(2)}
+                    style={{
+                      padding: '17px 24px', borderRadius: 14, border: '2px solid rgba(255,255,255,0.1)',
+                      background: 'transparent', color: 'white', fontFamily: "'Syne', sans-serif",
+                      fontWeight: 800, fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    ← Terug
+                  </button>
                   <button
                     onClick={handleFinish}
-                    disabled={loading}
-                    className="bg-[#E87722] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#d06a1a] transition-colors disabled:opacity-50"
+                    disabled={loading || !goal}
+                    style={{
+                      ...SYNE, flex: 1, padding: '17px 24px',
+                      background: loading || !goal ? 'rgba(232,119,34,0.3)' : '#E87722',
+                      color: 'white', border: 'none', borderRadius: 14,
+                      fontWeight: 800, fontSize: 13, letterSpacing: '0.14em',
+                      textTransform: 'uppercase',
+                      cursor: loading || !goal ? 'not-allowed' : 'pointer',
+                      transition: 'background .2s',
+                    }}
                   >
                     {loading ? 'Opslaan...' : 'Profiel afronden →'}
                   </button>
                 </div>
-              </>
+              </div>
             )}
-          </div>
 
-          {/* Rechter kolom: tips */}
-          <div className="hidden lg:block space-y-4">
-            <div className="bg-black text-white rounded-2xl p-6">
-              <p className="text-[#E87722] font-bold text-xs uppercase tracking-widest mb-3">Pro tip</p>
-              {step === 1 && <p className="text-sm text-gray-300 leading-relaxed">Een profielfoto vergroot je kans op een match met <strong className="text-white">3x</strong>. Voeg er een toe!</p>}
-              {step === 2 && <p className="text-sm text-gray-300 leading-relaxed">Sporters met meerdere sporten krijgen <strong className="text-white">meer reacties</strong>. Voeg alle sporten toe die je beoefent.</p>}
-              {step === 3 && <p className="text-sm text-gray-300 leading-relaxed">Je kunt je voorkeuren later altijd aanpassen in je profiel instellingen.</p>}
-            </div>
-            <div className="bg-orange-50 border border-orange-100 rounded-2xl p-6">
-              <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-2">Bijna klaar</p>
-              <p className="text-sm text-gray-600">Na het afronden van je profiel kun je direct beginnen met het zoeken naar sportpartners in jouw regio.</p>
-            </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </>
   )
 }
