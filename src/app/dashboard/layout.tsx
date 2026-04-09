@@ -116,19 +116,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           bottom: 16,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 320,
+          width: 360,
           background: 'rgba(232,119,34,0.95)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderRadius: 999,
           boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-          padding: '10px 20px',
+          padding: '10px 12px',
         }}
       >
         <div className="flex items-center justify-between">
           {[
             { href: '/dashboard', icon: Home, label: 'home' },
-            { href: '/dashboard/groups', icon: Play, label: 'reels' },
+            { href: '/dashboard/feed', icon: Play, label: 'tijdlijn' },
+            { href: '/dashboard/groups', icon: Users, label: 'groepen' },
             { href: '/dashboard/notifications', icon: Send, label: 'verzoeken', dot: true },
             { href: '/dashboard/find', icon: Search, label: 'zoeken' },
             { href: '/dashboard/profile/me', icon: User, label: 'profiel', dot: true },
@@ -138,10 +139,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <Link
                 key={href}
                 href={href}
-                className="relative flex items-center justify-center w-11 h-11"
+                className="relative flex items-center justify-center w-10 h-10"
               >
                 <Icon
-                  className="w-5 h-5 transition-colors duration-200"
+                  className="w-[18px] h-[18px] transition-colors duration-200"
                   style={{ color: active ? 'white' : 'rgba(255,255,255,0.6)' }}
                 />
                 {dot && !active && (
