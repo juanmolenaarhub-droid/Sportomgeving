@@ -49,6 +49,7 @@ export default function OnboardingPage() {
   const [fullName, setFullName]     = useState('')
   const [region, setRegion]         = useState('')
   const [age, setAge]               = useState('')
+  const [geslacht1, setGeslacht1]   = useState('')
   const [bio, setBio]               = useState('')
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState('')
@@ -59,8 +60,8 @@ export default function OnboardingPage() {
   const [niveau, setNiveau]         = useState('beginner')
 
   // Step 3
+  const [taalvoorkeur, setTaalvoorkeur]         = useState('Nederlands')
   const [burgerlijkeStaat, setBurgerlijkeStaat] = useState('')
-  const [beschikbaarheid, setBeschikbaarheid]   = useState<string[]>([])
   const [radius, setRadius]                     = useState(25)
   const [geslacht, setGeslacht]                 = useState('geen')
 
@@ -99,17 +100,12 @@ export default function OnboardingPage() {
     })
   }
 
-  function toggleBeschikbaarheid(val: string) {
-    setBeschikbaarheid(prev =>
-      prev.includes(val) ? prev.filter(v => v !== val) : [...prev, val]
-    )
-  }
-
   function validateStep1() {
     const e: Record<string, string> = {}
     if (!fullName.trim()) e.fullName = 'Naam is verplicht'
     if (!region.trim())   e.region   = 'Stad is verplicht'
     if (!age)             e.age      = 'Leeftijd is verplicht'
+    if (!geslacht1)       e.geslacht = 'Geslacht is verplicht'
     setErrors1(e)
     return Object.keys(e).length === 0
   }
@@ -124,7 +120,7 @@ export default function OnboardingPage() {
     await supabase.from('user_sports').delete().eq('user_id', user.id)
     setStep(1); setFullName(''); setRegion(''); setAge(''); setBio('')
     setAvatarFile(null); setAvatarPreview(''); setSelectedSports([])
-    setBeschikbaarheid([]); setRadius(25); setGeslacht('geen')
+    setGeslacht1(''); setRadius(25); setGeslacht('geen')
   }
 
   async function handleFinish() {
@@ -366,6 +362,29 @@ export default function OnboardingPage() {
                     </div>
                   </div>
 
+                  {/* Geslacht */}
+                  <div className="mb-5">
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
+                      Geslacht <span style={{ color: '#E87722' }}>*</span>
+                    </label>
+                    <div className="flex gap-2">
+                      {['Man', 'Vrouw', 'Anders'].map(g => (
+                        <button
+                          key={g}
+                          onClick={() => { setGeslacht1(g); setErrors1(p => ({ ...p, geslacht: '' })) }}
+                          style={{
+                            flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
+                            background: geslacht1 === g ? '#E87722' : '#EDEDED',
+                            color: geslacht1 === g ? 'white' : '#555',
+                          }}
+                        >
+                          {g}
+                        </button>
+                      ))}
+                    </div>
+                    {errors1.geslacht && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>{errors1.geslacht}</p>}
+                  </div>
+
                   {/* Bio */}
                   <div className="mb-8">
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
@@ -485,6 +504,28 @@ export default function OnboardingPage() {
                     Stel je voorkeuren in zodat we de beste matches tonen.
                   </p>
 
+                  {/* Taalvoorkeur */}
+                  <div className="mb-5">
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
+                      Taalvoorkeur <span style={{ fontSize: 11, color: '#aaa', fontWeight: 400 }}>(optioneel)</span>
+                    </label>
+                    <div className="flex gap-2">
+                      {['Nederlands', 'Engels', 'Beide'].map(t => (
+                        <button
+                          key={t}
+                          onClick={() => setTaalvoorkeur(t)}
+                          style={{
+                            flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
+                            background: taalvoorkeur === t ? '#E87722' : '#EDEDED',
+                            color: taalvoorkeur === t ? 'white' : '#555',
+                          }}
+                        >
+                          {t}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
                   {/* Burgerlijke staat */}
                   <div className="mb-5">
                     <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
@@ -501,28 +542,6 @@ export default function OnboardingPage() {
                       <option value="relationship">In een relatie</option>
                       <option value="married">Getrouwd</option>
                     </select>
-                  </div>
-
-                  {/* Beschikbaarheid */}
-                  <div className="mb-5">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
-                      Beschikbaarheid
-                    </label>
-                    <div className="flex gap-2 flex-wrap">
-                      {['Ochtend', 'Middag', 'Avond', 'Weekend'].map(slot => (
-                        <button
-                          key={slot}
-                          onClick={() => toggleBeschikbaarheid(slot)}
-                          style={{
-                            padding: '8px 16px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
-                            background: beschikbaarheid.includes(slot) ? '#E87722' : '#EDEDED',
-                            color: beschikbaarheid.includes(slot) ? 'white' : '#555',
-                          }}
-                        >
-                          {slot}
-                        </button>
-                      ))}
-                    </div>
                   </div>
 
                   {/* Zoekradius */}
