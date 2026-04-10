@@ -4,8 +4,8 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import {
   Heart, MessageCircle, Share2, MoreHorizontal, MapPin, Clock,
-  Flame, X, Send, Bookmark, Play, Camera, Video, Image as ImageIcon,
-  Smile, Trophy, UserPlus, Filter, ChevronRight, Zap,
+  Flame, X, Send, Bookmark, Play, Camera, Image as ImageIcon,
+  Trophy, UserPlus, Filter, ChevronRight, Zap,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 
@@ -42,6 +42,19 @@ type SuggestedBuddy = {
   region: string
   sport: string
   mutuals: number
+}
+
+type SponsoredPost = {
+  id: string
+  business_name: string
+  business_logo_url?: string
+  sport_tag: string
+  headline: string
+  description: string
+  image_url?: string
+  cta_text: string
+  cta_url: string
+  is_active: boolean
 }
 
 // ─── Demo data ─────────────────────────────────────────────────────────────────
@@ -114,6 +127,75 @@ const SUGGESTED_BUDDIES: SuggestedBuddy[] = [
   { id: '7', name: 'Daan Bakker', region: 'Haarlem', sport: 'Tennis', mutuals: 3 },
   { id: '8', name: 'Anna de Boer', region: 'Amsterdam', sport: 'Zwemmen', mutuals: 5 },
   { id: '9', name: 'Jelle Peters', region: 'Utrecht', sport: 'Basketbal', mutuals: 2 },
+]
+
+const SPONSORED_POSTS: SponsoredPost[] = [
+  {
+    id: 'sp1',
+    business_name: 'RunShop Amsterdam',
+    sport_tag: 'run',
+    headline: 'Nieuwe hardloopschoenen nodig?',
+    description: 'Gratis verzending op alle schoenen boven €75. Speciaal voor Buddys gebruikers.',
+    image_url: 'https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=800&q=80',
+    cta_text: 'Bekijk aanbod',
+    cta_url: '#',
+    is_active: true,
+  },
+  {
+    id: 'sp2',
+    business_name: 'FitLife Supplements',
+    sport_tag: 'gym',
+    headline: 'Train harder met de juiste voeding',
+    description: 'Proteïne shakes en pre-workout speciaal samengesteld voor serieuze sporters.',
+    image_url: 'https://images.unsplash.com/photo-1593095948071-474c5cc2989d?w=800&q=80',
+    cta_text: 'Shop nu',
+    cta_url: '#',
+    is_active: true,
+  },
+  {
+    id: 'sp3',
+    business_name: 'Triathlon Store NL',
+    sport_tag: 'swim',
+    headline: 'Alles voor jouw Ironman',
+    description: 'Wetsuits, fietshelmen en loopschoenen — alles op één plek.',
+    image_url: 'https://images.unsplash.com/photo-1530549387789-4c1017266635?w=800&q=80',
+    cta_text: 'Ontdek meer',
+    cta_url: '#',
+    is_active: true,
+  },
+  {
+    id: 'sp4',
+    business_name: 'Cycling Pro Shop',
+    sport_tag: 'cycle',
+    headline: 'Fiets verder met de beste gear',
+    description: 'Helmen, wielrenschoenen en accessoires voor elke wielrenner. Nu 10% korting met code BUDDYS.',
+    image_url: 'https://images.unsplash.com/photo-1544197150-b99a580bb7a8?w=800&q=80',
+    cta_text: 'Bekijk collectie',
+    cta_url: '#',
+    is_active: true,
+  },
+  {
+    id: 'sp5',
+    business_name: 'Yoga Studio Amsterdam',
+    sport_tag: 'yoga',
+    headline: 'Eerste les gratis bij ons',
+    description: 'Meer dan 30 lessen per week. Voor beginners en gevorderden. Probeer ons gratis.',
+    image_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+    cta_text: 'Plan je les',
+    cta_url: '#',
+    is_active: true,
+  },
+  {
+    id: 'sp6',
+    business_name: 'Buddys Premium',
+    sport_tag: 'algemeen',
+    headline: 'Upgrade naar Premium',
+    description: 'Open profiel, onbeperkt berichten en exclusieve buddy-matches. Probeer 1 maand gratis.',
+    image_url: 'https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=800&q=80',
+    cta_text: 'Probeer gratis',
+    cta_url: '#',
+    is_active: true,
+  },
 ]
 
 const LEADERBOARD = [
@@ -204,6 +286,125 @@ function StoryViewer({ stories, startIndex, onClose }: { stories: Story[]; start
         <button className="absolute right-0 top-0 bottom-0 w-1/3 z-10" onClick={e => { e.stopPropagation(); if (current < stories.length - 1) setCurrent(c => c + 1); else onClose() }} />
       </div>
     </div>
+  )
+}
+
+// ─── Sponsored Post Card ──────────────────────────────────────────────────────
+
+function SponsoredPostCard({ ad, onHide }: { ad: SponsoredPost; onHide: () => void }) {
+  const [showMenu, setShowMenu] = useState(false)
+  const [hiding, setHiding] = useState(false)
+
+  function handleHide() {
+    setShowMenu(false)
+    setHiding(true)
+    // Sla op in localStorage
+    try {
+      const hidden = JSON.parse(localStorage.getItem('hidden_ads') ?? '[]') as string[]
+      localStorage.setItem('hidden_ads', JSON.stringify([...hidden, ad.id]))
+    } catch (_) {}
+    setTimeout(onHide, 350)
+  }
+
+  return (
+    <article
+      className="bg-white rounded-2xl overflow-hidden transition-all duration-350"
+      style={{
+        border: '1.5px solid #EEEEEE',
+        borderRadius: 16,
+        opacity: hiding ? 0 : 1,
+        transform: hiding ? 'scale(0.97)' : 'scale(1)',
+        transition: 'opacity 0.35s ease, transform 0.35s ease',
+      }}
+    >
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 pt-4 pb-3">
+        <div className="flex items-center gap-3">
+          {/* Logo placeholder — initialen als geen logo */}
+          <div className="w-10 h-10 rounded-full bg-[#E87722]/10 flex items-center justify-center shrink-0 text-[#E87722] font-black text-sm overflow-hidden">
+            {ad.business_logo_url
+              ? <img src={ad.business_logo_url} alt={ad.business_name} className="w-full h-full object-cover" />
+              : ad.business_name.slice(0, 2).toUpperCase()
+            }
+          </div>
+          <div>
+            <p className="font-black text-black text-sm leading-tight">{ad.business_name}</p>
+            <p className="text-xs text-gray-400 leading-tight">Gesponsord</p>
+          </div>
+        </div>
+
+        {/* Drie puntjes menu */}
+        <div className="relative">
+          <button
+            onClick={() => setShowMenu(v => !v)}
+            className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+          >
+            <MoreHorizontal className="w-4 h-4 text-gray-400" />
+          </button>
+          {showMenu && (
+            <>
+              <div className="fixed inset-0 z-10" onClick={() => setShowMenu(false)} />
+              <div className="absolute right-0 top-8 z-20 bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden w-52">
+                <button
+                  onClick={handleHide}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                >
+                  <X className="w-4 h-4 text-gray-400" />
+                  Deze advertentie verbergen
+                </button>
+                <button
+                  onClick={() => setShowMenu(false)}
+                  className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-500 hover:bg-gray-50 transition-colors text-left border-t border-gray-50"
+                >
+                  <span className="w-4 h-4 text-center text-gray-400 text-xs">?</span>
+                  Waarom zie ik deze advertentie?
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Afbeelding met sport-tag pill */}
+      {ad.image_url && (
+        <div className="relative mx-0 overflow-hidden" style={{ aspectRatio: '4/5' }}>
+          <img
+            src={ad.image_url}
+            alt={ad.headline}
+            className="w-full h-full object-cover"
+          />
+          {/* Sport-tag pill */}
+          <div className="absolute bottom-3 right-3">
+            <span className="bg-[#E87722] text-white text-[10px] font-black px-2.5 py-1 rounded-full uppercase tracking-wide">
+              {ad.sport_tag === 'run' ? 'Hardlopen'
+                : ad.sport_tag === 'gym' ? 'Gym'
+                : ad.sport_tag === 'cycle' ? 'Fietsen'
+                : ad.sport_tag === 'swim' ? 'Zwemmen'
+                : ad.sport_tag === 'yoga' ? 'Yoga'
+                : ad.sport_tag === 'football' ? 'Voetbal'
+                : ad.sport_tag}
+            </span>
+          </div>
+        </div>
+      )}
+
+      {/* Tekst + CTA */}
+      <div className="px-5 pt-4 pb-5 space-y-1.5">
+        <p className="font-black text-black text-base leading-snug">{ad.headline}</p>
+        <p className="text-sm text-gray-500 leading-relaxed line-clamp-2">{ad.description}</p>
+        <div className="pt-3">
+          <a
+            href={ad.cta_url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center justify-center w-full bg-[#E87722] hover:bg-[#d06a1a] text-white font-black text-sm rounded-xl transition-colors"
+            style={{ height: 44 }}
+          >
+            {ad.cta_text}
+          </a>
+        </div>
+      </div>
+    </article>
   )
 }
 
@@ -510,6 +711,9 @@ export default function FeedPage() {
   const [posts, setPosts] = useState<Post[]>(DEMO_POSTS)
   const [storyIndex, setStoryIndex] = useState<number | null>(null)
   const [sportFilter, setSportFilter] = useState('all')
+  const [hiddenAdIds, setHiddenAdIds] = useState<string[]>(() => {
+    try { return JSON.parse(localStorage.getItem('hidden_ads') ?? '[]') } catch { return [] }
+  })
   const [showCreatePost, setShowCreatePost] = useState(false)
   const [uploadType, setUploadType] = useState<'story' | null>(null)
   const [newPostContent, setNewPostContent] = useState('')
@@ -553,11 +757,34 @@ export default function FeedPage() {
 
   const filteredPosts = sportFilter === 'all' ? posts : posts.filter(p => p.activity_type === sportFilter)
 
-  // Bouw feed op: voeg suggested buddies in na post 2, daarna elke 4 posts
-  type FeedItem = { kind: 'post'; post: Post } | { kind: 'suggested' }
+  // Kies advertenties passend bij de actieve sportfilter, verborgen er uit
+  const activeAds = SPONSORED_POSTS.filter(ad =>
+    ad.is_active &&
+    !hiddenAdIds.includes(ad.id) &&
+    (ad.sport_tag === sportFilter || ad.sport_tag === 'algemeen' || sportFilter === 'all')
+  )
+  // Roteer willekeurig maar stabiel per render
+  const shuffledAds = [...activeAds].sort((a, b) => a.id > b.id ? 1 : -1)
+  let adIndex = 0
+
+  function hideAd(id: string) {
+    setHiddenAdIds(prev => {
+      const next = [...prev, id]
+      try { localStorage.setItem('hidden_ads', JSON.stringify(next)) } catch (_) {}
+      return next
+    })
+  }
+
+  type FeedItem = { kind: 'post'; post: Post } | { kind: 'suggested' } | { kind: 'ad'; ad: SponsoredPost }
   const feedItems: FeedItem[] = []
   filteredPosts.forEach((post, i) => {
     feedItems.push({ kind: 'post', post })
+    // Na elke 5e post: advertentie
+    if ((i + 1) % 5 === 0 && filteredPosts.length >= 5 && shuffledAds.length > 0) {
+      feedItems.push({ kind: 'ad', ad: shuffledAds[adIndex % shuffledAds.length] })
+      adIndex++
+    }
+    // Na post 2 en daarna elke 4: suggested buddies
     if (i === 2 || (i > 2 && (i - 2) % 4 === 0)) feedItems.push({ kind: 'suggested' })
   })
 
@@ -649,10 +876,14 @@ export default function FeedPage() {
         </div>
 
         {/* Feed items */}
-        {feedItems.map((item, idx) =>
-          item.kind === 'suggested' ? (
-            <SuggestedBuddiesCard key={`sugg-${idx}`} buddies={SUGGESTED_BUDDIES} />
-          ) : (
+        {feedItems.map((item, idx) => {
+          if (item.kind === 'suggested') {
+            return <SuggestedBuddiesCard key={`sugg-${idx}`} buddies={SUGGESTED_BUDDIES} />
+          }
+          if (item.kind === 'ad') {
+            return <SponsoredPostCard key={`ad-${item.ad.id}-${idx}`} ad={item.ad} onHide={() => hideAd(item.ad.id)} />
+          }
+          return (
             <PostCard
               key={item.post.id}
               post={item.post}
@@ -668,7 +899,7 @@ export default function FeedPage() {
               }}
             />
           )
-        )}
+        })}
 
         {filteredPosts.length === 0 && (
           <div className="bg-white rounded-2xl border border-gray-100 p-12 text-center">
