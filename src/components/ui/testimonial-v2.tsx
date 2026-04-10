@@ -74,7 +74,7 @@ function getInitials(name: string) {
 
 function TestimonialCard({ t }: { t: Testimonial }) {
   return (
-    <div className="bg-neutral-900 border border-neutral-800 rounded-2xl p-6 flex flex-col gap-4 w-[300px] shrink-0">
+    <div className="bg-white border border-[#E8E0D5] rounded-2xl p-6 flex flex-col gap-4 w-[300px] shrink-0">
       {/* Stars */}
       <div className="flex gap-0.5">
         {[...Array(5)].map((_, i) => (
@@ -83,12 +83,12 @@ function TestimonialCard({ t }: { t: Testimonial }) {
       </div>
 
       {/* Quote */}
-      <p className="text-neutral-300 text-sm leading-relaxed font-light flex-1">
+      <p className="text-gray-600 text-sm leading-relaxed font-light flex-1">
         &ldquo;{t.quote}&rdquo;
       </p>
 
       {/* Author */}
-      <div className="flex items-center gap-3 pt-4 border-t border-neutral-800">
+      <div className="flex items-center gap-3 pt-4 border-t border-[#E8E0D5]">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold shrink-0"
           style={{ ...SYNE, background: '#E87722' }}
@@ -96,9 +96,9 @@ function TestimonialCard({ t }: { t: Testimonial }) {
           {getInitials(t.name)}
         </div>
         <div>
-          <p className="text-white font-bold text-sm" style={SYNE}>{t.name}</p>
-          <p className="text-neutral-500 text-xs mt-0.5">
-            {t.location} · <span className="text-orange-500">{t.sport}</span>
+          <p className="text-black font-bold text-sm" style={SYNE}>{t.name}</p>
+          <p className="text-[#888077] text-xs mt-0.5">
+            {t.location} · <span className="text-[#E87722]">{t.sport}</span>
           </p>
         </div>
       </div>
@@ -134,7 +134,7 @@ export function TestimonialV2() {
   const col3 = TESTIMONIALS.slice(6, 9)
 
   return (
-    <section id="community" className="py-32 bg-black overflow-hidden">
+    <section id="community" className="py-32 bg-[#F5F0E8] overflow-hidden">
       <div className="max-w-7xl mx-auto px-8">
 
         {/* Header */}
@@ -143,12 +143,12 @@ export function TestimonialV2() {
             <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Community</p>
             <h2
               style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
-              className="text-[clamp(40px,5vw,72px)] text-white"
+              className="text-[clamp(40px,5vw,72px)] text-black"
             >
               Zij vonden hun buddy
             </h2>
           </div>
-          <a href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:text-white transition-colors">
+          <a href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:text-black transition-colors">
             Sluit je aan
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />

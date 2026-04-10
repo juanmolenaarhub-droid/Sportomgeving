@@ -270,7 +270,7 @@ export default function OnboardingPage() {
         }
       `}</style>
 
-      <div style={{ ...DM, background: '#edece8', minHeight: '100vh' }}>
+      <div style={{ ...DM, background: '#F5F0E8', minHeight: '100vh' }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-center py-8 relative">

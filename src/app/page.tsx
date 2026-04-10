@@ -63,10 +63,10 @@ export default function LandingPage() {
 
 
   return (
-    <div style={DM} className="bg-[#edece8] overflow-x-hidden">
+    <div style={DM} className="bg-[#F5F0E8] overflow-x-hidden">
 
       {/* ── NAVBAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#edece8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
@@ -86,11 +86,11 @@ export default function LandingPage() {
       </header>
 
       {/* ── TICKER ── */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-[#E87722] overflow-hidden" style={{ height: '36px' }}>
+      <div className="fixed top-16 left-0 right-0 z-40 bg-[#111111] overflow-hidden" style={{ height: '36px' }}>
         <div className="flex items-center h-full" style={{ animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', willChange: 'transform' }}>
           {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
             <span key={i} className="inline-flex items-center gap-3 text-white text-xs font-semibold px-8 tracking-wide">
-              <span className="w-1 h-1 bg-white/50 rounded-full shrink-0" />
+              <span className="w-1 h-1 bg-white/40 rounded-full shrink-0" />
               {item}
             </span>
           ))}
@@ -212,7 +212,7 @@ export default function LandingPage() {
 
 
       {/* ── HOE HET WERKT ── */}
-      <section id="hoe-het-werkt" className="py-32 bg-[#edece8]">
+      <section id="hoe-het-werkt" className="py-32 bg-[#F5F0E8]">
         <div className="max-w-7xl mx-auto px-8">
           <div className="grid lg:grid-cols-2 gap-20 items-start">
             <div>
@@ -232,7 +232,7 @@ export default function LandingPage() {
             <div className="space-y-4">
               {steps.map((step) => (
                 <div key={step.num}
-                  className="group bg-white rounded-2xl p-7 border border-gray-100 hover:border-[#E87722]/40 hover:shadow-lg transition-all duration-300 flex items-start gap-6">
+                  className="group bg-white rounded-2xl p-7 border border-[#E8E0D5] hover:border-[#111]/20 hover:shadow-lg transition-all duration-300 flex items-start gap-6">
                   <span style={{ ...SYNE, fontWeight: 800 }} className="text-4xl text-[#E87722]/25 leading-none shrink-0 group-hover:text-[#E87722]/50 transition-colors">{step.num}</span>
                   <div>
                     <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-xl text-black mb-2">{step.title}</h3>
@@ -246,7 +246,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── VIDEO SECTIE ── */}
-      <section className="py-24 bg-[#edece8]">
+      <section className="py-24 bg-[#F5F0E8]">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-10">
             <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Bekijk hoe het werkt</p>
@@ -281,7 +281,7 @@ export default function LandingPage() {
       <TestimonialV2 />
 
       {/* ── PRIJZEN ── */}
-      <section id="prijzen" className="py-32 bg-[#edece8]">
+      <section id="prijzen" className="py-32 bg-[#F5F0E8]">
         <div className="max-w-6xl mx-auto px-8">
           <div className="text-center mb-16">
             <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Pricing</p>
@@ -312,7 +312,7 @@ export default function LandingPage() {
                   { text: 'Subtiele advertenties', check: false },
                 ].map(item => (
                   <li key={item.text} className="flex items-center gap-2.5">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.check ? 'bg-[#E87722]' : 'bg-gray-100'}`}>
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.check ? 'bg-[#111111]' : 'bg-gray-100'}`}>
                       {item.check
                         ? <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                         : <span className="text-gray-400 text-[9px] font-bold">—</span>
@@ -328,17 +328,17 @@ export default function LandingPage() {
             </div>
 
             {/* Pro — featured, taller */}
-            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl bg-[#E87722]">
+            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl bg-[#111111]">
               <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Pro</h3>
-              <p className="text-white/70 text-sm mb-7">Voor de serieuze sporter</p>
+              <p className="text-white/50 text-sm mb-7">Voor de serieuze sporter</p>
               <div className="mb-7">
-                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-white">€4,99</span>
-                <span className="text-white/70 text-sm ml-1">/ maand</span>
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#E87722]">€4,99</span>
+                <span className="text-white/50 text-sm ml-1">/ maand</span>
               </div>
               <div className="mb-7 -mt-5">
-                <span className="inline-block bg-white text-[#E87722] text-xs font-semibold px-3 py-1 rounded-full">Early adopter prijs — straks €6,99</span>
+                <span className="inline-block bg-white/10 text-white text-xs font-semibold px-3 py-1 rounded-full">Early adopter prijs — straks €6,99</span>
               </div>
-              <ul className="space-y-3.5 mb-8 text-sm text-white flex-1">
+              <ul className="space-y-3.5 mb-8 text-sm text-white/80 flex-1">
                 {[
                   'Alles van Starter',
                   'Geen advertenties',
@@ -348,14 +348,14 @@ export default function LandingPage() {
                   'Strava en MyFitnessPal koppeling',
                 ].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-white/25 flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center font-semibold py-3.5 rounded-2xl hover:opacity-90 transition-all text-white" style={{ background: '#111111' }}>
+              <Link href="/register" className="block text-center font-semibold py-3.5 rounded-2xl hover:opacity-90 transition-all text-white" style={{ background: '#E87722' }}>
                 Start met Pro
               </Link>
             </div>
@@ -378,7 +378,7 @@ export default function LandingPage() {
                   'Directe zichtbaarheid bij jouw doelgroep',
                 ].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-[#111111] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {item}
@@ -407,9 +407,9 @@ export default function LandingPage() {
       </div>
 
       {/* ── FINAL CTA ── */}
-      <section className="relative py-36 bg-[#E87722] overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.05]"
-          style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+      <section className="relative py-36 bg-[#111111] overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.04]"
+          style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
         <div className="relative max-w-4xl mx-auto px-8 text-center">
           <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 0.95, letterSpacing: '-0.02em' }}
             className="text-[clamp(52px,7vw,104px)] text-white mb-5">
@@ -428,7 +428,7 @@ export default function LandingPage() {
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-black pt-16 pb-10">
+      <footer className="bg-[#1A1714] pt-16 pb-10">
         <div className="max-w-7xl mx-auto px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
             <div className="col-span-2 md:col-span-1">

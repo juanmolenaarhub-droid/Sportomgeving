@@ -7,10 +7,10 @@ const DM: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 
 export default function VoorBedrijvenPage() {
   return (
-    <div style={DM} className="bg-[#edece8] min-h-screen">
+    <div style={DM} className="bg-[#F5F0E8] min-h-screen">
 
       {/* ── NAVBAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#edece8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
@@ -30,35 +30,35 @@ export default function VoorBedrijvenPage() {
       </header>
 
       {/* ── HERO ── */}
-      <section className="pt-32 pb-20 bg-black relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.04]"
-          style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
+      <section className="pt-32 pb-20 bg-white relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]"
+          style={{ backgroundImage: 'linear-gradient(#000 1px, transparent 1px), linear-gradient(90deg, #000 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
         <div className="relative max-w-7xl mx-auto px-8 text-center">
           <div className="inline-flex items-center gap-2 bg-[#E87722]/10 border border-[#E87722]/20 rounded-full px-4 py-1.5 mb-8">
             <Building2 className="w-3.5 h-3.5 text-[#E87722]" />
             <span className="text-xs font-semibold text-[#E87722] uppercase tracking-widest">Voor merken & ondernemers</span>
           </div>
           <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em' }}
-            className="text-[clamp(48px,7vw,100px)] text-white mb-6">
+            className="text-[clamp(48px,7vw,100px)] text-black mb-6">
             Jouw merk.<br />
             <span className="text-[#E87722]">Duizenden sporters.</span><br />
             Één platform.
           </h1>
-          <p className="text-gray-400 text-xl max-w-2xl mx-auto leading-relaxed font-light mb-10">
+          <p className="text-gray-500 text-xl max-w-2xl mx-auto leading-relaxed font-light mb-10">
             Buddys is waar sporters dagelijks komen om te connecten, te trainen en te kopen. Plaats jouw merk precies daar waar jouw doelgroep al actief is — niet ernaast, maar er middenin.
           </p>
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/register"
-              className="inline-flex items-center gap-2 bg-[#E87722] text-white font-semibold px-8 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-base">
+              className="inline-flex items-center gap-2 bg-[#111111] text-white font-semibold px-8 py-4 rounded-2xl hover:bg-[#E87722] transition-all duration-200 text-base">
               Gratis zakelijk profiel aanmaken <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
-          <p className="text-gray-600 text-sm mt-5">Geen maandelijkse kosten · Alleen commissie op verkoop · Direct live</p>
+          <p className="text-gray-400 text-sm mt-5">Geen maandelijkse kosten · Alleen commissie op verkoop · Direct live</p>
         </div>
       </section>
 
       {/* ── GESCHIKT VOOR ── */}
-      <section className="py-14 bg-[#edece8] border-b border-black/6">
+      <section className="py-14 bg-[#F5F0E8] border-b border-black/6">
         <div className="max-w-7xl mx-auto px-8">
           <p className="text-xs font-bold text-gray-400 uppercase tracking-widest text-center mb-8">Geschikt voor</p>
           <div className="flex flex-wrap justify-center gap-3">
@@ -81,7 +81,7 @@ export default function VoorBedrijvenPage() {
       </section>
 
       {/* ── VOORDELEN ── */}
-      <section className="py-32 bg-[#edece8]">
+      <section className="py-32 bg-[#F5F0E8]">
         <div className="max-w-7xl mx-auto px-8">
           <div className="grid lg:grid-cols-2 gap-20 items-center">
             <div>
@@ -149,12 +149,12 @@ export default function VoorBedrijvenPage() {
       </section>
 
       {/* ── HOE HET WERKT (zakelijk) ── */}
-      <section className="py-24 bg-black">
+      <section className="py-24 bg-[#F5F0E8]">
         <div className="max-w-7xl mx-auto px-8">
           <div className="text-center mb-16">
             <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Zo simpel</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
-              className="text-[clamp(36px,5vw,64px)] text-white">
+              className="text-[clamp(36px,5vw,64px)] text-black">
               In 3 stappen live.
             </h2>
           </div>
@@ -164,9 +164,9 @@ export default function VoorBedrijvenPage() {
               { num: '02', title: 'Bereik jouw doelgroep', desc: 'Sporters die zoeken in jouw categorie zien jouw merk direct. Geen advertentiebudget nodig.' },
               { num: '03', title: 'Verkoop en groei', desc: 'Ontvang bestellingen, bouw reviews op en bouw een community van terugkerende klanten.' },
             ].map(step => (
-              <div key={step.num} className="bg-white/5 rounded-2xl p-8 border border-white/8">
-                <p style={{ ...SYNE, fontWeight: 900, fontSize: '48px', lineHeight: 1, letterSpacing: '-0.04em', color: 'rgba(232,119,34,0.3)' }} className="mb-4">{step.num}</p>
-                <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-white text-lg mb-3">{step.title}</h3>
+              <div key={step.num} className="bg-white rounded-2xl p-8 border border-[#E8E0D5]">
+                <p style={{ ...SYNE, fontWeight: 900, fontSize: '48px', lineHeight: 1, letterSpacing: '-0.04em', color: 'rgba(232,119,34,0.25)' }} className="mb-4">{step.num}</p>
+                <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-black text-lg mb-3">{step.title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed font-light">{step.desc}</p>
               </div>
             ))}
@@ -175,24 +175,24 @@ export default function VoorBedrijvenPage() {
       </section>
 
       {/* ── CTA ── */}
-      <section className="py-28 bg-[#E87722]">
+      <section className="py-28 bg-[#111111]">
         <div className="max-w-3xl mx-auto px-8 text-center">
           <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em' }}
             className="text-[clamp(40px,6vw,80px)] text-white mb-5">
             Klaar om te beginnen?
           </h2>
-          <p className="text-white/70 text-lg mb-10 font-light">
+          <p className="text-white/60 text-lg mb-10 font-light">
             Gratis profiel aanmaken. Geen maandelijkse kosten. Alleen commissie op wat je verkoopt.
           </p>
           <Link href="/register"
-            className="inline-flex items-center gap-2 bg-black text-white font-semibold px-10 py-5 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-base">
+            className="inline-flex items-center gap-2 bg-[#E87722] text-white font-semibold px-10 py-5 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-base">
             Gratis zakelijk profiel aanmaken <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
       </section>
 
       {/* ── FOOTER ── */}
-      <footer className="bg-black pt-16 pb-10">
+      <footer className="bg-[#1A1714] pt-16 pb-10">
         <div className="max-w-7xl mx-auto px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-10 mb-14">
             <div className="col-span-2 md:col-span-1">

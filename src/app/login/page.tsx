@@ -250,7 +250,7 @@ export default function LoginPage() {
         </div>
 
         {/* ── RIGHT: Form ── */}
-        <div className="flex-1 bg-[#edece8] flex flex-col">
+        <div className="flex-1 bg-[#F5F0E8] flex flex-col">
 
           {/* Mobile nav */}
           <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-black/8">
