@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { ArrowRight, ArrowLeft, Check, Instagram, Youtube, Globe, CheckCircle } from 'lucide-react'
+import { ArrowRight, ArrowLeft, Check, Globe, CheckCircle } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
@@ -225,7 +225,7 @@ export default function CreatorAanmeldenPage() {
                       className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20" />
                   </div>
                   <div className="relative">
-                    <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="2" width="20" height="20" rx="5" ry="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
                     <input type="text" value={instagramUrl} onChange={e => setInstagramUrl(e.target.value)}
                       placeholder="@jouwinstagram"
                       className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20" />
@@ -239,7 +239,7 @@ export default function CreatorAanmeldenPage() {
                       className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20" />
                   </div>
                   <div className="relative">
-                    <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                     <input type="text" value={youtubeUrl} onChange={e => setYoutubeUrl(e.target.value)}
                       placeholder="youtube.com/c/jouwkanaal"
                       className="w-full border border-gray-200 rounded-xl pl-10 pr-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20" />
