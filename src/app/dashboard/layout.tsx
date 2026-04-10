@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play } from 'lucide-react'
+import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play, Trophy, Flame } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const navItems = [
@@ -11,6 +11,7 @@ const navItems = [
   { href: '/dashboard/feed', label: 'Tijdlijn', icon: LayoutList },
   { href: '/dashboard/groups', label: 'Groepen', icon: Users },
   { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle, badge: 2 },
+  { href: '/challenges', label: 'Challenges', icon: Trophy },
 ]
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -54,6 +55,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 </Link>
               )
             })}
+            {/* Creator Studio link */}
+            <Link
+              href="/dashboard/creator"
+              className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
+                pathname.startsWith('/dashboard/creator')
+                  ? 'bg-[#111111] text-white'
+                  : 'text-gray-500 hover:text-black hover:bg-gray-50'
+              }`}
+            >
+              <Flame className="w-4 h-4" />
+              Creator Studio
+            </Link>
             {/* Zoek buddies CTA */}
             <Link
               href="/dashboard/find"
@@ -129,7 +142,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {[
             { href: '/dashboard', icon: Home },
             { href: '/dashboard/feed', icon: Play },
-            { href: '/dashboard/groups', icon: Users },
+            { href: '/challenges', icon: Trophy },
             { href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
             { href: '/dashboard/notifications', icon: Bell, badge: 5 },
             { href: '/dashboard/find', icon: Search },
