@@ -54,150 +54,171 @@ export default function LoginPage() {
     <>
       <style>{`
         @keyframes l-up {
-          from { opacity: 0; transform: translateY(24px); }
+          from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
         }
-        @keyframes l-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.4; transform: scale(0.8); }
-        }
-        @keyframes l-float {
-          0%,100% { transform: translateY(0px); }
-          50% { transform: translateY(-10px); }
-        }
-        @keyframes l-ticker {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-50%); }
-        }
-        @keyframes l-glow {
-          0%,100% { opacity: 0.6; }
-          50% { opacity: 1; }
-        }
-
-        .l1 { animation: l-up .6s cubic-bezier(.16,1,.3,1) .06s both; }
-        .l2 { animation: l-up .6s cubic-bezier(.16,1,.3,1) .14s both; }
-        .l3 { animation: l-up .6s cubic-bezier(.16,1,.3,1) .22s both; }
-        .l4 { animation: l-up .6s cubic-bezier(.16,1,.3,1) .30s both; }
-        .l5 { animation: l-up .6s cubic-bezier(.16,1,.3,1) .38s both; }
+        .l1 { animation: l-up .55s cubic-bezier(.16,1,.3,1) .08s both; }
+        .l2 { animation: l-up .55s cubic-bezier(.16,1,.3,1) .18s both; }
+        .l3 { animation: l-up .55s cubic-bezier(.16,1,.3,1) .28s both; }
+        .l4 { animation: l-up .55s cubic-bezier(.16,1,.3,1) .38s both; }
+        .l5 { animation: l-up .55s cubic-bezier(.16,1,.3,1) .48s both; }
 
         .li {
-          display: block; width: 100%;
-          background: transparent; border: none;
-          border-bottom: 2px solid rgba(17,17,17,0.15);
-          padding: 13px 0; font-size: 16px; color: #111;
-          outline: none; transition: border-color .2s;
-          font-family: 'DM Sans', sans-serif; font-weight: 500;
+          display: block;
+          width: 100%;
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid #e0deda;
+          padding: 13px 0;
+          font-size: 16px;
+          color: #111;
+          outline: none;
+          transition: border-color .2s;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 500;
         }
-        .li::placeholder { color: rgba(17,17,17,0.3); font-weight: 400; }
+        .li::placeholder { color: #c0bdb8; font-weight: 400; }
         .li:focus { border-bottom-color: #E87722; }
 
         .lb {
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          width: 100%; padding: 18px 24px;
-          background: #111; color: white; border: none; border-radius: 16px;
-          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px;
-          letter-spacing: .12em; text-transform: uppercase;
-          cursor: pointer; transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          padding: 17px 24px;
+          background: #111;
+          color: white;
+          border: none;
+          border-radius: 14px;
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: 13px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background .2s, transform .15s;
         }
-        .lb:hover:not(:disabled) { background: #E87722; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,119,34,0.4); }
-        .lb:active:not(:disabled) { transform: translateY(0); }
+        .lb:hover:not(:disabled) { background: #E87722; transform: translateY(-1px); }
         .lb:disabled { opacity: .45; cursor: not-allowed; }
 
         .lg-btn {
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          width: 100%; padding: 15px 20px;
-          background: white; border: 2px solid rgba(17,17,17,0.1); border-radius: 14px;
-          font-family: 'DM Sans', sans-serif; font-weight: 600; font-size: 14px; color: #333;
-          cursor: pointer; transition: border-color .2s, box-shadow .2s, transform .15s;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          padding: 14px 20px;
+          background: white;
+          border: 2px solid #ebe9e4;
+          border-radius: 14px;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 600;
+          font-size: 14px;
+          color: #333;
+          cursor: pointer;
+          transition: border-color .2s, box-shadow .2s, transform .15s;
         }
-        .lg-btn:hover { border-color: rgba(17,17,17,0.25); box-shadow: 0 4px 16px rgba(0,0,0,.07); transform: translateY(-1px); }
+        .lg-btn:hover { border-color: #d4d2cd; box-shadow: 0 4px 14px rgba(0,0,0,.07); transform: translateY(-1px); }
+
+        @keyframes lticker {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-50%); }
+        }
+        @keyframes lpulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.4; }
+        }
       `}</style>
 
       <div style={DM} className="min-h-screen flex">
 
         {/* ── LEFT: Black brand panel ── */}
-        <div
-          className="hidden lg:flex flex-col w-[46%] p-14 relative overflow-hidden select-none"
-          style={{ background: '#111111' }}
-        >
-          {/* Orange glow circle — decorative */}
-          <div style={{
-            position: 'absolute', top: -60, right: -60,
-            width: 420, height: 420, borderRadius: '50%',
-            background: 'radial-gradient(circle, rgba(232,119,34,0.18) 0%, transparent 70%)',
-            pointerEvents: 'none',
-            animation: 'l-glow 4s ease-in-out infinite',
-          }} />
-
-          {/* Orange ring */}
-          <div style={{
-            position: 'absolute', top: 30, right: 30,
-            width: 180, height: 180, borderRadius: '50%',
-            border: '2px solid rgba(232,119,34,0.25)',
-            pointerEvents: 'none',
-          }} />
-          <div style={{
-            position: 'absolute', top: 60, right: 60,
-            width: 120, height: 120, borderRadius: '50%',
-            border: '1.5px solid rgba(232,119,34,0.15)',
-            pointerEvents: 'none',
-          }} />
-
-          {/* Bottom rings */}
-          <div style={{ position: 'absolute', bottom: -80, left: -80, width: 400, height: 400, borderRadius: '50%', border: '2px solid rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -40, left: -40, width: 260, height: 260, borderRadius: '50%', border: '1.5px solid rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#111111' }}>
 
           {/* Logo */}
-          <Link href="/" className="relative z-10 shrink-0">
+          <Link href="/" className="relative z-10">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain brightness-0 invert" />
           </Link>
 
-          {/* Main content */}
-          <div className="relative z-10 flex-1 flex flex-col justify-center gap-9">
+          {/* Main content — vertically centered */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center gap-10">
 
-            {/* Eyebrow */}
-            <div className="flex items-center gap-3">
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#E87722', display: 'inline-block', animation: 'l-pulse 2s ease-in-out infinite' }} />
-              <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }}>
-                Welkom terug
-              </span>
-            </div>
-
-            {/* Headline */}
+            {/* Label + Headline */}
             <div>
-              <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.4vw, 66px)' }}>
+              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-6">
+                Welkom terug
+              </p>
+              <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.4vw, 64px)' }}>
                 <span style={{ color: 'white' }}>Jouw buddy</span><br />
                 <span style={{ color: '#E87722' }}>wacht</span>
                 <span style={{ color: 'white' }}> op je.</span>
               </h2>
-              <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.4)', marginTop: 12, fontWeight: 500, lineHeight: 1.5 }}>
-                Log in en ga verder waar je gebleven was.
-              </p>
+            </div>
+
+            {/* Stats */}
+            <div className="flex gap-8 pt-8 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
+              <div className="flex items-center gap-2">
+                <span className="w-2 h-2 rounded-full bg-green-400 shrink-0" style={{ animation: 'lpulse 2s ease-in-out infinite', boxShadow: '0 0 6px #4ade80' }} />
+                <div>
+                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 22, lineHeight: 1, color: 'white', letterSpacing: '-0.03em' }}>2.400+</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 3, fontWeight: 500 }}>Actieve sporters</p>
+                </div>
+              </div>
+              {[
+                { val: '850+', lbl: 'Matches gemaakt' },
+                { val: '4.8', lbl: 'Gemiddelde score' },
+              ].map(s => (
+                <div key={s.lbl}>
+                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 22, lineHeight: 1, color: 'white', letterSpacing: '-0.03em' }}>{s.val}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 3, fontWeight: 500 }}>{s.lbl}</p>
+                </div>
+              ))}
             </div>
 
             {/* Scrolling sport tags */}
-            <div className="overflow-hidden" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 12%, black 88%, transparent 100%)' }}>
-              <div style={{ display: 'flex', gap: '8px', animation: 'l-ticker 22s linear infinite', whiteSpace: 'nowrap' }}>
+            <div className="overflow-hidden" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
+              <div style={{ display: 'flex', gap: '8px', animation: 'lticker 22s linear infinite', whiteSpace: 'nowrap' }}>
                 {[
-                  { label: 'Hardlopen', hl: false }, { label: 'Fietsen', hl: true },
-                  { label: 'Zwemmen', hl: false }, { label: 'Gym', hl: false },
-                  { label: 'Voetbal', hl: false }, { label: 'Tennis', hl: false },
-                  { label: 'Yoga', hl: true }, { label: 'Padel', hl: false },
-                  { label: 'Triathlon', hl: false }, { label: 'Wandelen', hl: false },
-                  { label: 'Basketbal', hl: false }, { label: 'Boksen', hl: false },
+                  { label: 'Hardlopen', highlight: false },
+                  { label: 'Fietsen', highlight: true },
+                  { label: 'Zwemmen', highlight: false },
+                  { label: 'Gym', highlight: false },
+                  { label: 'Voetbal', highlight: false },
+                  { label: 'Tennis', highlight: false },
+                  { label: 'Golf', highlight: false },
+                  { label: 'Yoga', highlight: true },
+                  { label: 'Padel', highlight: false },
+                  { label: 'Triathlon', highlight: false },
+                  { label: 'Wandelen', highlight: false },
+                  { label: 'Basketbal', highlight: false },
+                  { label: 'Boksen', highlight: false },
+                  { label: 'Klimmen', highlight: false },
                   // duplicate for seamless loop
-                  { label: 'Hardlopen', hl: false }, { label: 'Fietsen', hl: true },
-                  { label: 'Zwemmen', hl: false }, { label: 'Gym', hl: false },
-                  { label: 'Voetbal', hl: false }, { label: 'Tennis', hl: false },
-                  { label: 'Yoga', hl: true }, { label: 'Padel', hl: false },
-                  { label: 'Triathlon', hl: false }, { label: 'Wandelen', hl: false },
-                  { label: 'Basketbal', hl: false }, { label: 'Boksen', hl: false },
+                  { label: 'Hardlopen', highlight: false },
+                  { label: 'Fietsen', highlight: true },
+                  { label: 'Zwemmen', highlight: false },
+                  { label: 'Gym', highlight: false },
+                  { label: 'Voetbal', highlight: false },
+                  { label: 'Tennis', highlight: false },
+                  { label: 'Golf', highlight: false },
+                  { label: 'Yoga', highlight: true },
+                  { label: 'Padel', highlight: false },
+                  { label: 'Triathlon', highlight: false },
+                  { label: 'Wandelen', highlight: false },
+                  { label: 'Basketbal', highlight: false },
+                  { label: 'Boksen', highlight: false },
+                  { label: 'Klimmen', highlight: false },
                 ].map((tag, i) => (
                   <span key={i} style={{
-                    display: 'inline-block', padding: '5px 13px', borderRadius: '999px',
-                    fontSize: '11px', fontWeight: 600, flexShrink: 0,
-                    background: tag.hl ? '#E87722' : '#1E1E1E', color: 'white',
+                    display: 'inline-block',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    background: tag.highlight ? '#E87722' : '#222222',
+                    color: 'white',
+                    flexShrink: 0,
                   }}>
                     {tag.label}
                   </span>
@@ -205,61 +226,39 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Stats */}
-            <div className="flex gap-8 pt-7" style={{ borderTop: '1px solid rgba(255,255,255,0.08)' }}>
-              <div className="flex items-center gap-2">
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#4ade80', display: 'inline-block', boxShadow: '0 0 6px #4ade80', animation: 'l-pulse 2.5s ease-in-out infinite' }} />
-                <div>
-                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: 'white', lineHeight: 1, letterSpacing: '-0.03em' }}>2.400+</p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 3, fontWeight: 500 }}>Actieve sporters</p>
-                </div>
-              </div>
+            {/* Testimonials */}
+            <div className="grid grid-cols-3 gap-3">
               {[
-                { val: '850+', lbl: 'Matches gemaakt' },
-                { val: '4.8★', lbl: 'Gemiddelde score' },
-              ].map(s => (
-                <div key={s.lbl}>
-                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: 'white', lineHeight: 1, letterSpacing: '-0.03em' }}>{s.val}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.3)', marginTop: 3, fontWeight: 500 }}>{s.lbl}</p>
-                </div>
-              ))}
-            </div>
-
-            {/* Mini testimonials */}
-            <div className="grid grid-cols-3 gap-2">
-              {[
-                { quote: 'Binnen een week mijn hardloopmaatje.', name: 'Daan V.', city: 'AMS' },
-                { quote: 'Eindelijk op mijn niveau.', name: 'Lisa M.', city: 'UTR' },
-                { quote: 'Drie reacties in twee dagen.', name: 'Marco R.', city: 'RTD' },
+                { quote: 'Binnen een week mijn hardloopmaatje gevonden.', name: 'Daan V.', sub: 'Amsterdam' },
+                { quote: 'Eindelijk iemand op mijn niveau.', name: 'Lisa M.', sub: 'Utrecht' },
+                { quote: 'Drie reacties in twee dagen.', name: 'Marco R.', sub: 'Rotterdam' },
               ].map(t => (
-                <div key={t.name} style={{ background: '#1A1A1A', borderRadius: 12, padding: '12px' }}>
-                  <div style={{ color: '#E87722', fontSize: 9, marginBottom: 5 }}>★★★★★</div>
-                  <p style={{ color: 'rgba(255,255,255,0.7)', fontSize: 10, lineHeight: 1.4, fontWeight: 500, marginBottom: 6 }}>
-                    &ldquo;{t.quote}&rdquo;
-                  </p>
-                  <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: 9, fontWeight: 500 }}>{t.name} · {t.city}</p>
+                <div key={t.name} style={{ background: '#1A1A1A', borderRadius: 14, padding: '14px' }}>
+                  <div style={{ color: '#E87722', fontSize: 10, marginBottom: 6, letterSpacing: '0.05em' }}>★★★★★</div>
+                  <p style={{ color: 'white', fontSize: 11, lineHeight: 1.5, fontWeight: 500, marginBottom: 8 }}>&ldquo;{t.quote}&rdquo;</p>
+                  <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: 500 }}>{t.name} · {t.sub}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Bottom link */}
-          <p className="relative z-10 shrink-0" style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
+          <p className="relative z-10" style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
             Nog geen account?{' '}
-            <Link href="/register" style={{ color: '#E87722', fontWeight: 800 }}>Registreer gratis →</Link>
+            <Link href="/register" style={{ color: '#E87722', fontWeight: 700 }}>Registreer gratis →</Link>
           </p>
         </div>
 
         {/* ── RIGHT: Form ── */}
         <div className="flex-1 bg-[#F5F0E8] flex flex-col">
 
-          {/* Mobile header */}
-          <div className="lg:hidden flex items-center justify-between px-6 py-4" style={{ borderBottom: '1px solid rgba(17,17,17,0.08)' }}>
+          {/* Mobile nav */}
+          <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-black/8">
             <Link href="/"><Image src="/logo.png" alt="Buddys" height={26} width={90} className="object-contain" /></Link>
-            <Link href="/register" style={{ ...SYNE, fontSize: 12, fontWeight: 800, color: '#E87722', letterSpacing: '0.06em' }}>Registreren</Link>
+            <Link href="/register" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Registreren</Link>
           </div>
 
-          <div className="flex-1 flex items-center justify-center px-8 py-12 lg:px-16">
+          <div className="flex-1 flex items-center justify-center px-8 py-14 lg:px-16">
             <div className="w-full max-w-[370px]">
 
               {/* Heading */}
@@ -267,7 +266,7 @@ export default function LoginPage() {
                 <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#111' }}>
                   Inloggen.
                 </h1>
-                <p style={{ fontSize: 14, color: '#999', marginTop: 10 }}>
+                <p style={{ ...DM, fontSize: 14, color: '#999', marginTop: 10 }}>
                   Geen account?{' '}
                   <Link href="/register" style={{ color: '#E87722', fontWeight: 700 }}>Maak er gratis een aan</Link>
                 </p>
@@ -289,13 +288,13 @@ export default function LoginPage() {
               {/* Divider */}
               <div className="l3 flex items-center gap-4 mb-6">
                 <div className="flex-1 h-px bg-black/10" />
-                <span style={{ fontSize: 12, color: '#bbb', fontWeight: 500 }}>of met e-mail</span>
+                <span style={{ ...DM, fontSize: 12, color: '#bbb', fontWeight: 500 }}>of met e-mail</span>
                 <div className="flex-1 h-px bg-black/10" />
               </div>
 
               {/* Form */}
               <form onSubmit={handleLogin}>
-                <div className="l3 mb-6">
+                <div className="l4 mb-7">
                   <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
                     E-mailadres
                   </label>
@@ -356,8 +355,8 @@ export default function LoginPage() {
                     {loading ? 'Bezig...' : (
                       <>
                         Inloggen
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                          <path d="M1 6.5h11M6.5 1l5.5 5.5-5.5 5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}

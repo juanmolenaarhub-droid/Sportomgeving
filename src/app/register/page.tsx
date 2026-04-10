@@ -48,202 +48,219 @@ export default function RegisterPage() {
     <>
       <style>{`
         @keyframes r-up {
-          from { opacity: 0; transform: translateY(24px); }
+          from { opacity: 0; transform: translateY(22px); }
           to   { opacity: 1; transform: translateY(0); }
         }
         @keyframes r-dot {
-          0%,100% { opacity:1; transform: scale(1); }
-          50% { opacity:0.5; transform: scale(0.8); }
+          0%,100% { opacity:1; } 50% { opacity:0.3; }
         }
-        @keyframes r-float {
-          0%,100% { transform: translateY(0px) rotate(0deg); }
-          33% { transform: translateY(-8px) rotate(1deg); }
-          66% { transform: translateY(-4px) rotate(-1deg); }
+        .r1 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .08s both; }
+        .r2 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .18s both; }
+        .r3 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .28s both; }
+        .r4 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .38s both; }
+        .r5 { animation: r-up .55s cubic-bezier(.16,1,.3,1) .48s both; }
+
+        .ri {
+          display: block;
+          width: 100%;
+          background: transparent;
+          border: none;
+          border-bottom: 2px solid #e0deda;
+          padding: 13px 0 13px 0;
+          font-size: 16px;
+          color: #111;
+          outline: none;
+          transition: border-color .2s;
+          font-family: 'DM Sans', sans-serif;
+          font-weight: 500;
         }
-        @keyframes r-spin-slow {
-          from { transform: rotate(0deg); }
-          to { transform: rotate(360deg); }
+        .ri::placeholder { color: #c0bdb8; font-weight: 400; }
+        .ri:focus { border-bottom-color: #E87722; }
+
+        .rb {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          gap: 10px;
+          width: 100%;
+          padding: 17px 24px;
+          background: #E87722;
+          color: white;
+          border: none;
+          border-radius: 14px;
+          font-family: 'Syne', sans-serif;
+          font-weight: 800;
+          font-size: 13px;
+          letter-spacing: .14em;
+          text-transform: uppercase;
+          cursor: pointer;
+          transition: background .2s, transform .15s;
         }
-        @keyframes r-ticker {
+        .rb:hover:not(:disabled) { background: #111; transform: translateY(-1px); }
+        .rb:disabled { opacity: .45; cursor: not-allowed; }
+
+        @keyframes rticker {
           0% { transform: translateX(0); }
           100% { transform: translateX(-50%); }
         }
-        .r1 { animation: r-up .6s cubic-bezier(.16,1,.3,1) .06s both; }
-        .r2 { animation: r-up .6s cubic-bezier(.16,1,.3,1) .14s both; }
-        .r3 { animation: r-up .6s cubic-bezier(.16,1,.3,1) .22s both; }
-        .r4 { animation: r-up .6s cubic-bezier(.16,1,.3,1) .30s both; }
-        .r5 { animation: r-up .6s cubic-bezier(.16,1,.3,1) .38s both; }
-        .r6 { animation: r-up .6s cubic-bezier(.16,1,.3,1) .46s both; }
-
-        .ri {
-          display: block; width: 100%;
-          background: transparent; border: none;
-          border-bottom: 2px solid rgba(17,17,17,0.15);
-          padding: 13px 0; font-size: 16px; color: #111;
-          outline: none; transition: border-color .2s;
-          font-family: 'DM Sans', sans-serif; font-weight: 500;
+        @keyframes rpulse {
+          0%, 100% { opacity: 1; }
+          50% { opacity: 0.3; }
         }
-        .ri::placeholder { color: rgba(17,17,17,0.3); font-weight: 400; }
-        .ri:focus { border-bottom-color: #111; }
-
-        .rb {
-          display: flex; align-items: center; justify-content: center; gap: 10px;
-          width: 100%; padding: 18px 24px;
-          background: #111; color: white; border: none; border-radius: 16px;
-          font-family: 'Syne', sans-serif; font-weight: 800; font-size: 13px;
-          letter-spacing: .12em; text-transform: uppercase;
-          cursor: pointer; transition: background .2s, transform .15s, box-shadow .2s;
-          box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        @keyframes rfadein {
+          from { opacity: 0; transform: translateY(6px); }
+          to { opacity: 1; transform: translateY(0); }
         }
-        .rb:hover:not(:disabled) { background: #E87722; transform: translateY(-2px); box-shadow: 0 8px 28px rgba(232,119,34,0.4); }
-        .rb:active:not(:disabled) { transform: translateY(0px); }
-        .rb:disabled { opacity: .45; cursor: not-allowed; }
       `}</style>
 
       <div style={DM} className="min-h-screen flex">
 
-        {/* ── LEFT: Orange hero panel ── */}
-        <div
-          className="hidden lg:flex flex-col w-[46%] p-14 relative overflow-hidden select-none"
-          style={{ background: '#E87722' }}
-        >
-          {/* Decorative geometric rings */}
-          <div style={{ position: 'absolute', top: -120, right: -120, width: 560, height: 560, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.08)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: -80, right: -80, width: 400, height: 400, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.06)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', top: -40, right: -40, width: 260, height: 260, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.1)', pointerEvents: 'none', animation: 'r-spin-slow 30s linear infinite' }} />
-          <div style={{ position: 'absolute', bottom: -100, left: -100, width: 480, height: 480, borderRadius: '50%', border: '2px solid rgba(0,0,0,0.07)', pointerEvents: 'none' }} />
-          <div style={{ position: 'absolute', bottom: -60, left: -60, width: 320, height: 320, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.09)', pointerEvents: 'none' }} />
-
-          {/* Floating sport dots */}
-          {[
-            { top: '18%', left: '10%', size: 10, delay: '0s' },
-            { top: '35%', right: '8%', size: 7, delay: '1.2s' },
-            { top: '60%', left: '6%', size: 12, delay: '0.6s' },
-            { top: '75%', right: '12%', size: 8, delay: '2s' },
-          ].map((dot, i) => (
-            <div key={i} style={{
-              position: 'absolute', top: dot.top, left: (dot as any).left, right: (dot as any).right,
-              width: dot.size, height: dot.size, borderRadius: '50%',
-              background: 'rgba(0,0,0,0.2)',
-              animation: `r-float 4s ease-in-out infinite`,
-              animationDelay: dot.delay,
-              pointerEvents: 'none',
-            }} />
-          ))}
+        {/* ── LEFT: Black brand panel ── */}
+        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#111111' }}>
 
           {/* Logo */}
-          <Link href="/" className="relative z-10 shrink-0">
-            <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
+          <Link href="/" className="relative z-10">
+            <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain brightness-0 invert" />
           </Link>
 
-          {/* Main content */}
-          <div className="relative z-10 flex-1 flex flex-col justify-center gap-8">
+          {/* Main content — vertically centered */}
+          <div className="relative z-10 flex-1 flex flex-col justify-center gap-10">
 
-            {/* Eyebrow */}
-            <div className="flex items-center gap-3">
-              <div style={{ width: 28, height: 2, background: 'rgba(0,0,0,0.35)' }} />
-              <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.24em', textTransform: 'uppercase', color: 'rgba(0,0,0,0.55)' }}>
-                Sport · Samen · Gratis
-              </span>
-            </div>
-
-            {/* Main headline */}
+            {/* Label + Headline */}
             <div>
-              <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.87, letterSpacing: '-0.03em', fontSize: 'clamp(48px, 3.6vw, 70px)', color: '#111' }}>
-                Word lid<br />van 2.400+<br />sporters.
-              </h2>
-              <p style={{ ...DM, fontSize: 15, color: 'rgba(0,0,0,0.6)', marginTop: 14, fontWeight: 500, lineHeight: 1.5 }}>
-                Vind de perfecte sportbuddy in jouw buurt. Gratis.
+              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-6">
+                Gratis starten
               </p>
+              <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.4vw, 64px)' }}>
+                <span style={{ color: 'white' }}>Word lid.</span><br />
+                <span style={{ color: 'white' }}>Sport samen.</span><br />
+                <span style={{ color: '#E87722' }}>Gratis.</span>
+              </h2>
             </div>
 
-            {/* Benefits */}
-            <div className="space-y-3">
-              {[
-                { icon: '🎯', text: 'Matches op sport, niveau en schema' },
-                { icon: '📍', text: 'Sporters bij jou in de buurt' },
-                { icon: '⚡', text: 'In 2 minuten aangemeld' },
-              ].map(b => (
-                <div key={b.text} className="flex items-center gap-3">
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 10, flexShrink: 0,
-                    background: 'rgba(0,0,0,0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    fontSize: 16,
-                  }}>
-                    {b.icon}
+            {/* Live activity block */}
+            <div style={{ background: '#1A1A1A', borderRadius: 16, padding: '16px 18px' }}>
+              <div className="flex items-center gap-2 mb-4">
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E87722', display: 'inline-block', animation: 'rpulse 2s ease-in-out infinite' }} />
+                <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#E87722' }}>Nu actief op Buddys</span>
+              </div>
+              <div className="space-y-3">
+                {[
+                  { emoji: '🏃', text: 'Daan V. uit Amsterdam vond een hardloopbuddy', time: '2 min geleden', delay: '0s' },
+                  { emoji: '🚴', text: 'Lisa M. uit Utrecht heeft een match geaccepteerd', time: '5 min geleden', delay: '0.3s' },
+                  { emoji: '🏊', text: 'Marco R. uit Rotterdam stuurde een buddy-verzoek', time: '8 min geleden', delay: '0.6s' },
+                ].map((item) => (
+                  <div key={item.text} className="flex items-start justify-between gap-3" style={{ animation: `rfadein .5s ease both`, animationDelay: item.delay }}>
+                    <div className="flex items-start gap-2">
+                      <span style={{ fontSize: 13 }}>{item.emoji}</span>
+                      <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 500, lineHeight: 1.4 }}>{item.text}</span>
+                    </div>
+                    <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0 }}>{item.time}</span>
                   </div>
-                  <span style={{ fontSize: 14, color: '#111', fontWeight: 600 }}>{b.text}</span>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
-            {/* Live activity */}
-            <div style={{ background: 'rgba(0,0,0,0.1)', borderRadius: 14, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 10, width: 'fit-content' }}>
-              <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#111', display: 'inline-block', animation: 'r-dot 2s ease-in-out infinite', flexShrink: 0 }} />
-              <span style={{ fontSize: 13, fontWeight: 700, color: '#111' }}>24 sporters aangemeld vandaag</span>
+            {/* Scrolling sport tags */}
+            <div className="overflow-hidden" style={{ maskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)', WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 10%, black 90%, transparent 100%)' }}>
+              <div style={{ display: 'flex', gap: '8px', animation: 'rticker 22s linear infinite', whiteSpace: 'nowrap' }}>
+                {[
+                  { label: 'Hardlopen', highlight: false },
+                  { label: 'Fietsen', highlight: false },
+                  { label: 'Zwemmen', highlight: true },
+                  { label: 'Gym', highlight: false },
+                  { label: 'Voetbal', highlight: false },
+                  { label: 'Tennis', highlight: false },
+                  { label: 'Golf', highlight: false },
+                  { label: 'Yoga', highlight: false },
+                  { label: 'Padel', highlight: true },
+                  { label: 'Triathlon', highlight: false },
+                  { label: 'Wandelen', highlight: false },
+                  { label: 'Basketbal', highlight: false },
+                  { label: 'Boksen', highlight: false },
+                  { label: 'Klimmen', highlight: false },
+                  { label: 'Hardlopen', highlight: false },
+                  { label: 'Fietsen', highlight: false },
+                  { label: 'Zwemmen', highlight: true },
+                  { label: 'Gym', highlight: false },
+                  { label: 'Voetbal', highlight: false },
+                  { label: 'Tennis', highlight: false },
+                  { label: 'Golf', highlight: false },
+                  { label: 'Yoga', highlight: false },
+                  { label: 'Padel', highlight: true },
+                  { label: 'Triathlon', highlight: false },
+                  { label: 'Wandelen', highlight: false },
+                  { label: 'Basketbal', highlight: false },
+                  { label: 'Boksen', highlight: false },
+                  { label: 'Klimmen', highlight: false },
+                ].map((tag, i) => (
+                  <span key={i} style={{
+                    display: 'inline-block',
+                    padding: '5px 12px',
+                    borderRadius: '999px',
+                    fontSize: '11px',
+                    fontWeight: 600,
+                    background: tag.highlight ? '#E87722' : '#222222',
+                    color: 'white',
+                    flexShrink: 0,
+                  }}>
+                    {tag.label}
+                  </span>
+                ))}
+              </div>
             </div>
 
-            {/* Stats row */}
-            <div className="grid grid-cols-3 gap-3 pt-6" style={{ borderTop: '1px solid rgba(0,0,0,0.15)' }}>
+            {/* Stats */}
+            <div className="flex gap-8 pt-8 border-t" style={{ borderColor: 'rgba(255,255,255,0.08)' }}>
               {[
-                { val: '2.400+', lbl: 'Sporters' },
-                { val: '850+', lbl: 'Matches' },
-                { val: '4.8★', lbl: 'Score' },
-              ].map(s => (
-                <div key={s.lbl}>
-                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#111', lineHeight: 1, letterSpacing: '-0.03em' }}>{s.val}</p>
-                  <p style={{ fontSize: 11, color: 'rgba(0,0,0,0.45)', marginTop: 4, fontWeight: 500 }}>{s.lbl}</p>
+                { val: '2.400+', lbl: 'Actieve sporters' },
+                { val: '850+', lbl: 'Matches gemaakt' },
+                { val: '4.8★', lbl: 'Gemiddelde score' },
+              ].map((s, i) => (
+                <div key={s.lbl} className="flex-1" style={{ paddingRight: i < 2 ? 16 : 0, borderRight: i < 2 ? '1px solid rgba(255,255,255,0.08)' : 'none' }}>
+                  <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, lineHeight: 1, color: 'white', letterSpacing: '-0.03em' }}>{s.val}</p>
+                  <p style={{ fontSize: 11, color: 'rgba(255,255,255,0.35)', marginTop: 4, fontWeight: 500 }}>{s.lbl}</p>
                 </div>
               ))}
             </div>
           </div>
 
           {/* Bottom link */}
-          <p className="relative z-10 shrink-0" style={{ fontSize: 13, color: 'rgba(0,0,0,0.4)' }}>
+          <p className="relative z-10" style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
             Al een account?{' '}
-            <Link href="/login" style={{ color: '#111', fontWeight: 800 }}>Inloggen →</Link>
+            <Link href="/login" style={{ color: '#E87722', fontWeight: 700 }}>Inloggen →</Link>
           </p>
         </div>
 
         {/* ── RIGHT: Form ── */}
-        <div className="flex-1 bg-[#F5F0E8] flex flex-col">
+        <div className="flex-1 bg-white flex flex-col">
 
-          {/* Mobile header */}
-          <div className="lg:hidden" style={{ background: '#E87722', padding: '16px 24px 20px' }}>
-            <div className="flex items-center justify-between mb-4">
-              <Link href="/"><Image src="/logo.png" alt="Buddys" height={26} width={90} className="object-contain" /></Link>
-              <Link href="/login" style={{ ...SYNE, fontSize: 12, fontWeight: 800, color: '#111', letterSpacing: '0.06em' }}>Inloggen</Link>
-            </div>
-            <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 28, lineHeight: 1, letterSpacing: '-0.03em', color: '#111' }}>
-              Word lid van<br />2.400+ sporters.
-            </h1>
+          {/* Mobile nav */}
+          <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-gray-100">
+            <Link href="/"><Image src="/logo.png" alt="Buddys" height={26} width={90} className="object-contain" /></Link>
+            <Link href="/login" className="text-sm font-bold text-gray-500 hover:text-black transition-colors">Inloggen</Link>
           </div>
 
-          <div className="flex-1 flex items-center justify-center px-8 py-12 lg:px-16">
+          <div className="flex-1 flex items-center justify-center px-8 py-14 lg:px-16">
             <div className="w-full max-w-[370px]">
 
               {/* Heading */}
-              <div className="r1 mb-9">
-                <div className="flex items-center gap-2 mb-4">
-                  <span style={{ width: 8, height: 8, borderRadius: '50%', background: '#E87722', animation: 'r-dot 2s ease-in-out infinite', display: 'inline-block' }} />
+              <div className="r1 mb-10">
+                <div className="flex items-center gap-2 mb-5">
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E87722', animation: 'r-dot 2s ease-in-out infinite', display: 'inline-block' }} />
                   <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#E87722' }}>
-                    Gratis aanmelden
+                    Nu aanmelden
                   </span>
                 </div>
-                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(36px, 4vw, 48px)', color: '#111' }}>
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#111' }}>
                   Account<br />aanmaken.
                 </h1>
-                <p style={{ fontSize: 14, color: '#999', marginTop: 10 }}>
-                  Al een account?{' '}
-                  <Link href="/login" style={{ color: '#E87722', fontWeight: 700 }}>Inloggen</Link>
-                </p>
               </div>
 
               {/* Form */}
               <form onSubmit={handleRegister}>
 
-                <div className="r2 mb-6">
+                <div className="r2 mb-7">
                   <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
                     Gebruikersnaam
                   </label>
@@ -258,7 +275,7 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <div className="r3 mb-6">
+                <div className="r3 mb-7">
                   <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
                     E-mailadres
                   </label>
@@ -272,7 +289,7 @@ export default function RegisterPage() {
                   />
                 </div>
 
-                <div className="r4 mb-8">
+                <div className="r4 mb-9">
                   <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
                     Wachtwoord
                   </label>
@@ -298,27 +315,26 @@ export default function RegisterPage() {
                     {loading ? 'Bezig...' : (
                       <>
                         Maak gratis account aan
-                        <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
-                          <path d="M1 7h12M7 1l6 6-6 6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <svg width="13" height="13" viewBox="0 0 13 13" fill="none">
+                          <path d="M1 6.5h11M6.5 1l5.5 5.5-5.5 5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
                         </svg>
                       </>
                     )}
                   </button>
+
+                  {/* Live badge below CTA */}
+                  <div className="flex items-center justify-center gap-2 mt-5">
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
+                    <span style={{ ...DM, fontSize: 12, color: '#aaa', fontWeight: 500 }}>
+                      24 sporters aangemeld vandaag
+                    </span>
+                  </div>
+
+                  <p style={{ ...DM, fontSize: 11, color: '#bbb', textAlign: 'center', marginTop: 16 }}>
+                    Door te registreren ga je akkoord met onze{' '}
+                    <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>voorwaarden</span>.
+                  </p>
                 </div>
-
-                {/* Social proof */}
-                <div className="r6 flex items-center justify-center gap-2 mt-5">
-                  <span style={{ width: 6, height: 6, borderRadius: '50%', background: '#22c55e', display: 'inline-block', flexShrink: 0 }} />
-                  <span style={{ fontSize: 12, color: '#aaa', fontWeight: 500 }}>
-                    24 sporters aangemeld vandaag
-                  </span>
-                </div>
-
-                <p style={{ fontSize: 11, color: '#bbb', textAlign: 'center', marginTop: 14 }}>
-                  Door te registreren ga je akkoord met onze{' '}
-                  <span style={{ textDecoration: 'underline', cursor: 'pointer' }}>voorwaarden</span>.
-                </p>
-
               </form>
 
               {/* Mobile link */}
