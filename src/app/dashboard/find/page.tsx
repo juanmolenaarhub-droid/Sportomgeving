@@ -218,7 +218,7 @@ function ProfileModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
-      <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-hidden shadow-2xl" onClick={e => e.stopPropagation()}>
+      <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-y-auto shadow-2xl" style={{ maxHeight: 'calc(100dvh - 100px)' }} onClick={e => e.stopPropagation()}>
 
         <div className="absolute top-4 right-4 z-10">
           <button onClick={onClose} className="w-8 h-8 bg-black/30 rounded-full flex items-center justify-center hover:bg-black/50 transition-colors">
@@ -277,10 +277,10 @@ function ProfileModal({
           <Link
             href={`/dashboard/profile/${buddy.id}`}
             onClick={onClose}
-            className="mt-5 flex items-center justify-between w-full bg-gray-50 hover:bg-gray-100 transition-colors rounded-xl px-4 py-3 group"
+            className="mt-5 flex items-center justify-center gap-2 w-full bg-[#111] hover:bg-[#333] transition-colors rounded-xl px-4 py-3 group"
           >
-            <span className="text-sm font-bold text-black">Ga naar volledig profiel</span>
-            <ArrowRight className="w-4 h-4 text-gray-400 group-hover:translate-x-1 transition-transform" />
+            <span className="text-sm font-bold text-white">Bekijk volledig profiel</span>
+            <ArrowRight className="w-4 h-4 text-white group-hover:translate-x-1 transition-transform" />
           </Link>
         </div>
       </div>
