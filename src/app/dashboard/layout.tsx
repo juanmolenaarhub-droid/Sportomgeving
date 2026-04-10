@@ -3,7 +3,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play, Send } from 'lucide-react'
+import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const navItems = [
@@ -116,7 +116,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           bottom: 16,
           left: '50%',
           transform: 'translateX(-50%)',
-          width: 360,
+          width: 390,
           background: 'rgba(232,119,34,0.95)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
@@ -127,13 +127,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <div className="flex items-center justify-between">
           {[
-            { href: '/dashboard', icon: Home, label: 'home' },
-            { href: '/dashboard/feed', icon: Play, label: 'tijdlijn' },
-            { href: '/dashboard/groups', icon: Users, label: 'groepen' },
-            { href: '/dashboard/notifications', icon: Send, label: 'verzoeken', dot: true },
-            { href: '/dashboard/find', icon: Search, label: 'zoeken' },
-            { href: '/dashboard/profile/me', icon: User, label: 'profiel', dot: true },
-          ].map(({ href, icon: Icon, dot }) => {
+            { href: '/dashboard', icon: Home },
+            { href: '/dashboard/feed', icon: Play },
+            { href: '/dashboard/groups', icon: Users },
+            { href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
+            { href: '/dashboard/notifications', icon: Bell, badge: 5 },
+            { href: '/dashboard/find', icon: Search },
+            { href: '/dashboard/profile/me', icon: User },
+          ].map(({ href, icon: Icon, badge }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
@@ -145,11 +146,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   className="w-[18px] h-[18px] transition-colors duration-200"
                   style={{ color: active ? 'white' : 'rgba(255,255,255,0.6)' }}
                 />
-                {dot && !active && (
-                  <span
-                    className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full"
-                    style={{ background: 'white' }}
-                  />
+                {badge && !active && (
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] bg-white text-[#E87722] text-[9px] font-black rounded-full flex items-center justify-center px-0.5">
+                    {badge}
+                  </span>
                 )}
               </Link>
             )
