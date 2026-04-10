@@ -218,7 +218,7 @@ function ProfileModal({
 }) {
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
-      <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-y-auto shadow-2xl" style={{ maxHeight: 'calc(100dvh - 100px)' }} onClick={e => e.stopPropagation()}>
+      <div className="bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl overflow-y-auto shadow-2xl" style={{ maxHeight: 'calc(100dvh - 110px)', marginBottom: 94 }} onClick={e => e.stopPropagation()}>
 
         <div className="absolute top-4 right-4 z-10">
           <button onClick={onClose} className="w-8 h-8 bg-black/30 rounded-full flex items-center justify-center hover:bg-black/50 transition-colors">
