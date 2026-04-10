@@ -19,6 +19,7 @@ export default function VoorBedrijvenPage() {
             <Link href="/#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</Link>
             <Link href="/#community" className="hover:text-black transition-colors">Community</Link>
             <Link href="/voor-bedrijven" className="text-black font-semibold">Voor bedrijven</Link>
+            <Link href="/voor-creators" className="hover:text-black transition-colors">Voor creators</Link>
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>

@@ -75,6 +75,7 @@ export default function LandingPage() {
             <a href="#hoe-het-werkt" className="hover:text-black transition-colors">Hoe het werkt</a>
 <a href="#community" className="hover:text-black transition-colors">Community</a>
             <Link href="/voor-bedrijven" className="hover:text-black transition-colors">Voor bedrijven</Link>
+            <Link href="/voor-creators" className="hover:text-black transition-colors">Voor creators</Link>
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>
@@ -437,7 +438,7 @@ export default function LandingPage() {
             </div>
             {[
               { title: 'Product', links: ['Hoe het werkt', 'AI Matching', 'Community', 'Prijzen'] },
-              { title: 'Bedrijf', links: ['Over ons', 'Blog', 'Pers', 'Vacatures'] },
+              { title: 'Bedrijf', links: ['Over ons', 'Blog', 'Voor bedrijven', 'Voor creators', 'Vacatures'] },
               { title: 'Support', links: ['Helpcentrum', 'Contact', 'Privacy', 'Voorwaarden'] },
             ].map(col => (
               <div key={col.title}>
