@@ -63,7 +63,7 @@ function ProfileFeedbackWidget() {
             key={key}
             onClick={() => setSelected(selected === key ? null : key)}
             className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all text-center ${
-              selected === key ? 'border-[#E87722] bg-[#E87722]/5' : 'border-gray-100 hover:border-gray-200'
+              selected === key ? 'border-[#111] bg-black/5' : 'border-gray-100 hover:border-gray-200'
             }`}
           >
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color}`}>
@@ -78,11 +78,11 @@ function ProfileFeedbackWidget() {
           <textarea
             rows={3}
             placeholder="Schrijf hier je feedback..."
-            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#E87722] transition-colors"
+            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#111] transition-colors"
           />
           <button
             onClick={() => setSent(true)}
-            className="w-full py-2 bg-[#E87722] text-white text-xs font-bold rounded-xl hover:bg-[#d06a1a] transition-colors"
+            className="w-full py-2 bg-[#111111] text-white text-xs font-bold rounded-xl hover:bg-[#333] transition-colors"
           >
             Versturen
           </button>

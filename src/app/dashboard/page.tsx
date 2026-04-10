@@ -34,7 +34,7 @@ function FeedbackWidget() {
             key={key}
             onClick={() => setSelected(selected === key ? null : key)}
             className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all text-center ${
-              selected === key ? 'border-[#E87722] bg-[#E87722]/5' : 'border-gray-100 hover:border-gray-200'
+              selected === key ? 'border-[#111] bg-black/5' : 'border-gray-100 hover:border-gray-200'
             }`}
           >
             <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color}`}>
@@ -49,11 +49,11 @@ function FeedbackWidget() {
           <textarea
             rows={3}
             placeholder="Schrijf hier je feedback..."
-            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#E87722] transition-colors"
+            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#111] transition-colors"
           />
           <button
             onClick={() => setSent(true)}
-            className="w-full py-2 bg-[#E87722] text-white text-xs font-bold rounded-xl hover:bg-[#d06a1a] transition-colors"
+            className="w-full py-2 bg-[#111111] text-white text-xs font-bold rounded-xl hover:bg-[#333] transition-colors"
           >
             Versturen
           </button>
@@ -283,7 +283,7 @@ export default function DashboardHomePage() {
                   <p className="text-xs text-gray-500 italic mb-2.5 leading-relaxed px-1">&ldquo;{req.msg}&rdquo;</p>
                 )}
                 <div className="flex gap-2">
-                  <button className="flex-1 py-1.5 bg-[#E87722] text-white text-xs font-bold rounded-lg hover:bg-[#d06a1a] transition-colors">
+                  <button className="flex-1 py-1.5 bg-[#111111] text-white text-xs font-bold rounded-lg hover:bg-[#333] transition-colors">
                     Accepteren
                   </button>
                   <button className="flex-1 py-1.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">
@@ -295,7 +295,7 @@ export default function DashboardHomePage() {
           </div>
         </div>
 
-        <Link href="/dashboard/find" className="flex items-center justify-between bg-[#E87722] text-white rounded-2xl p-5 hover:bg-[#d06a1a] transition-colors group">
+        <Link href="/dashboard/find" className="flex items-center justify-between bg-[#111111] text-white rounded-2xl p-5 hover:bg-[#333] transition-colors group">
           <div>
             <p className="font-black">Zoek een buddy</p>
             <p className="text-sm text-white/70 mt-0.5">Vind sporters in jouw buurt</p>

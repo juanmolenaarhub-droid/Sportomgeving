@@ -53,7 +53,7 @@ export function ProfileHeader({
   return (
     <div>
       {/* Banner */}
-      <div className={`relative ${bannerH} rounded-t-2xl overflow-hidden bg-gradient-to-r from-[#E87722] to-orange-400`}>
+      <div className={`relative ${bannerH} rounded-t-2xl overflow-hidden bg-gradient-to-r from-[#111111] to-gray-700`}>
         {bannerPreview && (
           <img src={bannerPreview} alt="banner" className="absolute inset-0 w-full h-full object-cover" />
         )}
@@ -84,7 +84,7 @@ export function ProfileHeader({
             <>
               <button
                 onClick={() => avatarRef.current?.click()}
-                className="absolute bottom-1 right-1 w-7 h-7 bg-[#E87722] rounded-full flex items-center justify-center shadow-md hover:bg-[#d06a1a] transition-colors"
+                className="absolute bottom-1 right-1 w-7 h-7 bg-[#111111] rounded-full flex items-center justify-center shadow-md hover:bg-[#333] transition-colors"
               >
                 <Pencil className="w-3.5 h-3.5 text-white" />
               </button>

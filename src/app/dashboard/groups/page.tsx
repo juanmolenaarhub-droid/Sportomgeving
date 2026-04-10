@@ -44,7 +44,7 @@ type Group = typeof myGroups[0] | typeof suggestedGroups[0]
 
 function GroupCard({ group, onJoin }: { group: Group; onJoin?: () => void }) {
   return (
-    <div className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#E87722] hover:shadow-sm transition-all">
+    <div className="bg-white rounded-2xl border border-[#E8E0D5] p-5 hover:border-[#111]/20 hover:shadow-sm transition-all">
       <div className="flex items-start justify-between mb-3">
         <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
           <Users className="w-6 h-6 text-[#E87722]" />
@@ -76,7 +76,7 @@ function GroupCard({ group, onJoin }: { group: Group; onJoin?: () => void }) {
         ) : (
           <button
             onClick={onJoin}
-            className="text-xs font-bold text-white bg-[#E87722] px-3 py-1.5 rounded-lg hover:bg-[#d06a1a] transition-colors"
+            className="text-xs font-bold text-white bg-[#111111] px-3 py-1.5 rounded-lg hover:bg-[#333] transition-colors"
           >
             Aansluiten
           </button>
@@ -107,7 +107,7 @@ export default function GroupsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-[#E87722] text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-[#d06a1a] transition-colors"
+          className="flex items-center gap-2 bg-[#111111] text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-[#333] transition-colors"
         >
           <Plus className="w-4 h-4" /> Groep aanmaken
         </button>
@@ -125,13 +125,13 @@ export default function GroupsPage() {
                   type="text"
                   value={newGroupName}
                   onChange={e => setNewGroupName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-black/20"
                   placeholder="Bijv. Running Rotterdam"
                 />
               </div>
               <div>
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Sport</label>
-                <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white">
+                <select className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-black/20 bg-white">
                   <option>Hardlopen</option>
                   <option>Fietsen</option>
                   <option>Gym</option>
@@ -146,7 +146,7 @@ export default function GroupsPage() {
                 <label className="block text-sm font-semibold text-gray-700 mb-1.5">Beschrijving</label>
                 <textarea
                   rows={3}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-[#E87722] resize-none"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-3 text-black focus:outline-none focus:ring-2 focus:ring-black/20 resize-none"
                   placeholder="Waar gaat de groep over?"
                 />
               </div>
@@ -159,7 +159,7 @@ export default function GroupsPage() {
                 </button>
                 <button
                   onClick={() => setShowCreate(false)}
-                  className="flex-1 bg-[#E87722] text-white font-bold py-3 rounded-xl hover:bg-[#d06a1a] transition-colors"
+                  className="flex-1 bg-[#111111] text-white font-bold py-3 rounded-xl hover:bg-[#333] transition-colors"
                 >
                   Aanmaken
                 </button>
@@ -188,7 +188,7 @@ export default function GroupsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Zoek op naam, sport of stad..."
-              className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white w-64"
+              className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-black/20 bg-white w-64"
             />
           </div>
         </div>

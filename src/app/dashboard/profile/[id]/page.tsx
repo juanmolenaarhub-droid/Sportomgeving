@@ -150,7 +150,7 @@ function LockedFeed({ firstName, onUnlock }: { firstName: string; onUnlock: () =
         </div>
         <button
           onClick={onUnlock}
-          className="px-4 py-2 bg-[#E87722] text-white text-xs font-bold rounded-xl hover:bg-[#d06a1a] transition-colors"
+          className="px-4 py-2 bg-[#111111] text-white text-xs font-bold rounded-xl hover:bg-[#333] transition-colors"
         >
           Stuur volgverzoek
         </button>
@@ -186,13 +186,13 @@ function RequestModal({ name, onClose, onSend }: { name: string; onClose: () => 
             onChange={e => setMessage(e.target.value.slice(0, MAX))}
             placeholder={`Hoi ${name.split(' ')[0]}, ik zou graag met jou willen sporten...`}
             rows={4}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] resize-none"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-black/20 resize-none"
           />
           <div className="flex justify-end mt-1"><span className="text-xs text-gray-300">{message.length}/{MAX}</span></div>
         </div>
         <div className="px-5 pb-5 flex gap-3">
           <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50">Annuleren</button>
-          <button onClick={handleSend} disabled={sending} className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#d06a1a] disabled:opacity-50">
+          <button onClick={handleSend} disabled={sending} className="flex-1 py-3 rounded-xl bg-[#111111] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#333] disabled:opacity-50">
             <Send className="w-4 h-4" />{sending ? 'Verzenden...' : 'Verstuur'}
           </button>
         </div>
@@ -251,7 +251,7 @@ export default function PublicProfilePage() {
       {/* Profiel header — oranje */}
       <div className="rounded-2xl overflow-hidden shadow-sm">
         {/* Banner + avatar via ProfileHeader (avatar heeft witte rand) */}
-        <div className="bg-[#E87722]">
+        <div className="bg-[#111111]">
           <ProfileHeader
             name={profile.name}
             avatarUrl={profile.avatarUrl}
@@ -261,8 +261,8 @@ export default function PublicProfilePage() {
           />
         </div>
 
-        {/* Oranje info sectie */}
-        <div className="bg-[#E87722] px-6 pb-6 -mt-2">
+        {/* Info sectie */}
+        <div className="bg-[#111111] px-6 pb-6 -mt-2">
           <div className="flex items-start justify-between gap-4">
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
@@ -292,7 +292,7 @@ export default function PublicProfilePage() {
                     ? 'bg-white/20 text-white hover:bg-white/30'
                     : requested
                     ? 'bg-white/10 text-white/50 cursor-default'
-                    : 'bg-white text-[#E87722] hover:bg-white/90'
+                    : 'bg-white text-black hover:bg-white/90'
                 }`}
               >
                 {following
@@ -328,8 +328,8 @@ export default function PublicProfilePage() {
 
       {/* Sporten badge als locked hint */}
       {isLocked && !requested && (
-        <div className="bg-orange-50 border border-orange-100 rounded-2xl px-5 py-4 flex items-start gap-3">
-          <Lock className="w-4 h-4 text-[#E87722] mt-0.5 shrink-0" />
+        <div className="bg-gray-50 border border-gray-200 rounded-2xl px-5 py-4 flex items-start gap-3">
+          <Lock className="w-4 h-4 text-gray-400 mt-0.5 shrink-0" />
           <div>
             <p className="text-sm font-bold text-black">Profiel vergrendeld</p>
             <p className="text-xs text-gray-500 mt-0.5">
@@ -421,7 +421,7 @@ export default function PublicProfilePage() {
           {!following && !requested && (
             <button
               onClick={handleFollowClick}
-              className="w-full flex items-center justify-between bg-[#E87722] text-white rounded-2xl p-5 hover:bg-[#d06a1a] transition-colors group"
+              className="w-full flex items-center justify-between bg-[#111111] text-white rounded-2xl p-5 hover:bg-[#333] transition-colors group"
             >
               <div>
                 <p className="font-black">Word buddy</p>

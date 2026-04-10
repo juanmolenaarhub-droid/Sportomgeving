@@ -119,7 +119,7 @@ export default function MessagesPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Zoek gesprekken..."
-              className="w-full bg-gray-50 rounded-xl pl-9 pr-4 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]"
+              className="w-full bg-gray-50 rounded-xl pl-9 pr-4 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black/20"
             />
           </div>
         </div>
@@ -127,16 +127,16 @@ export default function MessagesPage() {
         <div className="flex border-b border-gray-100">
           <button
             onClick={() => setActiveTab('requests')}
-            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-[#E87722] border-b-2 border-[#E87722]' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Verzoeken
             {totalUnreadRequests > 0 && (
-              <span className="ml-1.5 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{totalUnreadRequests}</span>
+              <span className="ml-1.5 bg-[#111111] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{totalUnreadRequests}</span>
             )}
           </button>
           <button
             onClick={() => setActiveTab('inbox')}
-            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'inbox' ? 'text-[#E87722] border-b-2 border-[#E87722]' : 'text-gray-400 hover:text-gray-600'}`}
+            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Inbox
           </button>
@@ -155,7 +155,7 @@ export default function MessagesPage() {
               <button
                 key={conv.id}
                 onClick={() => setSelected(conv)}
-                className={`w-full flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left ${selected?.id === conv.id ? 'bg-orange-50' : ''}`}
+                className={`w-full flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left ${selected?.id === conv.id ? 'bg-gray-100' : ''}`}
               >
                 <div className="relative shrink-0">
                   <Avatar name={conv.user.name} size="md" />
@@ -197,7 +197,7 @@ export default function MessagesPage() {
                 <button onClick={() => declineRequest(selected.id)} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors">
                   <X className="w-4 h-4" />
                 </button>
-                <button onClick={() => acceptRequest(selected.id)} className="flex items-center gap-1.5 bg-[#E87722] text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-[#d06a1a] transition-colors">
+                <button onClick={() => acceptRequest(selected.id)} className="flex items-center gap-1.5 bg-[#111111] text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-[#333] transition-colors">
                   <Check className="w-3.5 h-3.5" /> Accepteren
                 </button>
               </div>
@@ -205,8 +205,8 @@ export default function MessagesPage() {
           </div>
 
           {!selected.accepted && (
-            <div className="mx-4 mt-4 bg-orange-50 border border-orange-100 rounded-2xl p-4 flex items-start gap-3">
-              <Clock className="w-5 h-5 text-[#E87722] shrink-0 mt-0.5" />
+            <div className="mx-4 mt-4 bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-start gap-3">
+              <Clock className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-bold text-black mb-0.5">Berichtverzoek van {selected.user.name}</p>
                 <p className="text-xs text-gray-500 leading-relaxed">
@@ -217,7 +217,7 @@ export default function MessagesPage() {
                 <button onClick={() => declineRequest(selected.id)} className="text-xs font-semibold text-gray-400 hover:text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors">
                   Weigeren
                 </button>
-                <button onClick={() => acceptRequest(selected.id)} className="text-xs font-bold bg-[#E87722] text-white px-3 py-1.5 rounded-lg hover:bg-[#d06a1a] transition-colors">
+                <button onClick={() => acceptRequest(selected.id)} className="text-xs font-bold bg-[#111111] text-white px-3 py-1.5 rounded-lg hover:bg-[#333] transition-colors">
                   Accepteren
                 </button>
               </div>
@@ -229,7 +229,7 @@ export default function MessagesPage() {
               <div key={i} className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}>
                 {!msg.fromMe && <Avatar name={selected.user.name} size="xs" />}
                 <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                  msg.fromMe ? 'bg-[#E87722] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                  msg.fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
                 }`}>
                   {msg.text}
                   <p className={`text-[10px] mt-1 ${msg.fromMe ? 'text-white/60' : 'text-gray-400'}`}>{msg.time}</p>
@@ -249,7 +249,7 @@ export default function MessagesPage() {
                   placeholder="Schrijf een bericht..."
                   className="flex-1 bg-transparent text-sm text-black focus:outline-none"
                 />
-                <button onClick={sendMessage} disabled={!newMessage.trim()} className="w-8 h-8 bg-[#E87722] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#d06a1a] transition-colors shrink-0">
+                <button onClick={sendMessage} disabled={!newMessage.trim()} className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0">
                   <Send className="w-3.5 h-3.5 text-white" />
                 </button>
               </div>

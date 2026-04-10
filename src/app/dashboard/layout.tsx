@@ -41,7 +41,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   key={href}
                   href={href}
                   className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    active ? 'bg-[#E87722] text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50'
+                    active ? 'bg-[#111111] text-white' : 'text-gray-500 hover:text-black hover:bg-gray-50'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
@@ -60,7 +60,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className={`relative flex items-center gap-2 ml-2 px-5 py-2 rounded-xl text-sm font-black transition-all ${
                 pathname.startsWith('/dashboard/find')
                   ? 'bg-[#111] text-white'
-                  : 'bg-[#E87722] text-white hover:bg-[#111]'
+                  : 'bg-[#111111] text-white hover:bg-[#E87722]'
               }`}
               style={{ fontFamily: "'Syne', sans-serif", letterSpacing: '0.02em' }}
             >
@@ -80,7 +80,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             </Link>
             <Link
               href="/dashboard/profile/me"
-              className="w-9 h-9 bg-[#E87722] rounded-lg flex items-center justify-center"
+              className="w-9 h-9 bg-[#111111] rounded-lg flex items-center justify-center"
             >
               <User className="w-5 h-5 text-white" />
             </Link>
@@ -117,7 +117,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           left: '50%',
           transform: 'translateX(-50%)',
           width: 390,
-          background: 'rgba(232,119,34,0.95)',
+          background: 'rgba(17,17,17,0.97)',
           backdropFilter: 'blur(16px)',
           WebkitBackdropFilter: 'blur(16px)',
           borderRadius: 999,
@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   style={{ color: active ? 'white' : 'rgba(255,255,255,0.6)' }}
                 />
                 {badge && !active && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] bg-white text-[#E87722] text-[9px] font-black rounded-full flex items-center justify-center px-0.5">
+                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] bg-[#E87722] text-white text-[9px] font-black rounded-full flex items-center justify-center px-0.5">
                     {badge}
                   </span>
                 )}

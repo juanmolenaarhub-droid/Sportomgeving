@@ -56,7 +56,7 @@ function StoryViewer({ posts, startIndex, onClose }: { posts: StoryPost[]; start
         {/* Achtergrond */}
         {post.image_url
           ? <img src={post.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          : <div className="absolute inset-0 bg-gradient-to-br from-[#E87722] to-orange-900" />
+          : <div className="absolute inset-0 bg-gradient-to-br from-[#111111] to-gray-800" />
         }
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/75" />
 

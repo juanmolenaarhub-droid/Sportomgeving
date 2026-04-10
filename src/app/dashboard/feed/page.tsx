@@ -397,7 +397,7 @@ function SponsoredPostCard({ ad, onHide }: { ad: SponsoredPost; onHide: () => vo
             href={ad.cta_url}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center w-full bg-[#E87722] hover:bg-[#d06a1a] text-white font-black text-sm rounded-xl transition-colors"
+            className="flex items-center justify-center w-full bg-[#111111] hover:bg-[#333] text-white font-black text-sm rounded-xl transition-colors"
             style={{ height: 44 }}
           >
             {ad.cta_text}
@@ -442,7 +442,7 @@ function SuggestedBuddiesCard({ buddies }: { buddies: SuggestedBuddy[] }) {
             </div>
             <Link
               href={`/dashboard/profile/${buddy.id}`}
-              className="w-full py-1.5 bg-[#E87722] text-white text-[11px] font-bold rounded-lg text-center hover:bg-[#d06a1a] transition-colors"
+              className="w-full py-1.5 bg-[#111111] text-white text-[11px] font-bold rounded-lg text-center hover:bg-[#333] transition-colors"
             >
               Bekijk profiel
             </Link>
@@ -483,7 +483,7 @@ function LeaderboardSidebar() {
       </div>
 
       {/* Buddy zoeken CTA */}
-      <Link href="/dashboard/find" className="flex items-center justify-between bg-[#E87722] text-white rounded-2xl p-4 hover:bg-[#d06a1a] transition-colors group block">
+      <Link href="/dashboard/find" className="flex items-center justify-between bg-[#111111] text-white rounded-2xl p-4 hover:bg-[#333] transition-colors group block">
         <div>
           <p className="font-black text-sm">Zoek een buddy</p>
           <p className="text-xs text-white/70 mt-0.5">Vind sporters bij jou in de buurt</p>
@@ -868,7 +868,7 @@ export default function FeedPage() {
           {SPORT_FILTERS.map(f => (
             <button key={f.value} onClick={() => setSportFilter(f.value)}
               className={`px-3 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border-2 transition-all shrink-0 ${
-                sportFilter === f.value ? 'bg-[#E87722] text-white border-[#E87722]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'
+                sportFilter === f.value ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'
               }`}>
               {f.label}
             </button>
@@ -938,7 +938,7 @@ export default function FeedPage() {
             </div>
             <div className="px-5 pb-5 flex gap-3">
               <button onClick={() => setUploadType(null)} className="flex-1 border border-gray-200 text-gray-600 font-bold py-3 rounded-xl text-sm">Annuleren</button>
-              <button onClick={() => setUploadType(null)} className="flex-1 bg-[#E87722] text-white font-bold py-3 rounded-xl text-sm">Plaatsen</button>
+              <button onClick={() => setUploadType(null)} className="flex-1 bg-[#111111] text-white font-bold py-3 rounded-xl text-sm">Plaatsen</button>
             </div>
           </div>
         </div>
@@ -990,7 +990,7 @@ export default function FeedPage() {
             </div>
             <div className="p-5 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowCreatePost(false)} className="flex-1 border border-gray-200 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-50 text-sm">Annuleren</button>
-              <button onClick={createPost} disabled={!newPostContent.trim()} className="flex-1 bg-[#E87722] text-white font-bold py-2.5 rounded-xl hover:bg-[#d06a1a] disabled:opacity-40 text-sm">Delen</button>
+              <button onClick={createPost} disabled={!newPostContent.trim()} className="flex-1 bg-[#111111] text-white font-bold py-2.5 rounded-xl hover:bg-[#333] disabled:opacity-40 text-sm">Delen</button>
             </div>
           </div>
         </div>
