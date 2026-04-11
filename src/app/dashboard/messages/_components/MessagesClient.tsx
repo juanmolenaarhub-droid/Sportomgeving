@@ -506,11 +506,7 @@ export default function MessagesClient({
           otherUserName={selected.otherUserName}
           conversationId={selected.requestId}
           onClose={() => setShowReportModal(false)}
-          onSubmit={(blockedAlso) => {
-            setShowReportModal(false)
-            setToast('Je melding is ontvangen. We bekijken dit zo snel mogelijk.')
-            if (blockedAlso) setTimeout(() => setToast('Gebruiker geblokkeerd.'), 4000)
-          }}
+          onSubmit={() => setShowReportModal(false)}
         />
       )}
 
