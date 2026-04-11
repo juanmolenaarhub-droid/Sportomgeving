@@ -9,7 +9,8 @@ import {
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
-import { reportUser, deleteConversation, REPORT_CATEGORIES } from '../../safety-actions'
+import { deleteConversation } from '../../safety-actions'
+import { ReportUserModal } from './ReportUserModal'
 
 export type ConversationItem = {
   requestId: string
@@ -47,125 +48,6 @@ function timeAgo(dateStr: string): string {
   if (mins < 60) return `${mins} min`
   if (hours < 24) return `${hours} uur`
   return `${days} dag${days > 1 ? 'en' : ''}`
-}
-
-// ── Rapport modal ─────────────────────────────────────────────────────────────
-function ReportModal({
-  otherUserId,
-  otherUserName,
-  conversationId,
-  onClose,
-  onSubmit,
-}: {
-  otherUserId: string
-  otherUserName: string
-  conversationId: string
-  onClose: () => void
-  onSubmit: () => void
-}) {
-  const [category, setCategory] = useState('')
-  const [description, setDescription] = useState('')
-  const [blockAlso, setBlockAlso] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const MAX_DESC = 500
-
-  async function handleSubmit() {
-    if (!category) return
-    setSubmitting(true)
-    setError(null)
-    const result = await reportUser(otherUserId, category, description, conversationId, blockAlso)
-    setSubmitting(false)
-    if (result.error) { setError(result.error); return }
-    onSubmit()
-  }
-
-  return (
-    <div className="fixed inset-0 z-[70] bg-black/60 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
-      <div
-        className="bg-[#F5F0E8] w-full sm:max-w-md rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden max-h-[90dvh] flex flex-col"
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Header */}
-        <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-black/8 shrink-0">
-          <div>
-            <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#111' }}>
-              Rapporteer {otherUserName}
-            </h2>
-            <p className="text-xs text-gray-500 mt-1 leading-relaxed">
-              Je melding is anoniem. We beoordelen elk rapport zorgvuldig.
-            </p>
-          </div>
-          <button onClick={onClose} className="w-8 h-8 bg-black/8 rounded-full flex items-center justify-center hover:bg-black/12 transition-colors shrink-0 ml-3">
-            <X className="w-4 h-4 text-gray-600" />
-          </button>
-        </div>
-
-        {/* Body */}
-        <div className="overflow-y-auto flex-1 px-6 py-5 space-y-4">
-          <div>
-            <p className="text-xs font-bold text-gray-500 uppercase tracking-widest mb-3">Reden</p>
-            <div className="space-y-2">
-              {REPORT_CATEGORIES.map(cat => (
-                <label key={cat} className={`flex items-center gap-3 p-3 rounded-xl cursor-pointer transition-colors border ${category === cat ? 'border-[#E87722] bg-white' : 'border-transparent bg-white/60 hover:bg-white'}`}>
-                  <div className={`w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors ${category === cat ? 'border-[#E87722]' : 'border-gray-300'}`}>
-                    {category === cat && <div className="w-2 h-2 rounded-full bg-[#E87722]" />}
-                  </div>
-                  <input type="radio" name="category" value={cat} checked={category === cat} onChange={() => setCategory(cat)} className="sr-only" />
-                  <span className="text-sm font-medium text-gray-800">{cat}</span>
-                </label>
-              ))}
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">
-              Beschrijving <span className="normal-case font-normal text-gray-400">(optioneel)</span>
-            </label>
-            <textarea
-              value={description}
-              onChange={e => setDescription(e.target.value.slice(0, MAX_DESC))}
-              placeholder="Beschrijf wat er is gebeurd..."
-              rows={3}
-              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/40 resize-none leading-relaxed"
-            />
-            <div className="flex justify-end mt-1">
-              <span className="text-xs text-gray-300">{description.length}/{MAX_DESC}</span>
-            </div>
-          </div>
-
-          <label className="flex items-center gap-3 p-3 bg-white rounded-xl border border-black/8 cursor-pointer">
-            <div
-              onClick={() => setBlockAlso(v => !v)}
-              className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors ${blockAlso ? 'bg-[#111] border-[#111]' : 'border-gray-300'}`}
-            >
-              {blockAlso && <Check className="w-3 h-3 text-white" />}
-            </div>
-            <span className="text-sm text-gray-700">Blokkeer deze gebruiker ook</span>
-          </label>
-
-          {error && (
-            <p className="text-xs text-red-500 font-medium bg-red-50 px-3 py-2 rounded-lg">{error}</p>
-          )}
-        </div>
-
-        {/* Acties */}
-        <div className="px-6 pb-6 pt-4 border-t border-black/8 flex gap-3 shrink-0">
-          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-black/12 text-sm font-bold text-gray-600 hover:bg-black/5 transition-colors">
-            Annuleren
-          </button>
-          <button
-            onClick={handleSubmit}
-            disabled={!category || submitting}
-            style={SYNE}
-            className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold transition-colors hover:bg-[#d06a1a] disabled:opacity-40 disabled:cursor-not-allowed"
-          >
-            {submitting ? 'Indienen...' : 'Rapport indienen'}
-          </button>
-        </div>
-      </div>
-    </div>
-  )
 }
 
 // ── Verwijder bevestigingsdialog ──────────────────────────────────────────────
@@ -612,14 +494,15 @@ export default function MessagesClient({
 
       {/* Modals */}
       {showReportModal && selected && (
-        <ReportModal
+        <ReportUserModal
           otherUserId={selected.otherUserId}
           otherUserName={selected.otherUserName}
           conversationId={selected.requestId}
           onClose={() => setShowReportModal(false)}
-          onSubmit={() => {
+          onSubmit={(blockedAlso) => {
             setShowReportModal(false)
             setToast('Je melding is ontvangen. We bekijken dit zo snel mogelijk.')
+            if (blockedAlso) setTimeout(() => setToast('Gebruiker geblokkeerd.'), 4000)
           }}
         />
       )}
