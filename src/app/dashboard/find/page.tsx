@@ -348,11 +348,20 @@ export default function FindPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      // Haal alle profielen op behalve de eigen gebruiker
+      // Haal geblokkeerde gebruikers op (beide richtingen)
+      const { data: blockedRows } = await supabase
+        .from('blocked_users')
+        .select('blocked_id')
+        .eq('blocker_id', user.id)
+
+      const blockedIds = new Set((blockedRows ?? []).map(r => r.blocked_id))
+
+      // Haal alle profielen op behalve de eigen gebruiker en geblokkeerden
       const { data: profiles } = await supabase
         .from('profiles')
         .select('id, full_name, username, region, bio, avatar_url, banner_url, age')
         .neq('id', user.id)
+        .eq('is_active', true)
         .limit(50)
 
       if (!profiles || profiles.length === 0) return
@@ -385,7 +394,7 @@ export default function FindPage() {
         sportsMap[us.user_id].push({ label: name, level: levelLabel[us.level] ?? us.level })
       }
 
-      const realBuddies: Buddy[] = profiles.map(p => ({
+      const realBuddies: Buddy[] = profiles.filter(p => !blockedIds.has(p.id)).map(p => ({
         id: p.id,
         name: p.full_name ?? p.username ?? 'Onbekend',
         region: (p as any).region ?? '',

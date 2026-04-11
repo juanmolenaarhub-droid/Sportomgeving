@@ -8,6 +8,14 @@ export default async function MessagesPage() {
   const conversations: ConversationItem[] = []
 
   if (user) {
+    // Haal soft-deleted conversaties op voor deze gebruiker
+    const { data: deletedRows } = await supabase
+      .from('deleted_conversations')
+      .select('conversation_id')
+      .eq('user_id', user.id)
+
+    const deletedIds = new Set((deletedRows ?? []).map(r => r.conversation_id))
+
     // Ontvangen pending verzoeken (Verzoeken-tab)
     const { data: pendingReceived } = await supabase
       .from('follow_requests')
@@ -56,6 +64,7 @@ export default async function MessagesPage() {
     }
 
     for (const r of pendingReceived ?? []) {
+      if (deletedIds.has(r.id)) continue
       conversations.push({
         requestId: r.id,
         otherUserId: r.from_user_id,
@@ -68,6 +77,7 @@ export default async function MessagesPage() {
     }
 
     for (const r of acceptedSent ?? []) {
+      if (deletedIds.has(r.id)) continue
       conversations.push({
         requestId: r.id,
         otherUserId: r.to_user_id,
@@ -80,6 +90,7 @@ export default async function MessagesPage() {
     }
 
     for (const r of acceptedReceived ?? []) {
+      if (deletedIds.has(r.id)) continue
       conversations.push({
         requestId: r.id,
         otherUserId: r.from_user_id,
