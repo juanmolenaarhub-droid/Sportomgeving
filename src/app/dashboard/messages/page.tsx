@@ -92,5 +92,5 @@ export default async function MessagesPage() {
     }
   }
 
-  return <MessagesClient initialConversations={conversations} />
+  return <MessagesClient initialConversations={conversations} currentUserId={user?.id ?? ''} />
 }

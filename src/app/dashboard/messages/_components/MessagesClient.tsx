@@ -1,8 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { Search, Check, X, MessageCircle, Clock, Send } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
+import { createClient } from '@/lib/supabase'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
 
 export type ConversationItem = {
@@ -15,7 +16,18 @@ export type ConversationItem = {
   accepted: boolean
 }
 
-type Message = { text: string; time: string; fromMe: boolean }
+type ChatMessage = {
+  id: string
+  conversation_id: string
+  sender_id: string
+  content: string
+  created_at: string
+}
+
+function formatTime(dateStr: string): string {
+  const d = new Date(dateStr)
+  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+}
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
@@ -28,49 +40,134 @@ function timeAgo(dateStr: string): string {
   return `${days} dag${days > 1 ? 'en' : ''}`
 }
 
-export default function MessagesClient({ initialConversations }: { initialConversations: ConversationItem[] }) {
+export default function MessagesClient({
+  initialConversations,
+  currentUserId,
+}: {
+  initialConversations: ConversationItem[]
+  currentUserId: string
+}) {
   const [conversations, setConversations] = useState(initialConversations)
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('requests')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<ConversationItem | null>(null)
   const [newMessage, setNewMessage] = useState('')
-  const [localMessages, setLocalMessages] = useState<Record<string, Message[]>>({})
+  const [messages, setMessages] = useState<ChatMessage[]>([])
+  const [loadingMessages, setLoadingMessages] = useState(false)
+  const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const [isPending, startTransition] = useTransition()
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const supabase = createClient()
 
-  const requests = conversations.filter(c => !c.accepted)
-  const inbox = conversations.filter(c => c.accepted)
+  // Scroll naar laatste bericht
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [messages])
 
-  function handleAccept(requestId: string) {
+  // Online presence tracking
+  useEffect(() => {
+    const channel = supabase.channel('online-users', {
+      config: { presence: { key: currentUserId } },
+    })
+
+    channel
+      .on('presence', { event: 'sync' }, () => {
+        const state = channel.presenceState()
+        setOnlineUsers(new Set(Object.keys(state)))
+      })
+      .on('presence', { event: 'join' }, ({ key }) => {
+        setOnlineUsers(prev => new Set([...prev, key]))
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        setOnlineUsers(prev => { const s = new Set(prev); s.delete(key); return s })
+      })
+      .subscribe(async (status) => {
+        if (status === 'SUBSCRIBED') {
+          await channel.track({ online_at: new Date().toISOString() })
+        }
+      })
+
+    return () => { supabase.removeChannel(channel) }
+  }, [currentUserId])
+
+  // Laad berichten + realtime subscription bij geselecteerd gesprek
+  useEffect(() => {
+    if (!selected?.accepted) {
+      setMessages([])
+      return
+    }
+
+    const convId = selected.requestId
+    setLoadingMessages(true)
+
+    // Laad bestaande berichten
+    supabase
+      .from('chat_messages')
+      .select('*')
+      .eq('conversation_id', convId)
+      .order('created_at', { ascending: true })
+      .then(({ data }) => {
+        setMessages((data ?? []) as ChatMessage[])
+        setLoadingMessages(false)
+      })
+
+    // Realtime: luister naar nieuwe berichten
+    const channel = supabase
+      .channel(`chat:${convId}`)
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${convId}` },
+        (payload) => {
+          setMessages(prev => {
+            // Voorkom duplicaten
+            if (prev.some(m => m.id === payload.new.id)) return prev
+            return [...prev, payload.new as ChatMessage]
+          })
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, [selected?.requestId, selected?.accepted])
+
+  const handleAccept = useCallback((requestId: string) => {
     startTransition(async () => {
       await acceptBuddyRequest(requestId)
-      setConversations(prev =>
-        prev.map(c => c.requestId === requestId ? { ...c, accepted: true } : c)
-      )
+      setConversations(prev => prev.map(c => c.requestId === requestId ? { ...c, accepted: true } : c))
       setSelected(prev => prev?.requestId === requestId ? { ...prev, accepted: true } : prev)
       setActiveTab('inbox')
     })
-  }
+  }, [])
 
-  function handleDecline(requestId: string) {
+  const handleDecline = useCallback((requestId: string) => {
     startTransition(async () => {
       await declineBuddyRequest(requestId)
       setConversations(prev => prev.filter(c => c.requestId !== requestId))
       if (selected?.requestId === requestId) setSelected(null)
     })
-  }
+  }, [selected?.requestId])
 
-  function sendMessage() {
+  async function sendMessage() {
     if (!newMessage.trim() || !selected?.accepted) return
-    const msg: Message = { text: newMessage, time: 'Nu', fromMe: true }
-    setLocalMessages(prev => ({
-      ...prev,
-      [selected.requestId]: [...(prev[selected.requestId] ?? []), msg],
-    }))
+    const content = newMessage.trim()
     setNewMessage('')
+
+    const { error } = await supabase.from('chat_messages').insert({
+      conversation_id: selected.requestId,
+      sender_id: currentUserId,
+      content,
+    })
+
+    if (error) {
+      // Zet bericht terug als sturen mislukt
+      setNewMessage(content)
+    }
   }
 
-  const filtered = (activeTab === 'requests' ? requests : inbox)
+  const filtered = (activeTab === 'requests' ? conversations.filter(c => !c.accepted) : conversations.filter(c => c.accepted))
     .filter(c => c.otherUserName.toLowerCase().includes(search.toLowerCase()))
+
+  const requests = conversations.filter(c => !c.accepted)
 
   return (
     <div className="h-[calc(100vh-8rem)] flex bg-white rounded-2xl border border-gray-100 overflow-hidden">
@@ -116,35 +213,38 @@ export default function MessagesClient({ initialConversations }: { initialConver
               <p className="text-sm font-semibold text-gray-400">
                 {activeTab === 'requests' ? 'Geen berichtverzoeken' : 'Nog geen gesprekken'}
               </p>
-              {activeTab === 'inbox' && (
-                <p className="text-xs text-gray-300 mt-1">Accepteer verzoeken om te chatten</p>
-              )}
             </div>
           ) : (
-            filtered.map(conv => (
-              <button
-                key={conv.requestId}
-                onClick={() => setSelected(conv)}
-                className={`w-full flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left ${selected?.requestId === conv.requestId ? 'bg-gray-100' : ''}`}
-              >
-                <div className="relative shrink-0">
-                  <Avatar name={conv.otherUserName} size="md" />
-                  {!conv.accepted && (
-                    <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#E87722] rounded-full border-2 border-white" />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center justify-between mb-0.5">
-                    <p className="font-bold text-sm text-black truncate">{conv.otherUserName}</p>
-                    <span className="text-xs text-gray-400 shrink-0 ml-2">{timeAgo(conv.createdAt)}</span>
+            filtered.map(conv => {
+              const isOnline = onlineUsers.has(conv.otherUserId)
+              return (
+                <button
+                  key={conv.requestId}
+                  onClick={() => setSelected(conv)}
+                  className={`w-full flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left ${selected?.requestId === conv.requestId ? 'bg-gray-100' : ''}`}
+                >
+                  <div className="relative shrink-0">
+                    <Avatar name={conv.otherUserName} size="md" />
+                    {isOnline && (
+                      <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                    )}
+                    {!conv.accepted && !isOnline && (
+                      <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#E87722] rounded-full border-2 border-white" />
+                    )}
                   </div>
-                  {conv.sport && <p className="text-xs text-gray-400 mb-1">{conv.sport}</p>}
-                  <p className={`text-xs truncate ${!conv.accepted ? 'text-black font-semibold' : 'text-gray-400'}`}>
-                    {conv.message ?? 'Wil jouw sportbuddy worden'}
-                  </p>
-                </div>
-              </button>
-            ))
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between mb-0.5">
+                      <p className="font-bold text-sm text-black truncate">{conv.otherUserName}</p>
+                      <span className="text-xs text-gray-400 shrink-0 ml-2">{timeAgo(conv.createdAt)}</span>
+                    </div>
+                    {conv.sport && <p className="text-xs text-gray-400 mb-0.5">{conv.sport}</p>}
+                    <p className={`text-xs truncate ${!conv.accepted ? 'text-black font-semibold' : 'text-gray-400'}`}>
+                      {conv.message ?? 'Wil jouw sportbuddy worden'}
+                    </p>
+                  </div>
+                </button>
+              )
+            })
           )}
         </div>
       </div>
@@ -152,14 +252,22 @@ export default function MessagesClient({ initialConversations }: { initialConver
       {/* Chat */}
       {selected ? (
         <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
           <div className="flex items-center gap-3 p-4 border-b border-gray-100">
             <button onClick={() => setSelected(null)} className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 font-bold">
               ←
             </button>
-            <Avatar name={selected.otherUserName} size="sm" />
+            <div className="relative">
+              <Avatar name={selected.otherUserName} size="sm" />
+              {onlineUsers.has(selected.otherUserId) && (
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
+              )}
+            </div>
             <div className="flex-1">
               <p className="font-black text-black text-sm">{selected.otherUserName}</p>
-              {selected.sport && <p className="text-xs text-gray-400">{selected.sport}</p>}
+              <p className="text-xs font-medium" style={{ color: onlineUsers.has(selected.otherUserId) ? '#22c55e' : '#9ca3af' }}>
+                {onlineUsers.has(selected.otherUserId) ? 'Online' : 'Offline'}
+              </p>
             </div>
             {!selected.accepted && (
               <div className="flex items-center gap-2">
@@ -167,14 +275,14 @@ export default function MessagesClient({ initialConversations }: { initialConver
                 <button
                   onClick={() => handleDecline(selected.requestId)}
                   disabled={isPending}
-                  className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-red-50 hover:text-red-500 transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 bg-red-500 hover:bg-red-600 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
                 >
-                  <X className="w-4 h-4" />
+                  <X className="w-3.5 h-3.5" /> Weigeren
                 </button>
                 <button
                   onClick={() => handleAccept(selected.requestId)}
                   disabled={isPending}
-                  className="flex items-center gap-1.5 bg-[#111111] text-white text-xs font-bold px-3 py-1.5 rounded-full hover:bg-[#333] transition-colors disabled:opacity-50"
+                  className="flex items-center gap-1.5 bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded-full transition-colors disabled:opacity-50"
                 >
                   <Check className="w-3.5 h-3.5" /> Accepteren
                 </button>
@@ -182,27 +290,28 @@ export default function MessagesClient({ initialConversations }: { initialConver
             )}
           </div>
 
+          {/* Verzoek banner */}
           {!selected.accepted && (
             <div className="mx-4 mt-4 bg-gray-50 border border-gray-200 rounded-2xl p-4 flex items-start gap-3">
               <Clock className="w-5 h-5 text-gray-400 shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="text-sm font-bold text-black mb-0.5">Berichtverzoek van {selected.otherUserName}</p>
                 <p className="text-xs text-gray-500 leading-relaxed">
-                  Je kunt dit bericht lezen. Accepteer het verzoek om te reageren en de conversatie te starten.
+                  Accepteer het verzoek om te reageren en de conversatie te starten.
                 </p>
               </div>
               <div className="flex gap-2 shrink-0">
                 <button
                   onClick={() => handleDecline(selected.requestId)}
                   disabled={isPending}
-                  className="text-xs font-semibold text-gray-400 hover:text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-50 transition-colors disabled:opacity-50"
+                  className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   Weigeren
                 </button>
                 <button
                   onClick={() => handleAccept(selected.requestId)}
                   disabled={isPending}
-                  className="text-xs font-bold bg-[#111111] text-white px-3 py-1.5 rounded-lg hover:bg-[#333] transition-colors disabled:opacity-50"
+                  className="text-xs font-bold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
                 >
                   Accepteren
                 </button>
@@ -210,8 +319,9 @@ export default function MessagesClient({ initialConversations }: { initialConver
             </div>
           )}
 
+          {/* Berichten */}
           <div className="flex-1 overflow-y-auto p-4 space-y-3">
-            {/* Initieel bericht van het buddy-verzoek */}
+            {/* Initieel buddy-verzoek bericht */}
             {selected.message && (
               <div className="flex justify-start items-end gap-2">
                 <Avatar name={selected.otherUserName} size="xs" />
@@ -221,20 +331,33 @@ export default function MessagesClient({ initialConversations }: { initialConver
                 </div>
               </div>
             )}
-            {/* Lokale berichten (in-memory totdat chat tabel beschikbaar is) */}
-            {(localMessages[selected.requestId] ?? []).map((msg, i) => (
-              <div key={i} className={`flex ${msg.fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}>
-                {!msg.fromMe && <Avatar name={selected.otherUserName} size="xs" />}
-                <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
-                  msg.fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
-                }`}>
-                  {msg.text}
-                  <p className={`text-[10px] mt-1 ${msg.fromMe ? 'text-white/60' : 'text-gray-400'}`}>{msg.time}</p>
-                </div>
+
+            {loadingMessages && (
+              <div className="flex justify-center py-4">
+                <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
               </div>
-            ))}
+            )}
+
+            {messages.map(msg => {
+              const fromMe = msg.sender_id === currentUserId
+              return (
+                <div key={msg.id} className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}>
+                  {!fromMe && <Avatar name={selected.otherUserName} size="xs" />}
+                  <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${
+                    fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'
+                  }`}>
+                    {msg.content}
+                    <p className={`text-[10px] mt-1 ${fromMe ? 'text-white/60' : 'text-gray-400'}`}>
+                      {formatTime(msg.created_at)}
+                    </p>
+                  </div>
+                </div>
+              )
+            })}
+            <div ref={messagesEndRef} />
           </div>
 
+          {/* Input */}
           {selected.accepted ? (
             <div className="p-4 border-t border-gray-100">
               <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-2.5">
