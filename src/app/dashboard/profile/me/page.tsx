@@ -14,6 +14,8 @@ type Profile = {
   avatar_url: string | null
   banner_url: string | null
   age: number | null
+  gender: string | null
+  goal: string | null
 }
 
 type UserSport = {
@@ -104,7 +106,7 @@ export default function MyProfilePage() {
       if (!user) return
 
       const [{ data: prof }, { data: sp }] = await Promise.all([
-        supabase.from('profiles').select('id, full_name, region, bio, avatar_url, banner_url, age').eq('id', user.id).single(),
+        supabase.from('profiles').select('id, full_name, region, bio, avatar_url, banner_url, age, gender, goal').eq('id', user.id).single(),
         supabase.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', user.id),
       ])
 
@@ -140,10 +142,14 @@ export default function MyProfilePage() {
               ) : (
                 <>
                   <h1 className="text-2xl font-black text-black">{displayName}</h1>
-                  <div className="flex items-center gap-1.5 text-sm text-gray-400 mt-1">
-                    <MapPin className="w-3.5 h-3.5" /> {displayRegion}
-                    {profile?.age && <span className="ml-2">{profile.age} jaar</span>}
+                  <div className="flex items-center flex-wrap gap-x-3 gap-y-1 text-sm text-gray-400 mt-1">
+                    <span className="flex items-center gap-1"><MapPin className="w-3.5 h-3.5" /> {displayRegion}</span>
+                    {profile?.age && <span>{profile.age} jaar</span>}
+                    {profile?.gender && <span>{profile.gender}</span>}
                   </div>
+                  {profile?.goal && (
+                    <p className="text-xs text-gray-400 mt-1">Zoekt: <span className="font-semibold text-gray-600">{profile.goal === 'geen' ? 'Geen voorkeur' : profile.goal}</span></p>
+                  )}
                 </>
               )}
               {profile?.bio && (
