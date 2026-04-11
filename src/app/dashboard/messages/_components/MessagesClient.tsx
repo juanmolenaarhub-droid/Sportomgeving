@@ -449,8 +449,8 @@ export default function MessagesClient({
                 <div className="flex items-start gap-3 mb-3">
                   <AlertTriangle className="w-4 h-4 text-[#E87722] shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-700 leading-relaxed">
-                    <span className="font-bold text-[#E87722]">Let op: </span>
-                    Geef nooit zomaar je nummer aan iemand die je nog niet hebt gezien of gesproken. Behoud het contact eerst via de chat.
+                    <span className="font-bold text-[#E87722]">Wacht even — </span>
+                    je staat op het punt je telefoonnummer te delen. Ken je deze persoon al goed genoeg? Je kunt altijd verder chatten voordat je persoonlijke gegevens deelt.
                   </p>
                 </div>
                 <div className="flex justify-end">

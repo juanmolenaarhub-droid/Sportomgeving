@@ -2,7 +2,17 @@
 
 import { useState } from 'react'
 import { X, Check } from 'lucide-react'
-import { reportUser, REPORT_CATEGORIES } from '../../safety-actions'
+import { reportUser } from '../../safety-actions'
+
+const REPORT_CATEGORIES = [
+  'Ongepaste of beledigende berichten',
+  'Intimidatie of bedreiging',
+  'Spam of nep-profiel',
+  'Minderjarige gebruiker',
+  'Gevaarlijk of grensoverschrijdend gedrag',
+  'Haatdragende of discriminerende uitingen',
+  'Overig',
+] as const
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const MAX_DESC = 500
