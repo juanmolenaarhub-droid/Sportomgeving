@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { Search, MapPin, Filter, X, UserPlus, Check, MessageCircle, ChevronDown, Send, Lock, ArrowRight } from 'lucide-react'
 import { StoryAvatar, type StoryPost } from '@/components/StoryAvatar'
@@ -340,6 +340,68 @@ export default function FindPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [selectedBuddy, setSelectedBuddy] = useState<Buddy | null>(null)
   const [requestTarget, setRequestTarget] = useState<Buddy | null>(null)
+
+  // Laad echte gebruikers uit Supabase
+  useEffect(() => {
+    async function loadRealProfiles() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      // Haal alle profielen op behalve de eigen gebruiker
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, region, bio, avatar_url, banner_url, age')
+        .neq('id', user.id)
+        .limit(50)
+
+      if (!profiles || profiles.length === 0) return
+
+      const profileIds = profiles.map(p => p.id)
+
+      // Haal sporten op via user_sports + sports join
+      const { data: userSports } = await supabase
+        .from('user_sports')
+        .select('user_id, level, sports(name)')
+        .in('user_id', profileIds)
+
+      // Haal follow_request status op voor deze user
+      const { data: myRequests } = await supabase
+        .from('follow_requests')
+        .select('to_user_id, status')
+        .eq('from_user_id', user.id)
+        .in('to_user_id', profileIds)
+
+      const requestMap: Record<string, string> = {}
+      for (const r of myRequests ?? []) {
+        requestMap[r.to_user_id] = r.status
+      }
+
+      const sportsMap: Record<string, { label: string; level: string }[]> = {}
+      for (const us of userSports ?? []) {
+        if (!sportsMap[us.user_id]) sportsMap[us.user_id] = []
+        const name = (Array.isArray(us.sports) ? us.sports[0]?.name : (us.sports as any)?.name) ?? 'Sport'
+        const levelLabel: Record<string, string> = { beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd' }
+        sportsMap[us.user_id].push({ label: name, level: levelLabel[us.level] ?? us.level })
+      }
+
+      const realBuddies: Buddy[] = profiles.map(p => ({
+        id: p.id,
+        name: p.full_name ?? p.username ?? 'Onbekend',
+        region: (p as any).region ?? '',
+        age: (p as any).age ?? 0,
+        bio: (p as any).bio ?? '',
+        sports: sportsMap[p.id] ?? [],
+        avatarUrl: p.avatar_url ?? undefined,
+        bannerUrl: (p as any).banner_url ?? undefined,
+        following: requestMap[p.id] === 'accepted',
+        requested: requestMap[p.id] === 'pending',
+      }))
+
+      setBuddies(realBuddies)
+    }
+    loadRealProfiles()
+  }, [])
 
   function openRequest(buddy: Buddy) {
     if (buddy.openFollow) {
