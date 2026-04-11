@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase-admin'
 
-export const REPORT_CATEGORIES = [
+const VALID_CATEGORIES = [
   'Ongepaste of beledigende berichten',
   'Intimidatie of bedreiging',
   'Spam of nep-profiel',
@@ -12,7 +12,7 @@ export const REPORT_CATEGORIES = [
   'Gevaarlijk of grensoverschrijdend gedrag',
   'Haatdragende of discriminerende uitingen',
   'Overig',
-] as const
+]
 
 export async function reportUser(
   reportedUserId: string,
@@ -26,7 +26,7 @@ export async function reportUser(
   if (!user) return { error: 'Niet ingelogd' }
 
   if (user.id === reportedUserId) return { error: 'Je kunt jezelf niet rapporteren' }
-  if (!(REPORT_CATEGORIES as readonly string[]).includes(category)) return { error: 'Ongeldige categorie' }
+  if (!VALID_CATEGORIES.includes(category)) return { error: 'Ongeldige categorie' }
 
   // Rate limiting: max 3 rapporten per dag per reporter
   const today = new Date()
