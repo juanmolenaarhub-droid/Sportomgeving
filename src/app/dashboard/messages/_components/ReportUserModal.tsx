@@ -174,8 +174,8 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
               <button
                 onClick={handleSubmit}
                 disabled={!category || submitting}
-                style={{ ...SYNE, backgroundColor: category && !submitting ? '#E87722' : undefined }}
-                className="flex-1 py-3 rounded-xl text-white text-sm font-bold transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:bg-[#E87722]"
+                style={SYNE}
+                className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold transition-colors hover:bg-[#d06a1a] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Indienen...' : 'Rapport indienen'}
               </button>
