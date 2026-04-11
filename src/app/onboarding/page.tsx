@@ -150,49 +150,55 @@ export default function OnboardingPage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) { router.push('/login'); return }
 
-      let avatarUrl = ''
+      // Upload avatar
+      let avatarUrl: string | null = null
       if (avatarFile) {
         const ext = avatarFile.name.split('.').pop()
         const path = `avatars/${user.id}.${ext}`
         const { error: uploadError } = await supabase.storage
           .from('avatars').upload(path, avatarFile, { upsert: true })
-        if (!uploadError) {
-          const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-          avatarUrl = data.publicUrl
-        }
+        if (uploadError) throw new Error(`Foto upload mislukt: ${uploadError.message}`)
+        const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+        avatarUrl = data.publicUrl
       }
 
-      let bannerUrl = ''
+      // Upload banner
+      let bannerUrl: string | null = null
       if (bannerFile) {
         const ext = bannerFile.name.split('.').pop()
         const path = `banners/${user.id}.${ext}`
         const { error: uploadError } = await supabase.storage
           .from('avatars').upload(path, bannerFile, { upsert: true })
-        if (!uploadError) {
-          const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-          bannerUrl = data.publicUrl
-        }
+        if (uploadError) throw new Error(`Banner upload mislukt: ${uploadError.message}`)
+        const { data } = supabase.storage.from('avatars').getPublicUrl(path)
+        bannerUrl = data.publicUrl
       }
 
-      const { error: profileError } = await supabase.from('profiles').upsert({
+      // Bouw het profiel object — alleen velden meesturen die een waarde hebben
+      const profileData: Record<string, unknown> = {
         id:         user.id,
         username:   user.user_metadata?.username ?? null,
         full_name:  sanitizeText(limitLength(fullName, 80)),
         region:     sanitizeText(limitLength(region, 80)),
-        region_lat: null,
-        region_lng: null,
         age:        age ? parseInt(age) : null,
         bio:        sanitizeText(limitLength(bio, 500)),
-        avatar_url: avatarUrl || undefined,
-        banner_url: bannerUrl || undefined,
-        gender:     geslacht1 === 'Anders' ? andersOptie || 'Anders' : geslacht1,
+        gender:     geslacht1 === 'Anders' ? (andersOptie || 'Anders') : geslacht1,
         goal:       geslacht,
-      }, { onConflict: 'id' })
+      }
+      if (avatarUrl) profileData.avatar_url = avatarUrl
+      if (bannerUrl) profileData.banner_url = bannerUrl
 
-      if (profileError) throw new Error(`Profiel: ${profileError.message}`)
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .upsert(profileData, { onConflict: 'id' })
+
+      if (profileError) throw new Error(`Profiel opslaan mislukt: ${profileError.message}`)
 
       if (selectedSports.length > 0) {
-        const { error: sportsError } = await supabase.from('user_sports').upsert(
+        // Verwijder oude sporten eerst zodat verwijderde sporten ook weg zijn
+        await supabase.from('user_sports').delete().eq('user_id', user.id)
+
+        const { error: sportsError } = await supabase.from('user_sports').insert(
           selectedSports.map(s => ({
             user_id: user.id,
             sport_id: s.sport_id,
@@ -200,7 +206,7 @@ export default function OnboardingPage() {
             looking_for_partner: true,
           }))
         )
-        if (sportsError) throw new Error(`Sporten: ${sportsError.message}`)
+        if (sportsError) throw new Error(`Sporten opslaan mislukt: ${sportsError.message}`)
       }
 
       router.push('/dashboard/feed')
