@@ -133,7 +133,8 @@ function RequestModal({
           to_user_id: buddy.id,
           message: message.trim() || null,
           status: 'pending',
-        })
+          sport: buddy.sports?.[0]?.label ?? null,
+        }, { onConflict: 'from_user_id,to_user_id' })
       }
     } catch (_) {
       // silently continue — UI updates regardless
