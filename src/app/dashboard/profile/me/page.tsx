@@ -398,6 +398,7 @@ export default function MyProfilePage() {
       {/* Profiel header kaart */}
       <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
         <ProfileHeader
+          key={`${profile?.avatar_url}-${profile?.banner_url}`}
           name={displayName}
           avatarUrl={profile?.avatar_url ?? undefined}
           bannerUrl={profile?.banner_url ?? undefined}

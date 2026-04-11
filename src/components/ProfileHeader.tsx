@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import { Camera, Pencil } from 'lucide-react'
 import { Avatar } from './Avatar'
 import { validateImageFile } from '@/lib/validateFile'
@@ -28,6 +28,9 @@ export function ProfileHeader({
 
   const [bannerPreview, setBannerPreview] = useState<string | null>(bannerUrl ?? null)
   const [avatarPreview, setAvatarPreview] = useState<string | null>(avatarUrl ?? null)
+
+  useEffect(() => { setBannerPreview(bannerUrl ?? null) }, [bannerUrl])
+  useEffect(() => { setAvatarPreview(avatarUrl ?? null) }, [avatarUrl])
 
   function handleBanner(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
