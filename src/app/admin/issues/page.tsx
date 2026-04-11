@@ -1,6 +1,8 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { IssuesClient } from './_components/IssuesClient'
 
+export const dynamic = 'force-dynamic'
+
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
 export type ReportRow = {

@@ -63,6 +63,7 @@ export async function reportUser(
     revalidatePath('/dashboard/find')
   }
 
+  revalidatePath('/admin/issues')
   return { success: true }
 }
 
