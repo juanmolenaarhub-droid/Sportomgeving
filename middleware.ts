@@ -28,6 +28,16 @@ export async function middleware(request: NextRequest) {
   // Ververs de auth sessie zodat die niet verloopt
   const { data: { user } } = await supabase.auth.getUser()
 
+  // Admin route: alleen de admin user mag erin
+  if (request.nextUrl.pathname.startsWith('/admin')) {
+    const adminUserId = process.env.ADMIN_USER_ID
+    if (!user || user.id !== adminUserId) {
+      const url = request.nextUrl.clone()
+      url.pathname = user ? '/dashboard' : '/login'
+      return NextResponse.redirect(url)
+    }
+  }
+
   // Beschermde routes: redirect naar login als niet ingelogd
   const protectedPaths = ['/dashboard', '/onboarding']
   const isProtected = protectedPaths.some((path) =>
