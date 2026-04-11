@@ -62,7 +62,6 @@ export default function OnboardingPage() {
 
   // Step 2
   const [selectedSports, setSelectedSports] = useState<SelectedSport[]>([])
-  const [niveau, setNiveau]         = useState('beginner')
 
   // Step 3
   const [taalvoorkeur, setTaalvoorkeur]         = useState('Nederlands')
@@ -112,8 +111,12 @@ export default function OnboardingPage() {
     setSelectedSports(prev => {
       const exists = prev.find(s => s.sport_id === id)
       if (exists) return prev.filter(s => s.sport_id !== id)
-      return [...prev, { sport_id: id, level: niveau }]
+      return [...prev, { sport_id: id, level: 'beginner' }]
     })
+  }
+
+  function setNiveauForSport(id: number, level: string) {
+    setSelectedSports(prev => prev.map(s => s.sport_id === id ? { ...s, level } : s))
   }
 
   function validateStep1() {
@@ -171,7 +174,9 @@ export default function OnboardingPage() {
         }
       }
 
-      const { error: profileError } = await supabase.from('profiles').update({
+      const { error: profileError } = await supabase.from('profiles').upsert({
+        id:         user.id,
+        username:   user.user_metadata?.username ?? null,
         full_name:  sanitizeText(limitLength(fullName, 80)),
         region:     sanitizeText(limitLength(region, 80)),
         region_lat: null,
@@ -180,8 +185,9 @@ export default function OnboardingPage() {
         bio:        sanitizeText(limitLength(bio, 500)),
         avatar_url: avatarUrl || undefined,
         banner_url: bannerUrl || undefined,
+        gender:     geslacht1 === 'Anders' ? andersOptie || 'Anders' : geslacht1,
         goal:       geslacht,
-      }).eq('id', user.id)
+      }, { onConflict: 'id' })
 
       if (profileError) throw new Error(`Profiel: ${profileError.message}`)
 
@@ -190,7 +196,7 @@ export default function OnboardingPage() {
           selectedSports.map(s => ({
             user_id: user.id,
             sport_id: s.sport_id,
-            level: niveau,
+            level: s.level,
             looking_for_partner: true,
           }))
         )
@@ -587,26 +593,34 @@ export default function OnboardingPage() {
                     })}
                   </div>
 
-                  {/* Niveau */}
+                  {/* Per sport niveau */}
                   {selectedSports.length > 0 && (
-                    <div className="mb-8 p-4 rounded-xl" style={{ background: '#F9F9F9', border: '1px solid #F0F0F0' }}>
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>Jouw niveau:</p>
-                      <div className="flex gap-2">
-                        {LEVELS.map(l => (
-                          <button
-                            key={l.value}
-                            onClick={() => setNiveau(l.value)}
-                            className="flex-1 py-2.5 rounded-xl transition-all"
-                            style={{
-                              fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer',
-                              background: niveau === l.value ? '#E87722' : '#EDEDED',
-                              color: niveau === l.value ? 'white' : '#555',
-                            }}
-                          >
-                            {l.label}
-                          </button>
-                        ))}
-                      </div>
+                    <div className="mb-8 space-y-3">
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>Niveau per sport:</p>
+                      {selectedSports.map(s => {
+                        const sportName = SPORTS.find(sp => sp.id === s.sport_id)?.name ?? ''
+                        return (
+                          <div key={s.sport_id} className="p-3 rounded-xl" style={{ background: '#F9F9F9', border: '1px solid #F0F0F0' }}>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: '#E87722', marginBottom: 8 }}>{sportName}</p>
+                            <div className="flex gap-2">
+                              {LEVELS.map(l => (
+                                <button
+                                  key={l.value}
+                                  onClick={() => setNiveauForSport(s.sport_id, l.value)}
+                                  className="flex-1 py-2 rounded-xl transition-all"
+                                  style={{
+                                    fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
+                                    background: s.level === l.value ? '#E87722' : '#EDEDED',
+                                    color: s.level === l.value ? 'white' : '#555',
+                                  }}
+                                >
+                                  {l.label}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })}
                     </div>
                   )}
 
