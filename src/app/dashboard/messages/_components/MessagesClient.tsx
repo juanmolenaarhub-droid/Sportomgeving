@@ -48,7 +48,7 @@ export default function MessagesClient({
   currentUserId: string
 }) {
   const [conversations, setConversations] = useState(initialConversations)
-  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('requests')
+  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<ConversationItem | null>(null)
   const [newMessage, setNewMessage] = useState('')
@@ -190,19 +190,19 @@ export default function MessagesClient({
 
         <div className="flex border-b border-gray-100">
           <button
-            onClick={() => setActiveTab('requests')}
-            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
-          >
-            Verzoeken
-            {requests.length > 0 && (
-              <span className="ml-1.5 bg-[#111111] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>
-            )}
-          </button>
-          <button
             onClick={() => setActiveTab('inbox')}
             className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
           >
             Inbox
+          </button>
+          <button
+            onClick={() => setActiveTab('requests')}
+            className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
+          >
+            Volgverzoeken
+            {requests.length > 0 && (
+              <span className="ml-1.5 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>
+            )}
           </button>
         </div>
 
