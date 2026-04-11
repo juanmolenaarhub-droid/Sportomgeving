@@ -38,6 +38,15 @@ export async function acceptBuddyRequest(requestId: string) {
       accepted_at: now,
     }, { onConflict: 'from_user_id,to_user_id' })
 
+  // Log in activity_log
+  await supabase
+    .from('activity_log')
+    .insert({
+      user_id: user.id,
+      event_type: 'match_accepted',
+      metadata: { request_id: requestId, other_user_id: req.from_user_id, sport: req.sport ?? null },
+    })
+
   revalidatePath('/dashboard/notifications')
   revalidatePath('/dashboard/messages')
   return { success: true }
@@ -74,6 +83,15 @@ export async function declineBuddyRequest(requestId: string) {
         requested_at: req.created_at,
         declined_at: now,
       }, { onConflict: 'from_user_id,to_user_id' })
+
+    // Log in activity_log
+    await supabase
+      .from('activity_log')
+      .insert({
+        user_id: user.id,
+        event_type: 'match_declined',
+        metadata: { request_id: requestId, other_user_id: req.from_user_id, sport: req.sport ?? null },
+      })
   }
 
   revalidatePath('/dashboard/notifications')

@@ -135,6 +135,12 @@ function RequestModal({
           status: 'pending',
           sport: buddy.sports?.[0]?.label ?? null,
         }, { onConflict: 'from_user_id,to_user_id' })
+
+        await supabase.from('activity_log').insert({
+          user_id: user.id,
+          event_type: 'match_requested',
+          metadata: { to_user_id: buddy.id, sport: buddy.sports?.[0]?.label ?? null },
+        })
       }
     } catch (_) {
       // silently continue — UI updates regardless
