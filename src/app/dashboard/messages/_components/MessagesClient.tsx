@@ -236,7 +236,7 @@ export default function MessagesClient({
   }, [selected?.requestId])
 
   async function sendMessage() {
-    if (!newMessage.trim() || !selected?.accepted) return
+    if (!newMessage.trim() || !selected?.accepted || showPhoneWarning) return
     const content = newMessage.trim()
     setNewMessage('')
     setPhoneWarningDismissed(false)
@@ -445,15 +445,22 @@ export default function MessagesClient({
 
             {/* Telefoonwaarschuwing */}
             {showPhoneWarning && (
-              <div className="mx-4 mb-2 flex items-start gap-3 bg-[#FFF8F2] border-l-4 border-[#E87722] rounded-r-xl px-4 py-3">
-                <AlertTriangle className="w-4 h-4 text-[#E87722] shrink-0 mt-0.5" />
-                <p className="text-xs text-gray-700 leading-relaxed flex-1">
-                  <span className="font-bold text-[#E87722]">Let op: </span>
-                  Geef nooit zomaar je nummer aan iemand die je nog niet hebt gezien of gesproken. Behoud het contact eerst via de chat.
-                </p>
-                <button onClick={() => setPhoneWarningDismissed(true)} className="text-gray-400 hover:text-gray-600 transition-colors shrink-0">
-                  <X className="w-3.5 h-3.5" />
-                </button>
+              <div className="mx-4 mb-2 bg-[#FFF8F2] border-l-4 border-[#E87722] rounded-r-xl px-4 py-3">
+                <div className="flex items-start gap-3 mb-3">
+                  <AlertTriangle className="w-4 h-4 text-[#E87722] shrink-0 mt-0.5" />
+                  <p className="text-xs text-gray-700 leading-relaxed">
+                    <span className="font-bold text-[#E87722]">Let op: </span>
+                    Geef nooit zomaar je nummer aan iemand die je nog niet hebt gezien of gesproken. Behoud het contact eerst via de chat.
+                  </p>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    onClick={() => setPhoneWarningDismissed(true)}
+                    className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] transition-colors px-4 py-1.5 rounded-lg"
+                  >
+                    Akkoord
+                  </button>
+                </div>
               </div>
             )}
 
@@ -469,7 +476,7 @@ export default function MessagesClient({
                     placeholder="Schrijf een bericht..."
                     className="flex-1 bg-transparent text-sm text-black focus:outline-none"
                   />
-                  <button onClick={sendMessage} disabled={!newMessage.trim()}
+                  <button onClick={sendMessage} disabled={!newMessage.trim() || showPhoneWarning}
                     className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0">
                     <Send className="w-3.5 h-3.5 text-white" />
                   </button>
