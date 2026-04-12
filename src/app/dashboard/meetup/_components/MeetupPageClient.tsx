@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { MapPin, List, Plus, ChevronDown, Clock, Users, Zap, Calendar } from 'lucide-react'
@@ -12,6 +12,8 @@ const MeetupMap = dynamic(() => import('./MeetupMap'), { ssr: false, loading: ()
     <MapPin className="w-8 h-8 text-gray-300" />
   </div>
 )})
+
+const MeetupDetailModal = dynamic(() => import('./MeetupDetailModal'), { ssr: false })
 
 const SPORTS = ['Alles', 'Hardlopen', 'Fietsen', 'Gym', 'Yoga', 'Zwemmen', 'Voetbal', 'Padel', 'Tennis', 'Wandelen', 'Boksen', 'Klimmen']
 const DATE_FILTERS = [
@@ -58,6 +60,7 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
   const [sportFilter, setSportFilter] = useState('Alles')
   const [dateFilter, setDateFilter] = useState('alles')
   const [interestMeetup, setInterestMeetup] = useState<MeetupListItem | null>(null)
+  const [detailMeetupId, setDetailMeetupId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const filtered = meetups.filter(m => {
@@ -82,11 +85,6 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
   function showToast(msg: string) {
     setToast(msg)
     setTimeout(() => setToast(null), 3500)
-  }
-
-  function handleInterest(meetupId: string) {
-    const m = meetups.find(x => x.id === meetupId)
-    if (m) setInterestMeetup(m)
   }
 
   function handleInterestSuccess(meetupId: string) {
@@ -166,7 +164,8 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
             meetups={filtered}
             center={center}
             currentUserId={currentUserId}
-            onInterest={handleInterest}
+            onInterestSuccess={handleInterestSuccess}
+            onDetailsClick={id => setDetailMeetupId(id)}
           />
         </div>
       )}
@@ -200,6 +199,15 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
         />
       )}
 
+      {/* Detail modal */}
+      {detailMeetupId && (
+        <MeetupDetailModal
+          meetupId={detailMeetupId}
+          onClose={() => setDetailMeetupId(null)}
+          onInterestSuccess={handleInterestSuccess}
+        />
+      )}
+
       {/* Toast */}
       {toast && (
         <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#111] text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl max-w-xs text-center">
@@ -220,7 +228,6 @@ function MeetupListCard({
   onInterest: () => void
 }) {
   const color = getSportColor(meetup.sport)
-  const spotsLeft = meetup.maxParticipants - meetup.acceptedCount
   const isCreator = meetup.creatorId === currentUserId
 
   return (

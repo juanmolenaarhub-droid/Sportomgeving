@@ -1,11 +1,11 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import {
   MapPin, Award, MessageCircle, UserPlus, Check, ArrowLeft,
   Users, Heart, Flame, Trophy, Calendar, Clock, ChevronRight,
-  Send, X, Lock, Zap,
+  Send, X, Lock, Zap, Star, ShieldCheck, User,
 } from 'lucide-react'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
@@ -123,7 +123,7 @@ function PublicMeetupsCard({ profileId }: { profileId: string }) {
   const [loaded, setLoaded] = useState(false)
   const supabase = createClient()
 
-  useState(() => {
+  useEffect(() => {
     supabase
       .from('meetups')
       .select('id, sport, title, date, time, is_spontaneous, status, city, expires_at')
@@ -133,7 +133,8 @@ function PublicMeetupsCard({ profileId }: { profileId: string }) {
       .order('created_at', { ascending: false })
       .limit(3)
       .then(({ data }) => { setMeetups(data ?? []); setLoaded(true) })
-  })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   if (!loaded || meetups.length === 0) return null
 
@@ -161,6 +162,56 @@ function PublicMeetupsCard({ profileId }: { profileId: string }) {
           )
         })}
       </div>
+    </div>
+  )
+}
+
+function calcTrustScore(s: MeetupStats): number {
+  const hostedPts = s.meetupsHosted === 0 ? 0 : s.meetupsHosted <= 2 ? 10 : s.meetupsHosted <= 5 ? 20 : 30
+  const ratingPts = s.organizerRating ? Math.min(30, Math.round(s.organizerRating * 6)) : 0
+  const attendRate = s.meetupsJoined > 0 ? (s.meetupsAttended / s.meetupsJoined) * 100 : 0
+  const attendPts = Math.min(20, Math.round(attendRate * 0.2))
+  const months = Math.floor((Date.now() - new Date(s.createdAt).getTime()) / (30 * 24 * 3600 * 1000))
+  const durationPts = Math.min(20, Math.round(months * 0.5))
+  return hostedPts + ratingPts + attendPts + durationPts
+}
+
+function getTrustBadge(score: number) {
+  if (score < 40) return null
+  if (score < 60) return { label: 'Nieuw', color: '#3B82F6', bg: '#EFF6FF', icon: <User size={11} /> }
+  if (score < 75) return { label: 'Actief', color: '#E87722', bg: '#FFF5EE', icon: <Zap size={11} /> }
+  if (score < 90) return { label: 'Betrouwbaar', color: '#22C55E', bg: '#F0FDF4', icon: <ShieldCheck size={11} /> }
+  return { label: 'Top organisator', color: '#F59E0B', bg: '#FFFBEB', icon: <Star size={11} /> }
+}
+
+function MeetupStatsCard({ s }: { s: MeetupStats }) {
+  const score = calcTrustScore(s)
+  const badge = getTrustBadge(score)
+  const attendPct = s.meetupsJoined > 0 ? Math.round((s.meetupsAttended / s.meetupsJoined) * 100) : 0
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <h3 className="font-black text-black mb-4 flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-[#E87722]" /> Meetup activiteit
+      </h3>
+      <div className="grid grid-cols-2 gap-2 mb-3">
+        {[
+          { label: 'Gehost', value: s.meetupsHosted },
+          { label: 'Gejoind', value: s.meetupsJoined },
+          { label: 'Aanwezigheid', value: `${attendPct}%` },
+          { label: 'Beoordeling', value: s.organizerRating ? `${s.organizerRating.toFixed(1)} ⭐` : '–' },
+        ].map(({ label, value }) => (
+          <div key={label} className="bg-[#F5F0E8] rounded-xl p-3">
+            <p className="text-[10px] text-gray-400 font-semibold mb-0.5">{label}</p>
+            <p className="text-base font-black text-black" style={{ fontFamily: "'Syne', sans-serif" }}>{value}</p>
+          </div>
+        ))}
+      </div>
+      {badge && (
+        <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: badge.bg, color: badge.color, fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 999 }}>
+          {badge.icon} {badge.label}
+        </span>
+      )}
     </div>
   )
 }
@@ -249,6 +300,15 @@ const BESCHIKBAARHEID_META: Record<string, { emoji: string; label: string; sub: 
   weekend: { emoji: '📅', label: 'Weekend', sub: 'Za & Zo' },
 }
 
+export type MeetupStats = {
+  meetupsHosted: number
+  meetupsJoined: number
+  meetupsAttended: number
+  organizerRating: number | null
+  organizerReviewCount: number
+  createdAt: string
+}
+
 export type ProfileData = {
   id: string
   name: string
@@ -260,6 +320,7 @@ export type ProfileData = {
   openFollow?: boolean
   beschikbaarheid?: string[]
   stats?: { volgers: number; volgend: number; posts: number; groepen: number }
+  meetupStats?: MeetupStats
 }
 
 type Props = {
@@ -507,6 +568,9 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
 
           {/* Publieke meetups */}
           <PublicMeetupsCard profileId={profile.id} />
+
+          {/* Meetup stats */}
+          {profile.meetupStats && <MeetupStatsCard s={profile.meetupStats} />}
 
           {followStatus === 'none' && (
             <button

@@ -501,6 +501,246 @@ export async function getMeetups(params: {
   }).filter(Boolean) as MeetupListItem[]
 }
 
+// ─── New types voor modal ─────────────────────────────────────────────────────
+
+export type ModalParticipant = {
+  userId: string
+  name: string
+  avatarUrl: string | null
+  status: string
+  message: string | null
+  joinedAt: string | null
+  attended: boolean
+}
+
+export type ModalCreator = {
+  id: string
+  name: string
+  avatarUrl: string | null
+  bannerUrl: string | null
+  bio: string | null
+  city: string | null
+  sport: string | null
+  meetupsHosted: number
+  meetupsJoined: number
+  meetupsAttended: number
+  organizerRating: number | null
+  organizerReviewCount: number
+  createdAt: string
+}
+
+export type MeetupModalDetail = {
+  meetup: {
+    id: string
+    creatorId: string
+    sport: string
+    title: string
+    description: string | null
+    locationName: string
+    locationAddress: string | null
+    city: string
+    latitude: number
+    longitude: number
+    displayLat: number
+    displayLon: number
+    hasLocationAccess: boolean
+    isSpontaneous: boolean
+    date: string | null
+    time: string | null
+    expiresAt: string | null
+    maxParticipants: number
+    status: string
+    visibility: string
+    createdAt: string
+  }
+  creator: ModalCreator
+  acceptedParticipants: ModalParticipant[]
+  interestedParticipants: ModalParticipant[]
+  isCreator: boolean
+  myStatus: string | null
+  currentUserId: string | null
+  myReviewSubmitted: boolean
+}
+
+// ─── 8b. Detail voor kaart-modal ─────────────────────────────────────────────
+
+export async function getMeetupDetailForModal(meetupId: string): Promise<MeetupModalDetail | null> {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+
+  const { data: meetup } = await supabase
+    .from('meetups').select('*').eq('id', meetupId).single()
+  if (!meetup) return null
+
+  const [{ data: creatorRaw }, { data: allParticipants }] = await Promise.all([
+    supabase.from('profiles')
+      .select('id, full_name, username, avatar_url, banner_url, bio, city, sport, created_at')
+      .eq('id', meetup.creator_id).single(),
+    supabase.from('meetup_participants')
+      .select('user_id, status, message, joined_at, attended')
+      .eq('meetup_id', meetupId),
+  ])
+
+  // Stats kolommen bestaan pas na SQL-migratie — veilig ophalen
+  let statsData = { meetups_hosted: 0, meetups_joined: 0, meetups_attended: 0, organizer_rating: null as number | null, organizer_review_count: 0 }
+  try {
+    const { data: stats } = await supabase.from('profiles')
+      .select('meetups_hosted, meetups_joined, meetups_attended, organizer_rating, organizer_review_count')
+      .eq('id', meetup.creator_id).single()
+    if (stats) statsData = {
+      meetups_hosted: (stats as Record<string, unknown>).meetups_hosted as number ?? 0,
+      meetups_joined: (stats as Record<string, unknown>).meetups_joined as number ?? 0,
+      meetups_attended: (stats as Record<string, unknown>).meetups_attended as number ?? 0,
+      organizer_rating: (stats as Record<string, unknown>).organizer_rating as number | null ?? null,
+      organizer_review_count: (stats as Record<string, unknown>).organizer_review_count as number ?? 0,
+    }
+  } catch { /* kolommen bestaan nog niet */ }
+
+  const participantIds = (allParticipants ?? []).map(p => p.user_id)
+  let profileMap: Record<string, { name: string; avatarUrl: string | null }> = {}
+  if (participantIds.length > 0) {
+    const { data: profiles } = await supabase.from('profiles')
+      .select('id, full_name, username, avatar_url').in('id', participantIds)
+    profileMap = Object.fromEntries((profiles ?? []).map(p => [
+      p.id, { name: p.full_name ?? p.username ?? 'Onbekend', avatarUrl: p.avatar_url ?? null }
+    ]))
+  }
+
+  const isCreator = user?.id === meetup.creator_id
+  const myParticipant = user ? (allParticipants ?? []).find(p => p.user_id === user.id) : null
+  const myStatus = myParticipant?.status ?? null
+  const hasLocationAccess = isCreator || myStatus === 'geaccepteerd'
+
+  let myReviewSubmitted = false
+  if (user && !isCreator) {
+    try {
+      const { data: rev } = await supabase.from('meetup_reviews')
+        .select('id').eq('meetup_id', meetupId).eq('reviewer_id', user.id).maybeSingle()
+      myReviewSubmitted = !!rev
+    } catch { /* tabel bestaat nog niet */ }
+  }
+
+  const toParticipant = (p: { user_id: string; status: string; message: string | null; joined_at: string | null; attended: boolean | null }): ModalParticipant => ({
+    userId: p.user_id,
+    name: profileMap[p.user_id]?.name ?? 'Onbekend',
+    avatarUrl: profileMap[p.user_id]?.avatarUrl ?? null,
+    status: p.status,
+    message: p.message ?? null,
+    joinedAt: p.joined_at ?? null,
+    attended: p.attended ?? false,
+  })
+
+  return {
+    meetup: {
+      id: meetup.id,
+      creatorId: meetup.creator_id,
+      sport: meetup.sport,
+      title: meetup.title,
+      description: meetup.description,
+      locationName: meetup.location_name,
+      locationAddress: meetup.location_address ?? null,
+      city: meetup.city,
+      latitude: meetup.latitude,
+      longitude: meetup.longitude,
+      displayLat: hasLocationAccess ? meetup.latitude : Math.round(meetup.latitude * 100) / 100,
+      displayLon: hasLocationAccess ? meetup.longitude : Math.round(meetup.longitude * 100) / 100,
+      hasLocationAccess,
+      isSpontaneous: meetup.is_spontaneous,
+      date: meetup.date,
+      time: meetup.time,
+      expiresAt: meetup.expires_at,
+      maxParticipants: meetup.max_participants,
+      status: meetup.status,
+      visibility: meetup.visibility,
+      createdAt: meetup.created_at,
+    },
+    creator: {
+      id: creatorRaw!.id,
+      name: creatorRaw?.full_name ?? (creatorRaw as unknown as { username?: string })?.username ?? 'Onbekend',
+      avatarUrl: creatorRaw?.avatar_url ?? null,
+      bannerUrl: (creatorRaw as unknown as { banner_url?: string | null })?.banner_url ?? null,
+      bio: creatorRaw?.bio ?? null,
+      city: (creatorRaw as unknown as { city?: string | null })?.city ?? null,
+      sport: (creatorRaw as unknown as { sport?: string | null })?.sport ?? null,
+      meetupsHosted: statsData.meetups_hosted,
+      meetupsJoined: statsData.meetups_joined,
+      meetupsAttended: statsData.meetups_attended,
+      organizerRating: statsData.organizer_rating,
+      organizerReviewCount: statsData.organizer_review_count,
+      createdAt: (creatorRaw as unknown as { created_at?: string })?.created_at ?? new Date().toISOString(),
+    },
+    acceptedParticipants: (allParticipants ?? [])
+      .filter(p => p.status === 'geaccepteerd')
+      .map(p => toParticipant(p as Parameters<typeof toParticipant>[0])),
+    interestedParticipants: (allParticipants ?? [])
+      .filter(p => p.status === 'interesse')
+      .map(p => toParticipant(p as Parameters<typeof toParticipant>[0])),
+    isCreator,
+    myStatus,
+    currentUserId: user?.id ?? null,
+    myReviewSubmitted,
+  }
+}
+
+// ─── 9. Aanwezigheid bevestigen ───────────────────────────────────────────────
+
+export async function markAttended(meetupId: string, targetUserId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+
+  const { data: meetup } = await supabase.from('meetups')
+    .select('creator_id').eq('id', meetupId).single()
+  if (!meetup || meetup.creator_id !== user.id) return { success: false }
+
+  await supabase.from('meetup_participants')
+    .update({ attended: true, confirmed_at: new Date().toISOString() })
+    .eq('meetup_id', meetupId).eq('user_id', targetUserId).eq('status', 'geaccepteerd')
+
+  revalidatePath(`/dashboard/meetup/${meetupId}`)
+  return { success: true }
+}
+
+// ─── 10. Review indienen ──────────────────────────────────────────────────────
+
+export async function submitReview(meetupId: string, organizerId: string, rating: number) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd' }
+  if (rating < 1 || rating > 5) return { success: false, error: 'Ongeldige rating' }
+
+  try {
+    const { error } = await supabase.from('meetup_reviews')
+      .insert({ meetup_id: meetupId, reviewer_id: user.id, organizer_id: organizerId, rating })
+    if (error) return { success: false, error: error.message }
+    return { success: true }
+  } catch {
+    return { success: false, error: 'Review-tabel bestaat nog niet' }
+  }
+}
+
+// ─── 11. Deelnemer verwijderen (organisator) ──────────────────────────────────
+
+export async function removeParticipant(meetupId: string, targetUserId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false }
+
+  const { data: meetup } = await supabase.from('meetups')
+    .select('creator_id, status').eq('id', meetupId).single()
+  if (!meetup || meetup.creator_id !== user.id) return { success: false }
+
+  await supabase.from('meetup_participants')
+    .delete().eq('meetup_id', meetupId).eq('user_id', targetUserId)
+
+  if (meetup.status === 'vol') {
+    await supabase.from('meetups').update({ status: 'open' }).eq('id', meetupId)
+  }
+
+  revalidatePath(`/dashboard/meetup/${meetupId}`)
+  return { success: true }
+}
+
 // ─── 8. Meetup detail ophalen ─────────────────────────────────────────────────
 
 export async function getMeetupDetail(meetupId: string) {
