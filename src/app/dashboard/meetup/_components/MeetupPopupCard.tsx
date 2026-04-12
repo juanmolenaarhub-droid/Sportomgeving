@@ -76,11 +76,11 @@ export default function MeetupPopupCard({
     ? (new Date(meetup.expiresAt).getTime() - Date.now()) < 3600000
     : false
 
-  const coverBg: React.CSSProperties = meetup.creatorAvatarUrl
+  const coverBg: React.CSSProperties = meetup.creatorBannerUrl
     ? {
-        backgroundImage: `url(${meetup.creatorAvatarUrl})`,
+        backgroundImage: `url(${meetup.creatorBannerUrl})`,
         backgroundSize: 'cover',
-        backgroundPosition: 'center top',
+        backgroundPosition: 'center',
       }
     : { background: SPORT_GRADIENTS[meetup.sport] ?? DEFAULT_GRADIENT }
 

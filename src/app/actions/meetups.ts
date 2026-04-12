@@ -364,6 +364,7 @@ export type MeetupListItem = {
   creatorId: string
   creatorName: string
   creatorAvatarUrl: string | null
+  creatorBannerUrl: string | null
   sport: string
   title: string
   description: string | null
@@ -439,7 +440,7 @@ export async function getMeetups(params: {
   const creatorIds = [...new Set(meetups.map(m => m.creator_id))]
   const { data: creators } = await supabase
     .from('profiles')
-    .select('id, full_name, username, avatar_url')
+    .select('*')
     .in('id', creatorIds)
   const creatorMap = Object.fromEntries((creators ?? []).map(c => [c.id, c]))
 
@@ -478,6 +479,7 @@ export async function getMeetups(params: {
       creatorId: m.creator_id,
       creatorName: creator?.full_name ?? creator?.username ?? 'Onbekend',
       creatorAvatarUrl: creator?.avatar_url ?? null,
+      creatorBannerUrl: (creator as Record<string, unknown>)?.banner_url as string | null ?? null,
       sport: m.sport,
       title: m.title,
       description: m.description,
