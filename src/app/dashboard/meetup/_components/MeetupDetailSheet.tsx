@@ -11,28 +11,18 @@ import {
   markAttended,
   removeParticipant,
   showInterest,
+  withdrawInterest,
   type MeetupModalDetail,
   type ModalParticipant,
 } from '@/app/actions/meetups'
 import { getSportEmoji } from './MeetupMapPin'
+import MeetupBeheerSheet from './MeetupBeheerSheet'
 
 const LocationPreviewMap = dynamic(() => import('./LocationPreviewMap'), { ssr: false })
 
 // ─── Constanten ───────────────────────────────────────────────────────────────
 
-const SPORT_GRADIENTS: Record<string, string> = {
-  'Hardlopen': 'linear-gradient(160deg, #E87722 0%, #8B3300 100%)',
-  'Fietsen':   'linear-gradient(160deg, #3B82F6 0%, #1E3A8A 100%)',
-  'Zwemmen':   'linear-gradient(160deg, #06B6D4 0%, #164E63 100%)',
-  'Gym':       'linear-gradient(160deg, #22C55E 0%, #14532D 100%)',
-  'Tennis':    'linear-gradient(160deg, #8B5CF6 0%, #4C1D95 100%)',
-  'Padel':     'linear-gradient(160deg, #8B5CF6 0%, #4C1D95 100%)',
-  'Golf':      'linear-gradient(160deg, #22C55E 0%, #166534 100%)',
-  'Voetbal':   'linear-gradient(160deg, #10B981 0%, #064E3B 100%)',
-  'Yoga':      'linear-gradient(160deg, #F59E0B 0%, #78350F 100%)',
-  'Boksen':    'linear-gradient(160deg, #EF4444 0%, #7F1D1D 100%)',
-}
-const DEFAULT_GRADIENT = 'linear-gradient(160deg, #111111 0%, #374151 100%)'
+const ORANGE_GRADIENT = 'linear-gradient(160deg, #E87722 0%, #8B3300 100%)'
 
 // ─── Hulpfuncties ─────────────────────────────────────────────────────────────
 
@@ -80,17 +70,19 @@ type Props = {
   meetupId: string
   onClose: () => void
   onInterestSuccess: (meetupId: string) => void
+  onMeetupDeleted?: (meetupId: string) => void
 }
 
 // ─── Hoofd component ──────────────────────────────────────────────────────────
 
-export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess }: Props) {
+export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess, onMeetupDeleted }: Props) {
   const [data, setData] = useState<MeetupModalDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [tab, setTab] = useState<Tab>('info')
   const [visible, setVisible] = useState(false)
+  const [showManage, setShowManage] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
   const [actionPending, setActionPending] = useState<string | null>(null)
   const [myStatus, setMyStatus] = useState<string | null>(null)
@@ -166,13 +158,34 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
     })
   }
 
+  function handleWithdraw() {
+    if (!data || actionPending) return
+    setActionPending('withdraw')
+    startTransition(async () => {
+      const res = await withdrawInterest(data.meetup.id)
+      if (res.success) {
+        setMyStatus(null)
+        showToastMsg('Interesse ingetrokken.')
+      }
+      setActionPending(null)
+    })
+  }
+
+  async function handleRefreshData() {
+    const fresh = await getMeetupDetailForModal(meetupId)
+    if (fresh) setData(fresh)
+  }
+
+  function handleMeetupGone() {
+    onMeetupDeleted?.(meetupId)
+    handleClose()
+  }
+
   // Cover achtergrond
   const m = data?.meetup
   const coverBg: React.CSSProperties = m?.coverImageUrl
     ? { backgroundImage: `url(${m.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
-    : m
-    ? { background: SPORT_GRADIENTS[m.sport] ?? DEFAULT_GRADIENT }
-    : { background: DEFAULT_GRADIENT }
+    : { background: ORANGE_GRADIENT }
 
   const emoji = m ? getSportEmoji(m.sport) : '🏅'
 
@@ -308,9 +321,23 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
               isCreator={data.isCreator}
               myStatus={myStatus}
               onInterest={handleInterest}
+              onManage={() => setShowManage(true)}
+              onWithdraw={handleWithdraw}
               actionPending={actionPending}
             />
           </div>
+        )}
+
+        {/* ── BEHEER SHEET (slide in van rechts, bovenop de sheet) ── */}
+        {data && (
+          <MeetupBeheerSheet
+            data={data}
+            meetupId={meetupId}
+            visible={showManage}
+            onBack={() => setShowManage(false)}
+            onMeetupGone={handleMeetupGone}
+            onRefresh={handleRefreshData}
+          />
         )}
       </div>
 
@@ -633,13 +660,17 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
 
 // ─── Footer knop ──────────────────────────────────────────────────────────────
 
-function FooterButton({ meetup, isCreator, myStatus, onInterest, actionPending }: {
+function FooterButton({ meetup, isCreator, myStatus, onInterest, onManage, onWithdraw, actionPending }: {
   meetup: MeetupModalDetail['meetup']
   isCreator: boolean
   myStatus: string | null
   onInterest: () => void
+  onManage: () => void
+  onWithdraw: () => void
   actionPending: string | null
 }) {
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false)
+
   const base: React.CSSProperties = {
     display: 'block', width: '100%', textAlign: 'center',
     borderRadius: 12, padding: '14px', fontSize: 15, fontWeight: 700,
@@ -648,23 +679,50 @@ function FooterButton({ meetup, isCreator, myStatus, onInterest, actionPending }
 
   if (isCreator) {
     return (
-      <a href={`/dashboard/meetup/${meetup.id}`} style={{ ...base, background: '#111', color: '#fff' }}>
+      <button onClick={onManage} style={{ ...base, background: '#111', color: '#fff' }}>
         Beheer Meetup
-      </a>
+      </button>
     )
   }
   if (myStatus === 'geaccepteerd') {
     return (
-      <a href="/dashboard/messages?tab=meetups" style={{ ...base, background: '#16A34A', color: '#fff' }}>
+      <a href="/dashboard/messages?tab=meetups" style={{ ...base, background: '#16A34A', color: '#fff', display: 'block' }}>
         Ga naar Meetup chat
       </a>
     )
   }
   if (myStatus === 'interesse') {
+    if (confirmWithdraw) {
+      return (
+        <div style={{ display: 'flex', gap: 8 }}>
+          <button
+            onClick={() => setConfirmWithdraw(false)}
+            style={{ flex: 1, background: '#F3F4F6', color: '#111', border: 'none', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+          >
+            Nee
+          </button>
+          <button
+            onClick={onWithdraw}
+            disabled={actionPending === 'withdraw'}
+            style={{ flex: 1, background: '#DC2626', color: '#fff', border: 'none', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 700, cursor: 'pointer', opacity: actionPending === 'withdraw' ? 0.6 : 1 }}
+          >
+            {actionPending === 'withdraw' ? 'Bezig...' : 'Ja, intrekken'}
+          </button>
+        </div>
+      )
+    }
     return (
-      <button disabled style={{ ...base, background: '#9CA3AF', color: '#fff', cursor: 'not-allowed' }}>
-        Wacht op acceptatie...
-      </button>
+      <div style={{ textAlign: 'center' }}>
+        <button disabled style={{ ...base, background: '#E87722', color: '#fff', opacity: 0.85, cursor: 'not-allowed' }}>
+          Wacht op acceptatie...
+        </button>
+        <button
+          onClick={() => setConfirmWithdraw(true)}
+          style={{ marginTop: 6, fontSize: 12, color: '#9CA3AF', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline' }}
+        >
+          Intrekken ×
+        </button>
+      </div>
     )
   }
   if (meetup.status === 'open') {
@@ -673,8 +731,7 @@ function FooterButton({ meetup, isCreator, myStatus, onInterest, actionPending }
         onClick={onInterest}
         disabled={actionPending === 'interest'}
         style={{
-          ...base,
-          background: '#E87722', color: '#fff',
+          ...base, background: '#E87722', color: '#fff',
           opacity: actionPending === 'interest' ? 0.6 : 1,
           cursor: actionPending === 'interest' ? 'not-allowed' : 'pointer',
         }}

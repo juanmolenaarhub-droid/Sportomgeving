@@ -280,49 +280,41 @@ export async function leaveMeetup(meetupId: string) {
 
 // ─── 5. Meetup annuleren ──────────────────────────────────────────────────────
 
-export async function cancelMeetup(meetupId: string) {
+export async function cancelMeetup(meetupId: string, reason?: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Niet ingelogd' }
 
   const { data: meetup } = await supabase
-    .from('meetups')
-    .select('creator_id, title')
-    .eq('id', meetupId)
-    .single()
-
+    .from('meetups').select('creator_id, title').eq('id', meetupId).single()
   if (!meetup || meetup.creator_id !== user.id) return { success: false, error: 'Geen toegang' }
 
   await supabase.from('meetups').update({ status: 'geannuleerd' }).eq('id', meetupId)
 
-  // Notificeer geaccepteerde deelnemers
-  const { data: accepted } = await supabase
-    .from('meetup_participants')
-    .select('user_id')
-    .eq('meetup_id', meetupId)
-    .eq('status', 'geaccepteerd')
+  // Notificeer alle deelnemers (interesse + geaccepteerd)
+  const { data: allParticipants } = await supabase
+    .from('meetup_participants').select('user_id')
+    .eq('meetup_id', meetupId).in('status', ['geaccepteerd', 'interesse'])
 
-  // Systeem-bericht
+  const message = reason
+    ? `De Meetup '${meetup.title}' is geannuleerd. Reden: ${reason}`
+    : `De Meetup '${meetup.title}' is geannuleerd`
+
   const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
   const name = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
   await supabase.from('meetup_messages').insert({
-    meetup_id: meetupId,
-    sender_id: user.id,
-    content: `Meetup geannuleerd door ${name}`,
+    meetup_id: meetupId, sender_id: user.id,
+    content: `Meetup geannuleerd door ${name}${reason ? `. Reden: ${reason}` : ''}`,
     is_system: true,
   })
 
-  for (const p of accepted ?? []) {
-    await sendNotification(
-      supabase, p.user_id, 'meetup_cancelled',
-      `De Meetup '${meetup.title}' is geannuleerd`,
-      `/dashboard/meetup`,
-    )
+  for (const p of allParticipants ?? []) {
+    await sendNotification(supabase, p.user_id, 'meetup_cancelled', message, '/dashboard/meetup')
   }
 
   await logActivity(supabase, user.id, 'meetup_cancelled', { meetup_id: meetupId })
   revalidatePath('/dashboard/meetup')
-  return { success: true }
+  return { success: true, error: null }
 }
 
 // ─── 6. Meetup-bericht sturen ─────────────────────────────────────────────────
@@ -735,7 +727,7 @@ export async function removeParticipant(meetupId: string, targetUserId: string) 
   if (!user) return { success: false }
 
   const { data: meetup } = await supabase.from('meetups')
-    .select('creator_id, status').eq('id', meetupId).single()
+    .select('creator_id, status, title').eq('id', meetupId).single()
   if (!meetup || meetup.creator_id !== user.id) return { success: false }
 
   await supabase.from('meetup_participants')
@@ -744,6 +736,10 @@ export async function removeParticipant(meetupId: string, targetUserId: string) 
   if (meetup.status === 'vol') {
     await supabase.from('meetups').update({ status: 'open' }).eq('id', meetupId)
   }
+
+  await sendNotification(supabase, targetUserId, 'meetup_removed',
+    `Je bent verwijderd uit de Meetup '${meetup.title}'.`, '/dashboard/meetup')
+  await logActivity(supabase, user.id, 'meetup_participant_removed', { meetup_id: meetupId, removed_user: targetUserId })
 
   revalidatePath(`/dashboard/meetup/${meetupId}`)
   return { success: true }
@@ -793,4 +789,118 @@ export async function getMeetupDetail(meetupId: string) {
     myStatus: myParticipant?.status ?? null,
     currentUserId: user?.id ?? null,
   }
+}
+
+// ─── 12. Meetup bijwerken ─────────────────────────────────────────────────────
+
+export async function updateMeetup(meetupId: string, updates: {
+  title?: string
+  description?: string
+  date?: string
+  time?: string
+  maxParticipants?: number
+  locationName?: string
+}) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd' }
+
+  const { data: meetup } = await supabase.from('meetups').select('creator_id').eq('id', meetupId).single()
+  if (!meetup || meetup.creator_id !== user.id) return { success: false, error: 'Geen toegang' }
+
+  const patch: Record<string, unknown> = {}
+  if (updates.title !== undefined) patch.title = updates.title
+  if (updates.description !== undefined) patch.description = updates.description || null
+  if (updates.date !== undefined) patch.date = updates.date || null
+  if (updates.time !== undefined) patch.time = updates.time || null
+  if (updates.maxParticipants !== undefined) patch.max_participants = updates.maxParticipants
+  if (updates.locationName !== undefined) patch.location_name = updates.locationName
+
+  const { error } = await supabase.from('meetups').update(patch).eq('id', meetupId)
+  if (error) return { success: false, error: error.message }
+
+  await logActivity(supabase, user.id, 'meetup_updated', { meetup_id: meetupId })
+  revalidatePath(`/dashboard/meetup/${meetupId}`)
+  revalidatePath('/dashboard/meetup')
+  return { success: true, error: null }
+}
+
+// ─── 13. Meetup definitief verwijderen ────────────────────────────────────────
+
+export async function deleteMeetup(meetupId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd' }
+
+  const { data: meetup } = await supabase.from('meetups')
+    .select('creator_id, title').eq('id', meetupId).single()
+  if (!meetup || meetup.creator_id !== user.id) return { success: false, error: 'Geen toegang' }
+
+  // Notificeer deelnemers vóór verwijderen
+  const { data: participants } = await supabase.from('meetup_participants')
+    .select('user_id').eq('meetup_id', meetupId).in('status', ['geaccepteerd', 'interesse'])
+
+  for (const p of participants ?? []) {
+    await sendNotification(supabase, p.user_id, 'meetup_deleted',
+      `De Meetup '${meetup.title}' is verwijderd door de organisator.`, '/dashboard/meetup')
+  }
+
+  await logActivity(supabase, user.id, 'meetup_deleted', { meetup_id: meetupId })
+
+  await supabase.from('meetup_messages').delete().eq('meetup_id', meetupId)
+  await supabase.from('meetup_participants').delete().eq('meetup_id', meetupId)
+  await supabase.from('meetups').delete().eq('id', meetupId)
+
+  revalidatePath('/dashboard/meetup')
+  return { success: true, error: null }
+}
+
+// ─── 14. Interesse intrekken ──────────────────────────────────────────────────
+
+export async function withdrawInterest(meetupId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd' }
+
+  await supabase.from('meetup_participants')
+    .delete().eq('meetup_id', meetupId).eq('user_id', user.id).eq('status', 'interesse')
+
+  revalidatePath(`/dashboard/meetup/${meetupId}`)
+  return { success: true, error: null }
+}
+
+// ─── 15. Inschrijvingen sluiten ───────────────────────────────────────────────
+
+export async function closeMeetup(meetupId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd' }
+
+  const { data: meetup } = await supabase.from('meetups').select('creator_id').eq('id', meetupId).single()
+  if (!meetup || meetup.creator_id !== user.id) return { success: false, error: 'Geen toegang' }
+
+  await supabase.from('meetups').update({ status: 'vol' }).eq('id', meetupId)
+  revalidatePath(`/dashboard/meetup/${meetupId}`)
+  return { success: true, error: null }
+}
+
+// ─── 16. Aanwezigheid batch bevestigen ───────────────────────────────────────
+
+export async function confirmAttendance(meetupId: string, attendees: string[]) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd' }
+
+  const { data: meetup } = await supabase.from('meetups').select('creator_id').eq('id', meetupId).single()
+  if (!meetup || meetup.creator_id !== user.id) return { success: false, error: 'Geen toegang' }
+
+  if (attendees.length > 0) {
+    await supabase.from('meetup_participants')
+      .update({ attended: true, confirmed_at: new Date().toISOString() })
+      .eq('meetup_id', meetupId).in('user_id', attendees).eq('status', 'geaccepteerd')
+  }
+
+  await logActivity(supabase, user.id, 'meetup_attendance_confirmed', { meetup_id: meetupId, count: attendees.length })
+  revalidatePath(`/dashboard/meetup/${meetupId}`)
+  return { success: true, error: null }
 }

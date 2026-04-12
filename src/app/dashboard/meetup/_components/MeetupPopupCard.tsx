@@ -3,23 +3,11 @@
 import { useState, useTransition } from 'react'
 import { Clock, MapPin } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
-import { showInterest } from '@/app/actions/meetups'
+import { showInterest, withdrawInterest } from '@/app/actions/meetups'
 import type { MeetupListItem } from '@/app/actions/meetups'
 import { getSportEmoji } from './MeetupMapPin'
 
-const SPORT_GRADIENTS: Record<string, string> = {
-  'Hardlopen': 'linear-gradient(160deg, #E87722 0%, #8B3300 100%)',
-  'Fietsen':   'linear-gradient(160deg, #3B82F6 0%, #1E3A8A 100%)',
-  'Zwemmen':   'linear-gradient(160deg, #06B6D4 0%, #164E63 100%)',
-  'Gym':       'linear-gradient(160deg, #22C55E 0%, #14532D 100%)',
-  'Tennis':    'linear-gradient(160deg, #8B5CF6 0%, #4C1D95 100%)',
-  'Padel':     'linear-gradient(160deg, #8B5CF6 0%, #4C1D95 100%)',
-  'Golf':      'linear-gradient(160deg, #22C55E 0%, #166534 100%)',
-  'Voetbal':   'linear-gradient(160deg, #10B981 0%, #064E3B 100%)',
-  'Yoga':      'linear-gradient(160deg, #F59E0B 0%, #78350F 100%)',
-  'Boksen':    'linear-gradient(160deg, #EF4444 0%, #7F1D1D 100%)',
-}
-const DEFAULT_GRADIENT = 'linear-gradient(160deg, #111111 0%, #374151 100%)'
+const ORANGE_GRADIENT = 'linear-gradient(160deg, #E87722 0%, #8B3300 100%)'
 
 const INTEREST_CHIPS: Record<string, string> = {
   'Hardlopen': 'Hey! Train jij ook voor een wedstrijd? Zou leuk zijn samen te lopen!',
@@ -63,6 +51,7 @@ export default function MeetupPopupCard({
   meetup, currentUserId, userLat, userLon, onClose, onInterestSuccess, onDetailsClick,
 }: Props) {
   const [showOverlay, setShowOverlay] = useState(false)
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false)
   const [interestMsg, setInterestMsg] = useState('')
   const [myStatus, setMyStatus] = useState(meetup.myStatus)
   const [isPending, startTransition] = useTransition()
@@ -82,7 +71,7 @@ export default function MeetupPopupCard({
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }
-    : { background: SPORT_GRADIENTS[meetup.sport] ?? DEFAULT_GRADIENT }
+    : { background: ORANGE_GRADIENT }
 
   function handleInterestSubmit() {
     startTransition(async () => {
@@ -265,9 +254,32 @@ export default function MeetupPopupCard({
             Ga naar chat
           </a>
         ) : myStatus === 'interesse' ? (
-          <span style={{ ...primaryBtnBase, background: '#9CA3AF', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', fontStyle: 'italic', cursor: 'default' }}>
-            Wacht...
-          </span>
+          confirmWithdraw ? (
+            <>
+              <button
+                onClick={() => setConfirmWithdraw(false)}
+                style={{ ...primaryBtnBase, background: '#F3F4F6', color: '#111' }}
+              >Nee</button>
+              <button
+                onClick={() => startTransition(async () => {
+                  await withdrawInterest(meetup.id)
+                  setMyStatus(null)
+                  setConfirmWithdraw(false)
+                })}
+                disabled={isPending}
+                style={{ ...primaryBtnBase, background: '#DC2626', color: '#fff', opacity: isPending ? 0.6 : 1 }}
+              >{isPending ? 'Bezig...' : 'Ja, intrekken'}</button>
+            </>
+          ) : (
+            <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <button disabled style={{ ...primaryBtnBase, background: '#E87722', color: '#fff', opacity: 0.85, cursor: 'not-allowed' }}>
+                Wacht op acceptatie...
+              </button>
+              <button onClick={() => setConfirmWithdraw(true)} style={{ fontSize: 12, color: '#9CA3AF', background: 'transparent', border: 'none', cursor: 'pointer', textDecoration: 'underline', textAlign: 'center' }}>
+                Intrekken ×
+              </button>
+            </div>
+          )
         ) : meetup.status === 'open' ? (
           <button
             onClick={() => setShowOverlay(true)}

@@ -92,6 +92,11 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
     showToast('Je interesse is verstuurd! De organisator beslist of je mee mag doen.')
   }
 
+  function handleMeetupDeleted(meetupId: string) {
+    setMeetups(prev => prev.filter(m => m.id !== meetupId))
+    setDetailMeetupId(null)
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -205,6 +210,7 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
           meetupId={detailMeetupId}
           onClose={() => setDetailMeetupId(null)}
           onInterestSuccess={handleInterestSuccess}
+          onMeetupDeleted={handleMeetupDeleted}
         />
       )}
 
