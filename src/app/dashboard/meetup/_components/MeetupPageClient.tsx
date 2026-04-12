@@ -252,6 +252,11 @@ function MeetupListCard({
   const color = getSportColor(meetup.sport)
   const isCreator = meetup.creatorId === currentUserId
 
+  const hoursSinceDecline = meetup.declinedAt
+    ? (Date.now() - new Date(meetup.declinedAt).getTime()) / 3600000
+    : null
+  const declineExpired = hoursSinceDecline !== null && hoursSinceDecline >= 24
+
   return (
     <div className="bg-white rounded-2xl border border-black/8 overflow-hidden hover:border-black/16 hover:shadow-sm transition-all flex">
       {/* Sport kleur balk */}
@@ -311,11 +316,18 @@ function MeetupListCard({
               Details
             </Link>
             {!isCreator && meetup.myStatus === 'geaccepteerd' ? (
-              <Link href="/dashboard/messages?tab=meetups" className="text-xs font-bold bg-[#111] text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
+              <Link href={`/dashboard/messages?meetup=${meetup.id}`} className="text-xs font-bold bg-[#111] text-white px-3 py-1.5 rounded-lg hover:bg-gray-800 transition-colors">
                 Chat
               </Link>
             ) : !isCreator && meetup.myStatus === 'interesse' ? (
               <span className="text-xs text-gray-400 italic">Wacht op acceptatie</span>
+            ) : !isCreator && meetup.myStatus === 'geweigerd' && !declineExpired ? (
+              <div className="text-right">
+                <span className="text-xs font-bold text-gray-400 px-2 py-1 bg-gray-100 border border-gray-200 rounded-lg cursor-not-allowed">
+                  Niet geselecteerd
+                </span>
+                <p className="text-[10px] text-gray-400 mt-0.5">opnieuw na 24u</p>
+              </div>
             ) : !isCreator && meetup.status === 'open' ? (
               <button
                 onClick={onInterest}

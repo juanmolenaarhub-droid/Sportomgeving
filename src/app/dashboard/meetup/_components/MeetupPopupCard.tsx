@@ -1,9 +1,9 @@
 'use client'
 
-import { useState, useTransition } from 'react'
+import { useState, useEffect, useTransition } from 'react'
 import { Clock, MapPin } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
-import { showInterest, withdrawInterest } from '@/app/actions/meetups'
+import { showInterest, withdrawInterest, clearDeclinedParticipant } from '@/app/actions/meetups'
 import type { MeetupListItem } from '@/app/actions/meetups'
 import { getSportEmoji } from './MeetupMapPin'
 
@@ -55,6 +55,22 @@ export default function MeetupPopupCard({
   const [interestMsg, setInterestMsg] = useState('')
   const [myStatus, setMyStatus] = useState(meetup.myStatus)
   const [isPending, startTransition] = useTransition()
+
+  // Geweigerd: bereken of 24u voorbij is
+  const declinedAt = meetup.declinedAt ?? null
+  const hoursSinceDecline = declinedAt
+    ? (Date.now() - new Date(declinedAt).getTime()) / 3600000
+    : null
+  const declineExpired = hoursSinceDecline !== null && hoursSinceDecline >= 24
+
+  // Na 24u: verwijder geweigerd record zodat opnieuw interesse tonen mogelijk is
+  useEffect(() => {
+    if (myStatus === 'geweigerd' && declineExpired) {
+      clearDeclinedParticipant(meetup.id).then(({ cleared }) => {
+        if (cleared) setMyStatus(null)
+      })
+    }
+  }, [myStatus, declineExpired, meetup.id])
 
   const isCreator = meetup.creatorId === currentUserId
   const spotsLeft = meetup.maxParticipants - meetup.acceptedCount
@@ -280,6 +296,15 @@ export default function MeetupPopupCard({
               </button>
             </div>
           )
+        ) : myStatus === 'geweigerd' && !declineExpired ? (
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 4, textAlign: 'center' }}>
+            <button disabled style={{ ...primaryBtnBase, background: '#F3F4F6', color: '#6B7280', border: '1px solid #E5E7EB', cursor: 'not-allowed' }}>
+              Niet geselecteerd
+            </button>
+            <span style={{ fontSize: 11, color: '#9CA3AF' }}>
+              Je kunt opnieuw interesse tonen na 24 uur
+            </span>
+          </div>
         ) : meetup.status === 'open' ? (
           <button
             onClick={() => setShowOverlay(true)}

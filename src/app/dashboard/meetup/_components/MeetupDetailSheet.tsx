@@ -86,15 +86,32 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
   const [toast, setToast] = useState<string | null>(null)
   const [actionPending, setActionPending] = useState<string | null>(null)
   const [myStatus, setMyStatus] = useState<string | null>(null)
+  const [myDeclinedAt, setMyDeclinedAt] = useState<string | null>(null)
   const [, startTransition] = useTransition()
 
   useEffect(() => {
     setLoading(true)
     setFetchError(false)
     getMeetupDetailForModal(meetupId)
-      .then(d => {
+      .then(async d => {
         setData(d)
-        if (d) setMyStatus(d.myStatus)
+        if (d) {
+          setMyStatus(d.myStatus)
+          // Haal declined_at op als geweigerd
+          if (d.myStatus === 'geweigerd' && d.currentUserId) {
+            try {
+              const { createClient } = await import('@/lib/supabase')
+              const supabase = createClient()
+              const { data: p } = await supabase
+                .from('meetup_participants')
+                .select('declined_at')
+                .eq('meetup_id', meetupId)
+                .eq('user_id', d.currentUserId)
+                .single()
+              setMyDeclinedAt((p as Record<string, unknown>)?.declined_at as string | null ?? null)
+            } catch { /* kolom bestaat mogelijk nog niet */ }
+          }
+        }
         if (!d) setFetchError(true)
       })
       .catch(() => setFetchError(true))
@@ -320,9 +337,11 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
               meetup={data.meetup}
               isCreator={data.isCreator}
               myStatus={myStatus}
+              myDeclinedAt={myDeclinedAt}
               onInterest={handleInterest}
               onManage={() => setShowManage(true)}
               onWithdraw={handleWithdraw}
+              onDeclinedCleared={() => setMyStatus(null)}
               actionPending={actionPending}
             />
           </div>
@@ -660,15 +679,33 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
 
 // ─── Footer knop ──────────────────────────────────────────────────────────────
 
-function FooterButton({ meetup, isCreator, myStatus, onInterest, onManage, onWithdraw, actionPending }: {
+function FooterButton({ meetup, isCreator, myStatus, myDeclinedAt, onInterest, onManage, onWithdraw, onDeclinedCleared, actionPending }: {
   meetup: MeetupModalDetail['meetup']
   isCreator: boolean
   myStatus: string | null
+  myDeclinedAt: string | null
   onInterest: () => void
   onManage: () => void
   onWithdraw: () => void
+  onDeclinedCleared: () => void
   actionPending: string | null
 }) {
+  const hoursSinceDecline = myDeclinedAt
+    ? (Date.now() - new Date(myDeclinedAt).getTime()) / 3600000
+    : null
+  const declineExpired = hoursSinceDecline !== null && hoursSinceDecline >= 24
+
+  // Na 24u: verwijder geweigerd record
+  useEffect(() => {
+    if (myStatus === 'geweigerd' && declineExpired) {
+      import('@/app/actions/meetups').then(({ clearDeclinedParticipant }) => {
+        clearDeclinedParticipant(meetup.id).then(({ cleared }) => {
+          if (cleared) onDeclinedCleared()
+        })
+      })
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
   const [confirmWithdraw, setConfirmWithdraw] = useState(false)
 
   const base: React.CSSProperties = {
@@ -686,9 +723,21 @@ function FooterButton({ meetup, isCreator, myStatus, onInterest, onManage, onWit
   }
   if (myStatus === 'geaccepteerd') {
     return (
-      <a href="/dashboard/messages?tab=meetups" style={{ ...base, background: '#16A34A', color: '#fff', display: 'block' }}>
+      <a href={`/dashboard/messages?meetup=${meetup.id}`} style={{ ...base, background: '#16A34A', color: '#fff', display: 'block' }}>
         Ga naar Meetup chat
       </a>
+    )
+  }
+  if (myStatus === 'geweigerd' && !declineExpired) {
+    return (
+      <div style={{ textAlign: 'center' }}>
+        <button disabled style={{ ...base, background: '#F3F4F6', color: '#6B7280', border: '1px solid #E5E7EB', cursor: 'not-allowed' }}>
+          Niet geselecteerd
+        </button>
+        <p style={{ fontSize: 12, color: '#9CA3AF', margin: '6px 0 0' }}>
+          Je kunt opnieuw interesse tonen na 24 uur
+        </p>
+      </div>
     )
   }
   if (myStatus === 'interesse') {

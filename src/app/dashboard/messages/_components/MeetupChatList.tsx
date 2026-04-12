@@ -1,8 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import Link from 'next/link'
-import { MapPin, Zap, Calendar, MessageCircle, Crown, Users } from 'lucide-react'
+import { MapPin, Crown, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const SPORT_COLORS: Record<string, string> = {
@@ -55,7 +54,7 @@ type MeetupItem = {
   acceptedCount: number
 }
 
-export default function MeetupChatList({ currentUserId }: { currentUserId: string }) {
+export default function MeetupChatList({ currentUserId, onSelect }: { currentUserId: string; onSelect: (meetupId: string) => void }) {
   const [meetups, setMeetups] = useState<MeetupItem[]>([])
   const [loading, setLoading] = useState(true)
 
@@ -178,9 +177,9 @@ export default function MeetupChatList({ currentUserId }: { currentUserId: strin
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
         <MapPin className="w-10 h-10 text-gray-200 mb-3" />
         <p className="text-sm font-semibold text-gray-400">Geen actieve meetups</p>
-        <Link href="/dashboard/meetup" className="mt-3 text-xs font-bold text-[#E87722] hover:underline">
+        <a href="/dashboard/meetup" className="mt-3 text-xs font-bold text-[#E87722] hover:underline">
           Ontdek meetups →
-        </Link>
+        </a>
       </div>
     )
   }
@@ -190,10 +189,10 @@ export default function MeetupChatList({ currentUserId }: { currentUserId: strin
       {meetups.map(m => {
         const color = getSportColor(m.sport)
         return (
-          <Link
+          <button
             key={m.id}
-            href={`/dashboard/meetup/${m.id}`}
-            className="flex items-start gap-0 border-b border-gray-50 hover:bg-gray-50 transition-colors"
+            onClick={() => onSelect(m.id)}
+            className="w-full flex items-start gap-0 border-b border-gray-50 hover:bg-gray-50 transition-colors text-left"
           >
             {/* Sport kleur balk */}
             <div className="w-1 self-stretch shrink-0" style={{ background: color }} />
@@ -239,7 +238,7 @@ export default function MeetupChatList({ currentUserId }: { currentUserId: strin
                 </div>
               </div>
             </div>
-          </Link>
+          </button>
         )
       })}
     </div>

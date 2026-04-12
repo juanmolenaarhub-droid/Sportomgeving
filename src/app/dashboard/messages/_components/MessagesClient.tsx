@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import {
   Search, Check, X, MessageCircle, Clock, Send,
   MoreVertical, MoreHorizontal, EyeOff, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
@@ -22,6 +22,7 @@ import { AppointmentCard, type AppointmentData } from './AppointmentCard'
 import { MessageReactions, type Reaction } from './MessageReactions'
 import { ImageLightbox } from './ImageLightbox'
 import MeetupChatList from './MeetupChatList'
+import MeetupChatView from './MeetupChatView'
 
 export type ConversationItem = {
   requestId: string
@@ -131,6 +132,20 @@ function Toast({ message, onDone }: { message: string; onDone: () => void }) {
 }
 
 // ── Hoofdcomponent ────────────────────────────────────────────────────────────
+// ── Meetup chat data type ─────────────────────────────────────────────────────
+type MeetupChatData = {
+  id: string
+  title: string
+  sport: string
+  date: string | null
+  time: string | null
+  location: string
+  isSpontaneous: boolean
+  expiresAt: string | null
+  hostId: string
+  participants: { userId: string; name: string; avatarUrl: string | null; isHost: boolean }[]
+}
+
 export default function MessagesClient({
   initialConversations,
   currentUserId,
@@ -139,7 +154,13 @@ export default function MessagesClient({
   currentUserId: string
 }) {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const supabase = createClient()
+
+  // Meetup chat state
+  const [activeMeetupId, setActiveMeetupId] = useState<string | null>(null)
+  const [activeMeetupData, setActiveMeetupData] = useState<MeetupChatData | null>(null)
+  const [loadingMeetupChat, setLoadingMeetupChat] = useState(false)
 
   // Basis state
   const [conversations, setConversations] = useState(() => [
@@ -199,6 +220,63 @@ export default function MessagesClient({
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  // Meetup chat: laad data voor geselecteerde meetup
+  async function openMeetupChat(meetupId: string) {
+    setActiveMeetupId(meetupId)
+    setActiveMeetupData(null)
+    setLoadingMeetupChat(true)
+    setActiveTab('meetups')
+
+    const [{ data: meetup }, { data: participants }] = await Promise.all([
+      supabase.from('meetups')
+        .select('id, title, sport, date, time, location_name, is_spontaneous, expires_at, creator_id')
+        .eq('id', meetupId).single(),
+      supabase.from('meetup_participants')
+        .select('user_id, status')
+        .eq('meetup_id', meetupId)
+        .in('status', ['geaccepteerd']),
+    ])
+
+    if (!meetup) { setLoadingMeetupChat(false); return }
+
+    const participantIds = (participants ?? []).map(p => p.user_id)
+    const allUserIds = [...new Set([meetup.creator_id, ...participantIds])]
+    const { data: profiles } = await supabase.from('profiles')
+      .select('id, full_name, username, avatar_url').in('id', allUserIds)
+    const profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
+
+    const chatParticipants = allUserIds.map(uid => {
+      const p = profileMap[uid]
+      return {
+        userId: uid,
+        name: p?.full_name ?? p?.username ?? 'Onbekend',
+        avatarUrl: p?.avatar_url ?? null,
+        isHost: uid === meetup.creator_id,
+      }
+    })
+
+    setActiveMeetupData({
+      id: meetup.id,
+      title: meetup.title,
+      sport: meetup.sport,
+      date: meetup.date ?? null,
+      time: meetup.time ?? null,
+      location: meetup.location_name,
+      isSpontaneous: meetup.is_spontaneous,
+      expiresAt: meetup.expires_at ?? null,
+      hostId: meetup.creator_id,
+      participants: chatParticipants,
+    })
+    setLoadingMeetupChat(false)
+  }
+
+  // Verwerk ?meetup= URL param bij mount
+  useEffect(() => {
+    const meetupParam = searchParams.get('meetup')
+    if (meetupParam) openMeetupChat(meetupParam)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (!hasPhoneNumber) setPhoneWarningDismissed(false)
@@ -553,7 +631,7 @@ export default function MessagesClient({
           </div>
 
           {activeTab === 'meetups' && (
-            <MeetupChatList currentUserId={currentUserId} />
+            <MeetupChatList currentUserId={currentUserId} onSelect={openMeetupChat} />
           )}
 
           {activeTab !== 'meetups' && <div className="flex-1 overflow-y-auto">
@@ -570,7 +648,7 @@ export default function MessagesClient({
                 return (
                   <button
                     key={conv.requestId}
-                    onClick={() => { cancelLongPress(); setSelected(conv) }}
+                    onClick={() => { cancelLongPress(); setSelected(conv); setActiveMeetupId(null); setActiveMeetupData(null) }}
                     onMouseDown={() => startLongPress(conv)}
                     onMouseUp={cancelLongPress}
                     onMouseLeave={cancelLongPress}
@@ -604,8 +682,32 @@ export default function MessagesClient({
           </div>}
         </div>
 
+        {/* ── Meetup chat ── */}
+        {activeMeetupId && activeMeetupData && (
+          <MeetupChatView
+            meetupId={activeMeetupId}
+            meetupTitle={activeMeetupData.title}
+            meetupSport={activeMeetupData.sport}
+            meetupDate={activeMeetupData.date}
+            meetupTime={activeMeetupData.time}
+            meetupLocation={activeMeetupData.location}
+            isSpontaneous={activeMeetupData.isSpontaneous}
+            expiresAt={activeMeetupData.expiresAt}
+            hostId={activeMeetupData.hostId}
+            participants={activeMeetupData.participants}
+            currentUserId={currentUserId}
+            onBack={() => { setActiveMeetupId(null); setActiveMeetupData(null) }}
+          />
+        )}
+
+        {activeMeetupId && loadingMeetupChat && (
+          <div className="flex-1 flex items-center justify-center">
+            <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
+          </div>
+        )}
+
         {/* ── Chat ── */}
-        {selected ? (
+        {!activeMeetupId && selected ? (
           <div className="flex-1 flex flex-col min-w-0 relative">
             {/* Header */}
             <div className="flex items-center gap-3 p-4 border-b border-gray-100">
@@ -667,7 +769,15 @@ export default function MessagesClient({
               {selected.message && (
                 <div className="flex justify-start items-end gap-2 mb-2">
                   <Avatar name={selected.otherUserName} size="xs" />
-                  <div className="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed bg-gray-100 text-gray-800 rounded-bl-sm">
+                  <div
+                    className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
+                    style={{
+                      background: '#FFFFFF', color: '#111111',
+                      borderRadius: '16px 16px 16px 4px',
+                      boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+                    }}
+                  >
+                    <p className="text-xs font-semibold mb-0.5" style={{ color: '#3B82F6' }}>{selected.otherUserName}</p>
                     {selected.message}
                     <p className="text-[10px] mt-1 text-gray-400">{timeAgo(selected.createdAt)} geleden</p>
                   </div>
@@ -713,12 +823,24 @@ export default function MessagesClient({
                           <p className={`text-[10px] px-3 py-1 ${fromMe ? 'bg-[#111] text-white/60 text-right' : 'bg-gray-100 text-gray-400'}`}>{formatTime(msg.created_at)}</p>
                         </button>
                       ) : (
-                        <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'}`}>
+                        <div
+                          className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
+                          style={{
+                            background: fromMe ? '#FFF4ED' : '#FFFFFF',
+                            color: '#111111',
+                            borderRadius: fromMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
+                            boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
+                          }}
+                        >
+                          {/* Naam boven tekst */}
+                          <p className="text-xs font-semibold mb-0.5" style={{ color: fromMe ? '#E87722' : '#3B82F6' }}>
+                            {fromMe ? 'Jij' : selected.otherUserName}
+                          </p>
                           {msg.content}
                           <div className={`flex items-center gap-1 mt-1 ${fromMe ? 'justify-end' : 'justify-start'}`}>
-                            <span className={`text-[10px] ${fromMe ? 'text-white/60' : 'text-gray-400'}`}>{formatTime(msg.created_at)}</span>
+                            <span className="text-[10px] text-gray-400">{formatTime(msg.created_at)}</span>
                             {readStatus && (
-                              <span style={{ fontSize: 10 }} className={readStatus === 'read' ? 'text-[#E87722]' : 'text-white/40'}>
+                              <span style={{ fontSize: 10 }} className={readStatus === 'read' ? 'text-[#E87722]' : 'text-gray-300'}>
                                 {readStatus === 'read' ? '✓✓' : '✓'}
                               </span>
                             )}
@@ -878,7 +1000,7 @@ export default function MessagesClient({
               </div>
             )}
           </div>
-        ) : (
+        ) : !activeMeetupId ? (
           <div className="hidden md:flex flex-1 items-center justify-center">
             <div className="text-center">
               <MessageCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
@@ -886,7 +1008,7 @@ export default function MessagesClient({
               <p className="text-gray-300 text-sm mt-1">Kies een bericht uit de lijst</p>
             </div>
           </div>
-        )}
+        ) : null}
       </div>
 
       {/* ── Modals & overlays ── */}

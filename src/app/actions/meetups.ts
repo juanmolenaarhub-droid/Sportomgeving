@@ -198,7 +198,8 @@ export async function respondToInterest(
     .update({
       status: response,
       accepted_at: response === 'geaccepteerd' ? now : null,
-    })
+      declined_at: response === 'geweigerd' ? now : null,
+    } as Record<string, unknown>)
     .eq('meetup_id', meetupId)
     .eq('user_id', userId)
 
@@ -348,6 +349,32 @@ export async function sendMeetupMessage(meetupId: string, content: string) {
   if (error) return { success: false, error: error.message }
 
   await logActivity(supabase, user.id, 'meetup_message_sent', { meetup_id: meetupId })
+
+  // Notificeer andere deelnemers
+  try {
+    const { data: meetupInfo } = await supabase.from('meetups').select('title, creator_id').eq('id', meetupId).single()
+    const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
+    const senderName = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+
+    const { data: otherParticipants } = await supabase
+      .from('meetup_participants')
+      .select('user_id')
+      .eq('meetup_id', meetupId)
+      .eq('status', 'geaccepteerd')
+      .neq('user_id', user.id)
+
+    const recipientIds = new Set((otherParticipants ?? []).map(p => p.user_id))
+    if (meetupInfo?.creator_id && meetupInfo.creator_id !== user.id) recipientIds.add(meetupInfo.creator_id)
+
+    for (const recipientId of recipientIds) {
+      await sendNotification(
+        supabase, recipientId, 'meetup_message',
+        `${senderName} stuurde een bericht in '${meetupInfo?.title ?? 'meetup'}'`,
+        `/dashboard/messages?meetup=${meetupId}`,
+      )
+    }
+  } catch { /* notificatie optioneel */ }
+
   return { success: true }
 }
 
@@ -378,6 +405,7 @@ export type MeetupListItem = {
   createdAt: string
   distanceKm?: number
   myStatus?: 'interesse' | 'geaccepteerd' | 'geweigerd' | null
+  declinedAt?: string | null
 }
 
 export async function getMeetups(params: {
@@ -442,17 +470,21 @@ export async function getMeetups(params: {
   const meetupIds = meetups.map(m => m.id)
   const { data: participants } = await supabase
     .from('meetup_participants')
-    .select('meetup_id, status, user_id')
+    .select('meetup_id, status, user_id, declined_at')
     .in('meetup_id', meetupIds)
 
   const acceptedMap: Record<string, number> = {}
   const interestedMap: Record<string, number> = {}
   const myStatusMap: Record<string, 'interesse' | 'geaccepteerd' | 'geweigerd'> = {}
+  const myDeclinedAtMap: Record<string, string | null> = {}
 
   for (const p of participants ?? []) {
     if (p.status === 'geaccepteerd') acceptedMap[p.meetup_id] = (acceptedMap[p.meetup_id] ?? 0) + 1
     if (p.status === 'interesse') interestedMap[p.meetup_id] = (interestedMap[p.meetup_id] ?? 0) + 1
-    if (user && p.user_id === user.id) myStatusMap[p.meetup_id] = p.status as 'interesse' | 'geaccepteerd' | 'geweigerd'
+    if (user && p.user_id === user.id) {
+      myStatusMap[p.meetup_id] = p.status as 'interesse' | 'geaccepteerd' | 'geweigerd'
+      myDeclinedAtMap[p.meetup_id] = (p as Record<string, unknown>).declined_at as string | null ?? null
+    }
   }
 
   return meetups.map(m => {
@@ -493,6 +525,7 @@ export async function getMeetups(params: {
       createdAt: m.created_at,
       distanceKm,
       myStatus: myStatusMap[m.id] ?? null,
+      declinedAt: myDeclinedAtMap[m.id] ?? null,
     } satisfies MeetupListItem
   }).filter(Boolean) as MeetupListItem[]
 }
@@ -903,4 +936,96 @@ export async function confirmAttendance(meetupId: string, attendees: string[]) {
   await logActivity(supabase, user.id, 'meetup_attendance_confirmed', { meetup_id: meetupId, count: attendees.length })
   revalidatePath(`/dashboard/meetup/${meetupId}`)
   return { success: true, error: null }
+}
+
+// ─── 17. Meetup berichten ophalen ─────────────────────────────────────────────
+
+export type MeetupMessageItem = {
+  id: string
+  meetupId: string
+  senderId: string
+  senderName: string
+  senderAvatarUrl: string | null
+  content: string
+  isSystem: boolean
+  createdAt: string
+}
+
+export async function getMeetupMessages(meetupId: string): Promise<{ data: MeetupMessageItem[]; error: string | null }> {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { data: [], error: 'Niet ingelogd' }
+
+  // Toegangscontrole: creator of geaccepteerde deelnemer
+  const { data: meetup } = await supabase.from('meetups').select('creator_id').eq('id', meetupId).single()
+  if (!meetup) return { data: [], error: 'Meetup niet gevonden' }
+
+  const isCreator = meetup.creator_id === user.id
+  if (!isCreator) {
+    const { data: participant } = await supabase
+      .from('meetup_participants').select('status')
+      .eq('meetup_id', meetupId).eq('user_id', user.id).single()
+    if (participant?.status !== 'geaccepteerd') return { data: [], error: 'Geen toegang' }
+  }
+
+  const { data: messages, error } = await supabase
+    .from('meetup_messages')
+    .select('id, meetup_id, sender_id, content, is_system, created_at')
+    .eq('meetup_id', meetupId)
+    .order('created_at', { ascending: true })
+
+  if (error) return { data: [], error: error.message }
+
+  // Haal senderprofielen op
+  const senderIds = [...new Set((messages ?? []).filter(m => !m.is_system).map(m => m.sender_id))]
+  let profileMap: Record<string, { name: string; avatarUrl: string | null }> = {}
+  if (senderIds.length > 0) {
+    const { data: profiles } = await supabase
+      .from('profiles').select('id, full_name, username, avatar_url').in('id', senderIds)
+    profileMap = Object.fromEntries((profiles ?? []).map(p => [
+      p.id, { name: p.full_name ?? p.username ?? 'Onbekend', avatarUrl: p.avatar_url ?? null }
+    ]))
+  }
+
+  return {
+    data: (messages ?? []).map(m => ({
+      id: m.id,
+      meetupId: m.meetup_id,
+      senderId: m.sender_id,
+      senderName: profileMap[m.sender_id]?.name ?? 'Onbekend',
+      senderAvatarUrl: profileMap[m.sender_id]?.avatarUrl ?? null,
+      content: m.content,
+      isSystem: m.is_system ?? false,
+      createdAt: m.created_at,
+    })),
+    error: null,
+  }
+}
+
+// ─── 18. Geweigerd deelnemer verwijderen na 24u ───────────────────────────────
+
+export async function clearDeclinedParticipant(meetupId: string): Promise<{ cleared: boolean }> {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { cleared: false }
+
+  const { data: participant } = await supabase
+    .from('meetup_participants')
+    .select('status, declined_at')
+    .eq('meetup_id', meetupId)
+    .eq('user_id', user.id)
+    .single()
+
+  if (!participant || participant.status !== 'geweigerd') return { cleared: false }
+
+  const declinedAt = (participant as Record<string, unknown>).declined_at as string | null
+  if (!declinedAt) return { cleared: false }
+
+  const hoursSinceDecline = (Date.now() - new Date(declinedAt).getTime()) / 3600000
+  if (hoursSinceDecline < 24) return { cleared: false }
+
+  await supabase.from('meetup_participants')
+    .delete().eq('meetup_id', meetupId).eq('user_id', user.id)
+
+  return { cleared: true }
 }
