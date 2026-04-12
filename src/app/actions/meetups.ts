@@ -19,6 +19,7 @@ export type CreateMeetupParams = {
   time?: string       // HH:MM, alleen gepland
   maxParticipants?: number
   visibility?: 'publiek' | 'alleen_buddies'
+  coverImageUrl?: string
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -92,6 +93,7 @@ export async function createMeetup(params: CreateMeetupParams) {
     max_participants: params.maxParticipants ?? 10,
     visibility: params.visibility ?? 'publiek',
     status: 'open',
+    cover_image_url: params.coverImageUrl ?? null,
   }).select().single()
 
   if (error || !meetup) return { success: false, error: error?.message ?? 'Aanmaken mislukt' }
@@ -364,7 +366,7 @@ export type MeetupListItem = {
   creatorId: string
   creatorName: string
   creatorAvatarUrl: string | null
-  creatorBannerUrl: string | null
+  coverImageUrl: string | null
   sport: string
   title: string
   description: string | null
@@ -405,7 +407,7 @@ export async function getMeetups(params: {
     .select(`
       id, creator_id, sport, title, description, location_name, city,
       latitude, longitude, is_spontaneous, date, time, expires_at,
-      max_participants, status, visibility, created_at
+      max_participants, status, visibility, created_at, cover_image_url
     `)
     .in('status', ['open', 'vol'])
     .order('created_at', { ascending: false })
@@ -479,7 +481,7 @@ export async function getMeetups(params: {
       creatorId: m.creator_id,
       creatorName: creator?.full_name ?? creator?.username ?? 'Onbekend',
       creatorAvatarUrl: creator?.avatar_url ?? null,
-      creatorBannerUrl: (creator as Record<string, unknown>)?.banner_url as string | null ?? null,
+      coverImageUrl: m.cover_image_url ?? null,
       sport: m.sport,
       title: m.title,
       description: m.description,
@@ -546,6 +548,7 @@ export type MeetupModalDetail = {
     displayLat: number
     displayLon: number
     hasLocationAccess: boolean
+    coverImageUrl: string | null
     isSpontaneous: boolean
     date: string | null
     time: string | null
@@ -649,6 +652,7 @@ export async function getMeetupDetailForModal(meetupId: string): Promise<MeetupM
       displayLat: hasLocationAccess ? meetup.latitude : Math.round(meetup.latitude * 100) / 100,
       displayLon: hasLocationAccess ? meetup.longitude : Math.round(meetup.longitude * 100) / 100,
       hasLocationAccess,
+      coverImageUrl: meetup.cover_image_url ?? null,
       isSpontaneous: meetup.is_spontaneous,
       date: meetup.date,
       time: meetup.time,

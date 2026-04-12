@@ -76,9 +76,9 @@ export default function MeetupPopupCard({
     ? (new Date(meetup.expiresAt).getTime() - Date.now()) < 3600000
     : false
 
-  const coverBg: React.CSSProperties = meetup.creatorBannerUrl
+  const coverBg: React.CSSProperties = meetup.coverImageUrl
     ? {
-        backgroundImage: `url(${meetup.creatorBannerUrl})`,
+        backgroundImage: `url(${meetup.coverImageUrl})`,
         backgroundSize: 'cover',
         backgroundPosition: 'center',
       }

@@ -167,12 +167,9 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
   }
 
   // Cover achtergrond
-  const creator = data?.creator
   const m = data?.meetup
-  const coverBg: React.CSSProperties = creator?.bannerUrl
-    ? { backgroundImage: `url(${creator.bannerUrl})`, backgroundSize: 'cover', backgroundPosition: 'center top' }
-    : creator?.avatarUrl
-    ? { backgroundImage: `url(${creator.avatarUrl})`, backgroundSize: 'cover', backgroundPosition: 'center top' }
+  const coverBg: React.CSSProperties = m?.coverImageUrl
+    ? { backgroundImage: `url(${m.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : m
     ? { background: SPORT_GRADIENTS[m.sport] ?? DEFAULT_GRADIENT }
     : { background: DEFAULT_GRADIENT }

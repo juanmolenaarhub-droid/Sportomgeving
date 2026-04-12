@@ -3,8 +3,9 @@
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { ArrowLeft, Zap, Calendar, MapPin, ChevronDown, Users, Globe, Lock, Check } from 'lucide-react'
+import { ArrowLeft, Zap, Calendar, MapPin, ChevronDown, Users, Globe, Lock, Check, ImagePlus, X } from 'lucide-react'
 import { createMeetup } from '@/app/actions/meetups'
+import { createClient } from '@/lib/supabase'
 
 const SPORTS = ['Hardlopen', 'Fietsen', 'Gym', 'Yoga', 'Zwemmen', 'Voetbal', 'Padel', 'Tennis', 'Golf', 'Wandelen', 'Boksen', 'Klimmen']
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
@@ -49,6 +50,10 @@ export default function NewMeetupPage() {
   const [time, setTime] = useState('')
   const [maxParticipants, setMaxParticipants] = useState(8)
   const [visibility, setVisibility] = useState<'publiek' | 'alleen_buddies'>('publiek')
+  const [coverFile, setCoverFile] = useState<File | null>(null)
+  const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [coverUploading, setCoverUploading] = useState(false)
+  const coverInputRef = useRef<HTMLInputElement>(null)
   const [searching, setSearching] = useState(false)
   const searchTimeout = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -76,6 +81,19 @@ export default function NewMeetupPage() {
     default: 'Beschrijf jouw meetup...',
   }
 
+  function handleCoverSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setCoverFile(file)
+    setCoverPreview(URL.createObjectURL(file))
+  }
+
+  function removeCover() {
+    setCoverFile(null)
+    setCoverPreview(null)
+    if (coverInputRef.current) coverInputRef.current.value = ''
+  }
+
   function handleSelectLocation(r: GeoResult) {
     const nameParts = r.display_name.split(',')
     const shortName = nameParts.slice(0, 2).join(',').trim()
@@ -91,6 +109,26 @@ export default function NewMeetupPage() {
     if (mode === 'gepland' && (!date || !time)) return setError('Datum en tijd zijn verplicht')
 
     startTransition(async () => {
+      let coverImageUrl: string | undefined
+
+      if (coverFile) {
+        setCoverUploading(true)
+        try {
+          const supabase = createClient()
+          const ext = coverFile.name.split('.').pop()
+          const path = `${Date.now()}.${ext}`
+          const { data: up, error: upErr } = await supabase.storage
+            .from('meetup-covers')
+            .upload(path, coverFile, { contentType: coverFile.type, upsert: false })
+          if (!upErr && up) {
+            const { data: { publicUrl } } = supabase.storage.from('meetup-covers').getPublicUrl(up.path)
+            coverImageUrl = publicUrl
+          }
+        } finally {
+          setCoverUploading(false)
+        }
+      }
+
       const res = await createMeetup({
         sport,
         title: title.trim(),
@@ -104,6 +142,7 @@ export default function NewMeetupPage() {
         time: mode === 'gepland' ? time : undefined,
         maxParticipants,
         visibility,
+        coverImageUrl,
       })
       if (res.success) {
         router.push('/dashboard/meetup')
@@ -222,6 +261,43 @@ export default function NewMeetupPage() {
           <p className="text-right text-xs text-gray-400 mt-1">{description.length}/300</p>
         </div>
 
+        {/* Cover foto */}
+        <div>
+          <label className="block text-xs font-bold text-gray-600 mb-1.5">
+            Cover foto <span className="text-gray-400">(optioneel)</span>
+          </label>
+          {coverPreview ? (
+            <div className="relative rounded-xl overflow-hidden" style={{ height: 140 }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={coverPreview} alt="Cover preview" className="w-full h-full object-cover" />
+              <button
+                type="button"
+                onClick={removeCover}
+                className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center hover:bg-black/80 transition-colors"
+              >
+                <X className="w-4 h-4 text-white" />
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              onClick={() => coverInputRef.current?.click()}
+              className="w-full border-2 border-dashed border-black/12 rounded-xl py-7 flex flex-col items-center gap-2 hover:border-[#E87722] hover:bg-orange-50 transition-all text-gray-400 hover:text-[#E87722]"
+            >
+              <ImagePlus className="w-6 h-6" />
+              <span className="text-xs font-semibold">Klik om een foto te uploaden</span>
+              <span className="text-xs">JPG, PNG — max 5MB</span>
+            </button>
+          )}
+          <input
+            ref={coverInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleCoverSelect}
+          />
+        </div>
+
         {/* Locatie */}
         <div>
           <label className="block text-xs font-bold text-gray-600 mb-1.5">Locatie <span className="text-[#E87722]">*</span></label>
@@ -337,7 +413,7 @@ export default function NewMeetupPage() {
         className="w-full py-4 bg-[#E87722] text-white font-black text-base rounded-2xl hover:bg-[#d4691d] transition-colors disabled:opacity-40"
         style={SYNE}
       >
-        {isPending ? 'Aanmaken...' : '🚀 Meetup aanmaken'}
+        {coverUploading ? 'Foto uploaden...' : isPending ? 'Aanmaken...' : '🚀 Meetup aanmaken'}
       </button>
     </div>
   )
