@@ -10,7 +10,7 @@ const navItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/dashboard/feed', label: 'Tijdlijn', icon: LayoutList },
   { href: '/dashboard/groups', label: 'Groepen', icon: Users },
-  { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle, badge: 2 },
+  { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle },
   { href: '/challenges', label: 'Challenges', icon: Trophy },
 ]
 
@@ -35,7 +35,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
           {/* Desktop navigatie */}
           <nav className="hidden md:flex items-center gap-1">
-            {navItems.map(({ href, label, icon: Icon, badge }) => {
+            {navItems.map(({ href, label, icon: Icon }) => {
               const active = pathname === href || pathname.startsWith(href + '/')
               return (
                 <Link
@@ -47,11 +47,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 >
                   <Icon className="w-4 h-4" />
                   {label}
-                  {badge && !active && (
-                    <span className="absolute -top-1 -right-1 w-4 h-4 bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center">
-                      {badge}
-                    </span>
-                  )}
                 </Link>
               )
             })}
@@ -143,11 +138,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             { href: '/dashboard', icon: Home },
             { href: '/dashboard/feed', icon: Play },
             { href: '/challenges', icon: Trophy },
-            { href: '/dashboard/messages', icon: MessageCircle, badge: 2 },
-            { href: '/dashboard/notifications', icon: Bell, badge: 5 },
+            { href: '/dashboard/messages', icon: MessageCircle },
+            { href: '/dashboard/notifications', icon: Bell },
             { href: '/dashboard/find', icon: Search },
             { href: '/dashboard/profile/me', icon: User },
-          ].map(({ href, icon: Icon, badge }) => {
+          ].map(({ href, icon: Icon }) => {
             const active = pathname === href || pathname.startsWith(href + '/')
             return (
               <Link
@@ -159,11 +154,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   className="w-[18px] h-[18px] transition-colors duration-200"
                   style={{ color: active ? 'white' : 'rgba(255,255,255,0.6)' }}
                 />
-                {badge && !active && (
-                  <span className="absolute -top-0.5 -right-0.5 min-w-[14px] h-[14px] bg-[#E87722] text-white text-[9px] font-black rounded-full flex items-center justify-center px-0.5">
-                    {badge}
-                  </span>
-                )}
               </Link>
             )
           })}

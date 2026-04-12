@@ -207,6 +207,7 @@ export type ProfileData = {
   bannerUrl?: string
   openFollow?: boolean
   beschikbaarheid?: string[]
+  stats?: { volgers: number; volgend: number; posts: number; groepen: number }
 }
 
 type Props = {
@@ -221,7 +222,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
 
   const demo = DEMO_ENRICHMENT[profile.id]
   const age = demo?.age
-  const stats = demo?.stats ?? { volgers: 0, volgend: 0, posts: 0, groepen: 0 }
+  const stats = profile.stats ?? demo?.stats ?? { volgers: 0, volgend: 0, posts: 0, groepen: 0 }
   const recentPosts = demo?.recentPosts ?? []
   const groups = demo?.groups ?? []
   const achievements = demo?.achievements ?? []

@@ -416,6 +416,7 @@ function EditModal({ profile, sports, onClose, onSaved }: {
 export default function MyProfilePage() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [sports, setSports] = useState<UserSport[]>([])
+  const [stats, setStats] = useState({ volgers: 0, volgend: 0, posts: 0, groepen: 0 })
   const [loading, setLoading] = useState(true)
   const [showEdit, setShowEdit] = useState(false)
 
@@ -425,13 +426,25 @@ export default function MyProfilePage() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
 
-      const [{ data: prof }, { data: sp }] = await Promise.all([
+      const [
+        { data: prof },
+        { data: sp },
+        { count: volgers },
+        { count: volgend },
+        { count: posts },
+        { count: groepen },
+      ] = await Promise.all([
         supabase.from('profiles').select('id, full_name, username, region, bio, avatar_url, banner_url, age, gender, goal, beschikbaarheid').eq('id', user.id).single(),
         supabase.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', user.id),
+        supabase.from('follow_requests').select('*', { count: 'exact', head: true }).eq('to_user_id', user.id).eq('status', 'accepted'),
+        supabase.from('follow_requests').select('*', { count: 'exact', head: true }).eq('from_user_id', user.id).eq('status', 'accepted'),
+        supabase.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
+        supabase.from('group_members').select('*', { count: 'exact', head: true }).eq('user_id', user.id),
       ])
 
       if (prof) setProfile(prof as Profile)
       if (sp) setSports(sp as UserSport[])
+      setStats({ volgers: volgers ?? 0, volgend: volgend ?? 0, posts: posts ?? 0, groepen: groepen ?? 0 })
       setLoading(false)
     }
     load()
@@ -488,10 +501,10 @@ export default function MyProfilePage() {
           {/* Stats */}
           <div className="flex gap-8 mt-6 pt-6 border-t border-gray-50">
             {[
-              { label: 'Volgers', value: 0 },
-              { label: 'Volgend', value: 0 },
-              { label: 'Posts', value: 0 },
-              { label: 'Groepen', value: 0 },
+              { label: 'Volgers', value: stats.volgers },
+              { label: 'Volgend', value: stats.volgend },
+              { label: 'Posts', value: stats.posts },
+              { label: 'Groepen', value: stats.groepen },
             ].map(s => (
               <div key={s.label} className="text-center">
                 <p className="text-2xl font-black text-black">{s.value}</p>

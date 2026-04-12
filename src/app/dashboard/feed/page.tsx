@@ -8,6 +8,7 @@ import {
   Trophy, UserPlus, Filter, ChevronRight, Zap,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
+import { createClient } from '@/lib/supabase'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -721,10 +722,122 @@ export default function FeedPage() {
   const [newDistance, setNewDistance] = useState('')
   const [newDuration, setNewDuration] = useState('')
   const [commentInputs, setCommentInputs] = useState<Record<string, string>>({})
+  const [myUserId, setMyUserId] = useState<string | null>(null)
+  const [posting, setPosting] = useState(false)
   const mediaRef = useRef<HTMLInputElement>(null)
 
-  function toggleLike(id: string) {
+  // Laad echte posts bij mount
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient()
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      setMyUserId(user.id)
+
+      // Haal buddy-IDs op (geaccepteerde follow_requests beide richtingen)
+      const [{ data: sent }, { data: received }] = await Promise.all([
+        supabase.from('follow_requests').select('to_user_id').eq('from_user_id', user.id).eq('status', 'accepted'),
+        supabase.from('follow_requests').select('from_user_id').eq('to_user_id', user.id).eq('status', 'accepted'),
+      ])
+      const buddyIds = [
+        user.id,
+        ...(sent ?? []).map((r: any) => r.to_user_id as string),
+        ...(received ?? []).map((r: any) => r.from_user_id as string),
+      ]
+
+      // Laad posts van buddies + eigen posts
+      const { data: rawPosts } = await supabase
+        .from('posts')
+        .select('id, user_id, content, activity_type, distance_km, duration_minutes, image_url, likes_count, comments_count, created_at')
+        .in('user_id', buddyIds)
+        .order('created_at', { ascending: false })
+        .limit(50)
+
+      if (!rawPosts || rawPosts.length === 0) return
+
+      // Profielen
+      const postUserIds = [...new Set(rawPosts.map((p: any) => p.user_id as string))]
+      const { data: profiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, username, region')
+        .in('id', postUserIds)
+      const profileMap = Object.fromEntries((profiles ?? []).map((p: any) => [p.id, p]))
+
+      // Eigen likes
+      const postIds = rawPosts.map(p => p.id)
+      const { data: myLikes } = await supabase
+        .from('post_likes')
+        .select('post_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds)
+      const likedSet = new Set((myLikes ?? []).map((l: any) => l.post_id))
+
+      // Comments per post (max 3 per post)
+      const { data: allComments } = await supabase
+        .from('post_comments')
+        .select('id, post_id, content, user_id')
+        .in('post_id', postIds)
+        .order('created_at', { ascending: false })
+      const commentUserIds = [...new Set((allComments ?? []).map((c: any) => c.user_id))]
+      let commentProfileMap: Record<string, string> = {}
+      if (commentUserIds.length > 0) {
+        const { data: cp } = await supabase.from('profiles').select('id, full_name, username').in('id', commentUserIds)
+        commentProfileMap = Object.fromEntries((cp ?? []).map((p: any) => [p.id, p.full_name ?? p.username ?? 'Onbekend']))
+      }
+      const commentsByPost: Record<string, { user: string; text: string }[]> = {}
+      for (const c of (allComments ?? []) as any[]) {
+        if (!commentsByPost[c.post_id]) commentsByPost[c.post_id] = []
+        if (commentsByPost[c.post_id].length < 3)
+          commentsByPost[c.post_id].push({ user: commentProfileMap[c.user_id] ?? 'Onbekend', text: c.content })
+      }
+
+      function timeAgo(dateStr: string) {
+        const diff = Date.now() - new Date(dateStr).getTime()
+        const mins = Math.floor(diff / 60000)
+        const hours = Math.floor(diff / 3600000)
+        const days = Math.floor(diff / 86400000)
+        if (mins < 1) return 'Zojuist'
+        if (mins < 60) return `${mins} min geleden`
+        if (hours < 24) return `${hours} uur geleden`
+        return `${days} dag${days > 1 ? 'en' : ''} geleden`
+      }
+
+      const realPosts: Post[] = (rawPosts as any[]).map(p => {
+        const prof = profileMap[p.user_id]
+        return {
+          id: p.id,
+          userId: p.user_id,
+          user: { name: prof?.full_name ?? prof?.username ?? 'Onbekend', region: prof?.region ?? '' },
+          content: p.content,
+          activity_type: p.activity_type ?? 'other',
+          distance_km: p.distance_km ?? undefined,
+          duration_minutes: p.duration_minutes ?? undefined,
+          image_url: p.image_url ?? undefined,
+          likes_count: p.likes_count,
+          comments_count: p.comments_count,
+          liked: likedSet.has(p.id),
+          saved: false,
+          created_at: timeAgo(p.created_at),
+          comments: commentsByPost[p.id] ?? [],
+          showComments: false,
+        }
+      })
+
+      if (realPosts.length > 0) setPosts(realPosts)
+    }
+    load()
+  }, [])
+
+  async function toggleLike(id: string) {
+    const post = posts.find(p => p.id === id)
+    if (!post) return
     setPosts(prev => prev.map(p => p.id === id ? { ...p, liked: !p.liked, likes_count: p.liked ? p.likes_count - 1 : p.likes_count + 1 } : p))
+    const supabase = createClient()
+    if (post.liked) {
+      await supabase.from('post_likes').delete().eq('post_id', id).eq('user_id', myUserId ?? '')
+    } else {
+      await supabase.from('post_likes').insert({ post_id: id, user_id: myUserId })
+    }
   }
   function toggleSave(id: string) {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, saved: !p.saved } : p))
@@ -732,27 +845,40 @@ export default function FeedPage() {
   function toggleComments(id: string) {
     setPosts(prev => prev.map(p => p.id === id ? { ...p, showComments: !p.showComments } : p))
   }
-  function submitComment(postId: string) {
+  async function submitComment(postId: string) {
     const text = commentInputs[postId]?.trim()
-    if (!text) return
+    if (!text || !myUserId) return
+    setCommentInputs(prev => ({ ...prev, [postId]: '' }))
     setPosts(prev => prev.map(p => p.id === postId
       ? { ...p, comments: [...p.comments, { user: 'Jij', text }], comments_count: p.comments_count + 1 }
       : p))
-    setCommentInputs(prev => ({ ...prev, [postId]: '' }))
+    const supabase = createClient()
+    await supabase.from('post_comments').insert({ post_id: postId, user_id: myUserId, content: text })
   }
-  function createPost() {
-    if (!newPostContent.trim()) return
-    setPosts(prev => [{
-      id: Date.now().toString(), userId: 'me',
-      user: { name: 'Jouw Naam', region: 'Jouw Stad' },
-      content: newPostContent, activity_type: newActivityType,
-      distance_km: newDistance ? parseFloat(newDistance) : undefined,
-      duration_minutes: newDuration ? parseInt(newDuration) : undefined,
-      likes_count: 0, comments_count: 0, liked: false, saved: false,
-      created_at: 'Zojuist', comments: [], showComments: false,
-    }, ...prev])
+  async function createPost() {
+    if (!newPostContent.trim() || !myUserId) return
+    setPosting(true)
+    const supabase = createClient()
+    const { data: prof } = await supabase.from('profiles').select('full_name, username, region').eq('id', myUserId).single()
+    const { data: inserted } = await supabase.from('posts').insert({
+      user_id: myUserId,
+      content: newPostContent.trim(),
+      activity_type: newActivityType,
+      distance_km: newDistance ? parseFloat(newDistance) : null,
+      duration_minutes: newDuration ? parseInt(newDuration) : null,
+    }).select().single()
+    if (inserted) {
+      setPosts(prev => [{
+        id: inserted.id, userId: myUserId,
+        user: { name: prof?.full_name ?? prof?.username ?? 'Jij', region: prof?.region ?? '' },
+        content: inserted.content, activity_type: inserted.activity_type ?? 'other',
+        distance_km: inserted.distance_km ?? undefined, duration_minutes: inserted.duration_minutes ?? undefined,
+        likes_count: 0, comments_count: 0, liked: false, saved: false,
+        created_at: 'Zojuist', comments: [], showComments: false,
+      }, ...prev])
+    }
     setNewPostContent(''); setNewDistance(''); setNewDuration('')
-    setShowCreatePost(false)
+    setShowCreatePost(false); setPosting(false)
   }
 
   const filteredPosts = sportFilter === 'all' ? posts : posts.filter(p => p.activity_type === sportFilter)
@@ -990,7 +1116,7 @@ export default function FeedPage() {
             </div>
             <div className="p-5 border-t border-gray-100 flex gap-3">
               <button onClick={() => setShowCreatePost(false)} className="flex-1 border border-gray-200 text-gray-700 font-bold py-2.5 rounded-xl hover:bg-gray-50 text-sm">Annuleren</button>
-              <button onClick={createPost} disabled={!newPostContent.trim()} className="flex-1 bg-[#111111] text-white font-bold py-2.5 rounded-xl hover:bg-[#333] disabled:opacity-40 text-sm">Delen</button>
+              <button onClick={createPost} disabled={!newPostContent.trim() || posting} className="flex-1 bg-[#111111] text-white font-bold py-2.5 rounded-xl hover:bg-[#333] disabled:opacity-40 text-sm">{posting ? 'Bezig...' : 'Delen'}</button>
             </div>
           </div>
         </div>

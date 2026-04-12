@@ -72,12 +72,45 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     followStatus = 'pending_received'
   }
 
-  // Probeer profiel uit DB te laden (echte gebruikers)
-  const { data: dbProfile } = await supabase
-    .from('profiles')
-    .select('id, full_name, username, bio, avatar_url, banner_url, sports, region, beschikbaarheid')
-    .eq('id', profileId)
-    .maybeSingle()
+  // Profiel + sporten + stats parallel laden
+  const [
+    { data: dbProfile },
+    { data: userSports },
+    { count: followersCount },
+    { count: followingCount },
+    { count: postsCount },
+    { count: groupsCount },
+  ] = await Promise.all([
+    supabase.from('profiles')
+      .select('id, full_name, username, bio, avatar_url, banner_url, region, beschikbaarheid')
+      .eq('id', profileId)
+      .maybeSingle(),
+    supabase.from('user_sports')
+      .select('sport_id, level, sports(name)')
+      .eq('user_id', profileId),
+    // volgers = mensen die een geaccepteerd verzoek naar dit profiel hebben gestuurd
+    supabase.from('follow_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('to_user_id', profileId)
+      .eq('status', 'accepted'),
+    // volgend = geaccepteerde verzoeken vanuit dit profiel
+    supabase.from('follow_requests')
+      .select('*', { count: 'exact', head: true })
+      .eq('from_user_id', profileId)
+      .eq('status', 'accepted'),
+    supabase.from('posts')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', profileId),
+    supabase.from('group_members')
+      .select('*', { count: 'exact', head: true })
+      .eq('user_id', profileId),
+  ])
+
+  const levelLabel: Record<string, string> = { beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd' }
+  const mappedSports = (userSports ?? []).map(s => ({
+    label: (Array.isArray(s.sports) ? (s.sports[0] as any)?.name : (s.sports as any)?.name) ?? 'Sport',
+    level: levelLabel[s.level] ?? s.level,
+  }))
 
   let profile: ProfileData | null = null
 
@@ -87,10 +120,16 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       name: dbProfile.full_name ?? dbProfile.username ?? 'Onbekend',
       region: (dbProfile as any).region ?? '',
       bio: dbProfile.bio ?? '',
-      sports:          (dbProfile as any).sports ?? [],
+      sports:          mappedSports,
       avatarUrl:       dbProfile.avatar_url ?? undefined,
       bannerUrl:       dbProfile.banner_url ?? undefined,
       beschikbaarheid: (dbProfile as any).beschikbaarheid ?? [],
+      stats: {
+        volgers:  followersCount ?? 0,
+        volgend:  followingCount ?? 0,
+        posts:    postsCount ?? 0,
+        groepen:  groupsCount ?? 0,
+      },
     }
   } else if (DEMO_PROFILES[profileId]) {
     profile = DEMO_PROFILES[profileId]
