@@ -20,7 +20,7 @@ const NAV_ITEMS = [
 ] as const
 
 const MOBILE_ITEMS = [
-  { href: '/dashboard',           icon: Home,          label: 'Home',      exact: true  },
+  { href: '/dashboard/feed',      icon: Home,          label: 'Feed',      exact: false },
   { href: '/dashboard/meetup',    icon: MapPin,        label: 'Meetup',    exact: false },
   { href: '/dashboard/find',      icon: Search,        label: 'Zoeken',    exact: false },
   { href: '/dashboard/messages',  icon: MessageCircle, label: 'Berichten', exact: false },
