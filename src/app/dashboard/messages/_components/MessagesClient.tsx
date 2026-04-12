@@ -141,7 +141,13 @@ export default function MessagesClient({
   const supabase = createClient()
 
   // Basis state
-  const [conversations, setConversations] = useState(initialConversations)
+  const [conversations, setConversations] = useState(() => [
+    ...initialConversations.filter(c => !c.accepted),
+    ...initialConversations.filter(c => c.accepted).sort((a, b) =>
+      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    ),
+  ])
+  const acceptedIdsRef = useRef<string[]>(initialConversations.filter(c => c.accepted).map(c => c.requestId))
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<ConversationItem | null>(null)
@@ -220,6 +226,42 @@ export default function MessagesClient({
       .subscribe(async status => { if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() }) })
     return () => { supabase.removeChannel(channel) }
   }, [currentUserId])
+
+  // Houd acceptedIdsRef up-to-date als conversations verandert (bijv. na accepteren verzoek)
+  useEffect(() => {
+    acceptedIdsRef.current = conversations.filter(c => c.accepted).map(c => c.requestId)
+  }, [conversations])
+
+  // Live inbox: luister naar alle nieuwe berichten in geaccepteerde chats
+  useEffect(() => {
+    const channel = supabase.channel('inbox-live')
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
+        (payload) => {
+          const msg = payload.new as {
+            conversation_id: string; content: string; created_at: string; message_type: string
+          }
+          if (!acceptedIdsRef.current.includes(msg.conversation_id)) return
+
+          setConversations(prev => {
+            const updated = prev.map(c =>
+              c.requestId === msg.conversation_id
+                ? { ...c, lastMessage: msg.content, lastMessageType: msg.message_type, createdAt: msg.created_at }
+                : c
+            )
+            // Meest recent actieve chat bovenaan in inbox
+            return [
+              ...updated.filter(c => !c.accepted),
+              ...updated.filter(c => c.accepted).sort((a, b) =>
+                new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+              ),
+            ]
+          })
+        }
+      )
+      .subscribe()
+
+    return () => { supabase.removeChannel(channel) }
+  }, []) // eenmalig mounten — gebruikt ref voor up-to-date IDs
 
   // Berichten + realtime per gesprek
   useEffect(() => {
