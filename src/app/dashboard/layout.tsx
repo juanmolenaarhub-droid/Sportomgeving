@@ -20,11 +20,11 @@ const NAV_ITEMS = [
 ] as const
 
 const MOBILE_ITEMS = [
-  { href: '/dashboard/feed',      icon: Home,          label: 'Feed',      exact: false },
-  { href: '/dashboard/meetup',    icon: MapPin,        label: 'Meetup',    exact: false },
-  { href: '/dashboard/find',      icon: Search,        label: 'Zoeken',    exact: false },
-  { href: '/dashboard/messages',  icon: MessageCircle, label: 'Berichten', exact: false },
-  { href: '/dashboard/profile/me', icon: User,         label: 'Profiel',   exact: false },
+  { href: '/dashboard/feed',          icon: Home,          label: 'Feed',         exact: false },
+  { href: '/dashboard/meetup',        icon: MapPin,        label: 'Meetup',       exact: false },
+  { href: '/dashboard/find',          icon: Search,        label: 'Buddies',      exact: false },
+  { href: '/dashboard/messages',      icon: MessageCircle, label: 'Berichten',    exact: false },
+  { href: '/dashboard/notifications', icon: Bell,          label: 'Notificaties', exact: false },
 ] as const
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -317,11 +317,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 {active && (
                   <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
                 )}
-                {/* Unread badge */}
+                {/* Berichten badge */}
                 {href === '/dashboard/messages' && unreadMessages > 0 && (
                   <span className="absolute -top-1 right-0.5 min-w-[14px] h-[14px] bg-[#E87722] text-white text-[9px] font-black rounded-full flex items-center justify-center px-0.5">
                     {unreadMessages > 9 ? '9+' : unreadMessages}
                   </span>
+                )}
+                {/* Meetup dot */}
+                {href === '/dashboard/meetup' && hasMeetupDot && !active && (
+                  <span className="absolute -top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
+                )}
+                {/* Notificatie dot */}
+                {href === '/dashboard/notifications' && hasNotifDot && !active && (
+                  <span className="absolute -top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
                 )}
               </Link>
             )
