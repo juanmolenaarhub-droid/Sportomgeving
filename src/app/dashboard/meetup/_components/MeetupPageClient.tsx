@@ -13,7 +13,7 @@ const MeetupMap = dynamic(() => import('./MeetupMap'), { ssr: false, loading: ()
   </div>
 )})
 
-const MeetupDetailModal = dynamic(() => import('./MeetupDetailModal'), { ssr: false })
+const MeetupDetailSheet = dynamic(() => import('./MeetupDetailSheet'), { ssr: false })
 
 const SPORTS = ['Alles', 'Hardlopen', 'Fietsen', 'Gym', 'Yoga', 'Zwemmen', 'Voetbal', 'Padel', 'Tennis', 'Wandelen', 'Boksen', 'Klimmen']
 const DATE_FILTERS = [
@@ -199,9 +199,9 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
         />
       )}
 
-      {/* Detail modal */}
+      {/* Detail sheet */}
       {detailMeetupId && (
-        <MeetupDetailModal
+        <MeetupDetailSheet
           meetupId={detailMeetupId}
           onClose={() => setDetailMeetupId(null)}
           onInterestSuccess={handleInterestSuccess}
