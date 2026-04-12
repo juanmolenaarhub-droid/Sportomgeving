@@ -201,6 +201,12 @@ export default function MessagesClient({
   const [deletedForMeIds, setDeletedForMeIds] = useState<Set<string>>(new Set())
   const [msgMenuFor, setMsgMenuFor] = useState<string | null>(null)
 
+  // Typing indicator
+  const [typingUsers, setTypingUsers] = useState<Record<string, string>>({})
+  const myDisplayNameRef  = useRef<string>('Iemand')
+  const typingChannelRef  = useRef<ReturnType<typeof supabase.channel> | null>(null)
+  const typingTimerRef    = useRef<ReturnType<typeof setTimeout> | null>(null)
+
   // Lange-druk preview
   const [previewConv, setPreviewConv] = useState<ConversationItem | null>(null)
   const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -293,6 +299,15 @@ export default function MessagesClient({
     return () => clearInterval(interval)
   }, [])
 
+  // Haal weergavenaam op voor typing indicator
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      if (!user) return
+      supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
+        .then(({ data }) => { if (data) myDisplayNameRef.current = data.full_name ?? data.username ?? 'Iemand' })
+    })
+  }, [])
+
   // Online presence via Supabase Realtime
   useEffect(() => {
     const channel = supabase.channel('online-users', {
@@ -344,7 +359,7 @@ export default function MessagesClient({
 
   // Berichten + realtime per gesprek
   useEffect(() => {
-    if (!selected?.accepted) { setMessages([]); setReactions({}); setAppointments({}); setDeletedForMeIds(new Set()); return }
+    if (!selected?.accepted) { setMessages([]); setReactions({}); setAppointments({}); setDeletedForMeIds(new Set()); setTypingUsers({}); return }
     const convId = selected.requestId
     setLoadingMessages(true)
 
@@ -462,10 +477,43 @@ export default function MessagesClient({
       )
       .subscribe()
 
+    // Typing indicator presence channel
+    setTypingUsers({})
+    const typingChannel = supabase.channel(`typing:${convId}`, {
+      config: { presence: { key: currentUserId } },
+    })
+    typingChannel
+      .on('presence', { event: 'sync' }, () => {
+        const state = typingChannel.presenceState()
+        const typers: Record<string, string> = {}
+        for (const [key, presences] of Object.entries(state)) {
+          if (key !== currentUserId) {
+            const p = (presences as { name?: string }[])[0]
+            if (p?.name) typers[key] = p.name
+          }
+        }
+        setTypingUsers(typers)
+      })
+      .on('presence', { event: 'join' }, ({ key, newPresences }) => {
+        if (key !== currentUserId) {
+          const p = ((newPresences ?? []) as { name?: string }[])[0]
+          if (p?.name) setTypingUsers(prev => ({ ...prev, [key]: p.name! }))
+        }
+      })
+      .on('presence', { event: 'leave' }, ({ key }) => {
+        if (key !== currentUserId) {
+          setTypingUsers(prev => { const s = { ...prev }; delete s[key]; return s })
+        }
+      })
+      .subscribe()
+    typingChannelRef.current = typingChannel
+
     return () => {
       supabase.removeChannel(chatChannel)
       supabase.removeChannel(reactChannel)
       supabase.removeChannel(apptChannel)
+      supabase.removeChannel(typingChannel)
+      typingChannelRef.current = null
     }
   }, [selected?.requestId, selected?.accepted])
 
@@ -486,11 +534,23 @@ export default function MessagesClient({
     })
   }, [selected?.requestId])
 
+  function handleTyping() {
+    if (!typingChannelRef.current) return
+    typingChannelRef.current.track({ name: myDisplayNameRef.current })
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
+    typingTimerRef.current = setTimeout(() => {
+      typingChannelRef.current?.untrack()
+    }, 2000)
+  }
+
   async function sendMessage() {
     if (!newMessage.trim() || !selected?.accepted || showPhoneWarning) return
     const content = newMessage.trim()
     setNewMessage('')
     setPhoneWarningDismissed(false)
+    // Stop typing indicator
+    typingChannelRef.current?.untrack()
+    if (typingTimerRef.current) { clearTimeout(typingTimerRef.current); typingTimerRef.current = null }
     const { error } = await supabase.from('chat_messages').insert({
       conversation_id: selected.requestId,
       sender_id: currentUserId,
@@ -899,6 +959,27 @@ export default function MessagesClient({
                   </div>
                 )
               })}
+              {/* Typing indicator */}
+              {Object.keys(typingUsers).length > 0 && (
+                <div className="flex items-center gap-2 px-2 py-1 ml-1">
+                  <div className="flex gap-[3px] items-end">
+                    {[0, 1, 2].map(i => (
+                      <span
+                        key={i}
+                        className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
+                        style={{ animationDelay: `${i * 150}ms` }}
+                      />
+                    ))}
+                  </div>
+                  <span style={{ fontStyle: 'italic', color: '#6B7280', fontSize: 13 }}>
+                    {Object.values(typingUsers).length === 1
+                      ? `${Object.values(typingUsers)[0]} is aan het typen...`
+                      : Object.values(typingUsers).length === 2
+                      ? `${Object.values(typingUsers)[0]} en ${Object.values(typingUsers)[1]} zijn aan het typen...`
+                      : 'Meerdere mensen typen...'}
+                  </span>
+                </div>
+              )}
               <div ref={messagesEndRef} />
             </div>
 
@@ -980,7 +1061,7 @@ export default function MessagesClient({
                   <input
                     type="text"
                     value={newMessage}
-                    onChange={e => setNewMessage(e.target.value)}
+                    onChange={e => { setNewMessage(e.target.value); handleTyping() }}
                     onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                     placeholder="Schrijf een bericht..."
                     className="flex-1 bg-transparent text-sm text-black focus:outline-none"
