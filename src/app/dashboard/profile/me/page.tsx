@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { MapPin, Award, Settings, UserPlus, MessageCircle, Bell, Camera, X, Check, Lightbulb, ThumbsUp, Bug } from 'lucide-react'
+import { MapPin, Award, Settings, UserPlus, MessageCircle, Bell, Camera, X, Check, Lightbulb, ThumbsUp, Bug, Zap, Calendar } from 'lucide-react'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
@@ -53,6 +53,70 @@ const LEVELS = [
   { value: 'intermediate', label: 'Gevorderd' },
   { value: 'advanced', label: 'Professioneel' },
 ]
+
+function MyMeetupsCard({ userId }: { userId: string }) {
+  const [meetups, setMeetups] = useState<any[]>([])
+  const [loading, setLoading] = useState(true)
+
+  useEffect(() => {
+    async function load() {
+      const supabase = createClient()
+      const [{ data: created }, { data: participating }] = await Promise.all([
+        supabase.from('meetups').select('id, sport, title, date, time, is_spontaneous, status, city').eq('creator_id', userId).order('created_at', { ascending: false }).limit(5),
+        supabase.from('meetup_participants').select('meetup_id').eq('user_id', userId).eq('status', 'geaccepteerd'),
+      ])
+      const partIds = (participating ?? []).map((p: any) => p.meetup_id)
+      let partMeetups: any[] = []
+      if (partIds.length > 0) {
+        const { data } = await supabase.from('meetups').select('id, sport, title, date, time, is_spontaneous, status, city').in('id', partIds).order('created_at', { ascending: false }).limit(5)
+        partMeetups = (data ?? []).filter((m: any) => !(created ?? []).find((c: any) => c.id === m.id))
+      }
+      setMeetups([...(created ?? []).map((m: any) => ({ ...m, role: 'organizer' })), ...partMeetups.map((m: any) => ({ ...m, role: 'participant' }))])
+      setLoading(false)
+    }
+    load()
+  }, [userId])
+
+  const SPORT_COLORS: Record<string, string> = { 'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4', 'Gym': '#22C55E', default: '#6B7280' }
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <div className="flex items-center justify-between mb-4">
+        <h3 className="font-black text-black">Mijn Meetups</h3>
+        <Link href="/dashboard/meetup/nieuw" className="text-xs text-[#E87722] font-semibold hover:underline flex items-center gap-1">
+          <MapPin className="w-3 h-3" /> Aanmaken
+        </Link>
+      </div>
+      {loading ? (
+        <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}</div>
+      ) : meetups.length === 0 ? (
+        <div className="text-center py-4">
+          <p className="text-sm text-gray-400">Nog geen meetups.</p>
+          <Link href="/dashboard/meetup" className="text-xs text-[#E87722] font-semibold hover:underline mt-1 block">Ontdek meetups</Link>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {meetups.slice(0, 4).map((m: any) => {
+            const color = SPORT_COLORS[m.sport] ?? SPORT_COLORS.default
+            return (
+              <Link key={m.id} href={`/dashboard/meetup/${m.id}`} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+                <div className="w-2 h-8 rounded-full shrink-0" style={{ background: color }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold text-black truncate">{m.title}</p>
+                  <p className="text-xs text-gray-400 flex items-center gap-1">
+                    {m.is_spontaneous ? <><Zap className="w-3 h-3 text-red-400" /> Spontaan</> : m.date ? <><Calendar className="w-3 h-3" /> {new Date(`${m.date}T${m.time ?? '00:00'}`).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</> : m.city}
+                  </p>
+                </div>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${m.status === 'open' ? 'bg-green-50 text-green-600' : m.status === 'vol' ? 'bg-amber-50 text-amber-600' : 'bg-gray-100 text-gray-400'}`}>{m.status}</span>
+              </Link>
+            )
+          })}
+          <Link href="/dashboard/meetup" className="block text-center text-xs text-[#E87722] font-semibold hover:underline pt-1">Alle meetups bekijken</Link>
+        </div>
+      )}
+    </div>
+  )
+}
 
 function ProfileFeedbackWidget() {
   const [selected, setSelected] = useState<string | null>(null)
@@ -627,6 +691,9 @@ export default function MyProfilePage() {
             </div>
             <p className="text-sm text-gray-400">Nog geen groepen.</p>
           </div>
+
+          {/* Meetups */}
+          {profile?.id && <MyMeetupsCard userId={profile.id} />}
 
           {/* Feedback */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">

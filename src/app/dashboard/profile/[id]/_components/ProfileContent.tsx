@@ -5,7 +5,7 @@ import Link from 'next/link'
 import {
   MapPin, Award, MessageCircle, UserPlus, Check, ArrowLeft,
   Users, Heart, Flame, Trophy, Calendar, Clock, ChevronRight,
-  Send, X, Lock,
+  Send, X, Lock, Zap,
 } from 'lucide-react'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
@@ -108,6 +108,58 @@ function LockedFeed({ firstName, onUnlock }: { firstName: string; onUnlock: () =
         >
           Stuur volgverzoek
         </button>
+      </div>
+    </div>
+  )
+}
+
+const SPORT_COLORS: Record<string, string> = {
+  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#8B5CF6', default: '#6B7280',
+}
+
+function PublicMeetupsCard({ profileId }: { profileId: string }) {
+  const [meetups, setMeetups] = useState<any[]>([])
+  const [loaded, setLoaded] = useState(false)
+  const supabase = createClient()
+
+  useState(() => {
+    supabase
+      .from('meetups')
+      .select('id, sport, title, date, time, is_spontaneous, status, city, expires_at')
+      .eq('creator_id', profileId)
+      .eq('visibility', 'publiek')
+      .in('status', ['open', 'vol'])
+      .order('created_at', { ascending: false })
+      .limit(3)
+      .then(({ data }) => { setMeetups(data ?? []); setLoaded(true) })
+  })
+
+  if (!loaded || meetups.length === 0) return null
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-100 p-5">
+      <h3 className="font-black text-black mb-4 flex items-center gap-2">
+        <MapPin className="w-4 h-4 text-[#E87722]" /> Meetups
+      </h3>
+      <div className="space-y-2">
+        {meetups.map(m => {
+          const color = SPORT_COLORS[m.sport] ?? SPORT_COLORS.default
+          return (
+            <Link key={m.id} href={`/dashboard/meetup/${m.id}`} className="flex items-center gap-3 p-2.5 rounded-xl hover:bg-gray-50 transition-colors">
+              <div className="w-1.5 h-8 rounded-full shrink-0" style={{ background: color }} />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-black truncate">{m.title}</p>
+                <p className="text-xs text-gray-400 flex items-center gap-1">
+                  {m.is_spontaneous
+                    ? <><Zap className="w-3 h-3 text-red-400" /> Spontaan</>
+                    : m.date ? <><Calendar className="w-3 h-3" /> {new Date(`${m.date}T${m.time ?? '00:00'}`).toLocaleDateString('nl-NL', { day: 'numeric', month: 'short' })}</> : m.city}
+                </p>
+              </div>
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full shrink-0 ${m.status === 'open' ? 'bg-green-50 text-green-600' : 'bg-amber-50 text-amber-600'}`}>{m.status}</span>
+            </Link>
+          )
+        })}
       </div>
     </div>
   )
@@ -452,6 +504,9 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
               <p className="text-xs text-gray-400">Nog geen prestaties.</p>
             )}
           </div>
+
+          {/* Publieke meetups */}
+          <PublicMeetupsCard profileId={profile.id} />
 
           {followStatus === 'none' && (
             <button

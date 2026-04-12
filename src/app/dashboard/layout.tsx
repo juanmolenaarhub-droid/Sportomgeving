@@ -3,12 +3,13 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play, Trophy, Flame } from 'lucide-react'
+import { Home, Users, LayoutList, MessageCircle, Bell, User, LogOut, Search, Play, Trophy, Flame, MapPin } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const navItems = [
   { href: '/dashboard', label: 'Home', icon: Home },
   { href: '/dashboard/feed', label: 'Tijdlijn', icon: LayoutList },
+  { href: '/dashboard/meetup', label: 'Meetup', icon: MapPin },
   { href: '/dashboard/groups', label: 'Groepen', icon: Users },
   { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle },
   { href: '/challenges', label: 'Challenges', icon: Trophy },
@@ -137,7 +138,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {[
             { href: '/dashboard', icon: Home },
             { href: '/dashboard/feed', icon: Play },
-            { href: '/challenges', icon: Trophy },
+            { href: '/dashboard/meetup', icon: MapPin },
             { href: '/dashboard/messages', icon: MessageCircle },
             { href: '/dashboard/notifications', icon: Bell },
             { href: '/dashboard/find', icon: Search },

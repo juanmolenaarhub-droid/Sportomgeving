@@ -21,6 +21,7 @@ import { AfspraakModal } from './AfspraakModal'
 import { AppointmentCard, type AppointmentData } from './AppointmentCard'
 import { MessageReactions, type Reaction } from './MessageReactions'
 import { ImageLightbox } from './ImageLightbox'
+import MeetupChatList from './MeetupChatList'
 
 export type ConversationItem = {
   requestId: string
@@ -148,7 +149,7 @@ export default function MessagesClient({
     ),
   ])
   const acceptedIdsRef = useRef<string[]>(initialConversations.filter(c => c.accepted).map(c => c.requestId))
-  const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox')
+  const [activeTab, setActiveTab] = useState<'inbox' | 'requests' | 'meetups'>('inbox')
   const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<ConversationItem | null>(null)
   const [newMessage, setNewMessage] = useState('')
@@ -507,6 +508,7 @@ export default function MessagesClient({
 
   const filtered = (activeTab === 'requests' ? conversations.filter(c => !c.accepted) : conversations.filter(c => c.accepted))
     .filter(c => c.otherUserName.toLowerCase().includes(search.toLowerCase()))
+    .filter(() => activeTab !== 'meetups')
   const requests = conversations.filter(c => !c.accepted)
   const showStarters = messages.length === 0 && !loadingMessages && selected?.accepted === true
 
@@ -538,16 +540,23 @@ export default function MessagesClient({
           </div>
 
           <div className="flex border-b border-gray-100">
-            <button onClick={() => setActiveTab('inbox')} className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
+            <button onClick={() => setActiveTab('inbox')} className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
               Inbox
             </button>
-            <button onClick={() => setActiveTab('requests')} className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
-              Volgverzoeken
-              {requests.length > 0 && <span className="ml-1.5 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>}
+            <button onClick={() => setActiveTab('requests')} className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
+              Verzoeken
+              {requests.length > 0 && <span className="ml-1 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>}
+            </button>
+            <button onClick={() => setActiveTab('meetups')} className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === 'meetups' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
+              Meetups
             </button>
           </div>
 
-          <div className="flex-1 overflow-y-auto">
+          {activeTab === 'meetups' && (
+            <MeetupChatList currentUserId={currentUserId} />
+          )}
+
+          {activeTab !== 'meetups' && <div className="flex-1 overflow-y-auto">
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <MessageCircle className="w-10 h-10 text-gray-200 mb-3" />
@@ -592,7 +601,7 @@ export default function MessagesClient({
                 )
               })
             )}
-          </div>
+          </div>}
         </div>
 
         {/* ── Chat ── */}

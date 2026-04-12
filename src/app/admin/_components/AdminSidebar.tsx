@@ -5,7 +5,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
-  LayoutDashboard, TrendingUp, GitMerge, Zap, Users, Server, Menu, X, LogOut, ShieldAlert
+  LayoutDashboard, TrendingUp, GitMerge, Zap, Users, Server, Menu, X, LogOut, ShieldAlert, MapPin
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -17,6 +17,7 @@ const NAV = [
   { href: '/admin/engagement', label: 'Engagement', icon: Zap },
   { href: '/admin/gebruikers', label: 'Gebruikers', icon: Users },
   { href: '/admin/platform', label: 'Platform', icon: Server },
+  { href: '/admin/meetups', label: 'Meetups', icon: MapPin },
   { href: '/admin/issues', label: 'Meldingen', icon: ShieldAlert },
 ]
 

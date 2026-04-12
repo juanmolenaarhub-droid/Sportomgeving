@@ -1,4 +1,4 @@
-import { Bell, UserPlus, MessageCircle, Check } from 'lucide-react'
+import { Bell, UserPlus, MessageCircle, Check, MapPin } from 'lucide-react'
 import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { BuddyRequestCard } from './_components/BuddyRequestCard'
@@ -107,7 +107,25 @@ export default async function NotificationsPage() {
       .map(m => ({ ...m, sender: profileMap[m.sender_id] ?? null }))
   }
 
-  const totalNew = pendingRequests.length + recentMessages.length
+  // 4. Meetup notificaties (via system_notifications tabel)
+  type MeetupNotif = { id: string; type: string; message: string; link: string; created_at: string }
+  let meetupNotifs: MeetupNotif[] = []
+  if (user) {
+    try {
+      const since7d = new Date(Date.now() - 7 * 86400000).toISOString()
+      const { data } = await supabase
+        .from('system_notifications')
+        .select('id, type, message, link, created_at')
+        .eq('user_id', user.id)
+        .like('type', 'meetup_%')
+        .gte('created_at', since7d)
+        .order('created_at', { ascending: false })
+        .limit(20)
+      meetupNotifs = (data ?? []) as MeetupNotif[]
+    } catch { /* tabel bestaat mogelijk niet */ }
+  }
+
+  const totalNew = pendingRequests.length + recentMessages.length + meetupNotifs.length
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
@@ -186,6 +204,31 @@ export default async function NotificationsPage() {
                 </Link>
               )
             })}
+          </div>
+        </div>
+      )}
+
+      {/* Meetup notificaties */}
+      {meetupNotifs.length > 0 && (
+        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+          <div className="px-5 py-3 border-b border-gray-50 flex items-center gap-2">
+            <MapPin className="w-4 h-4 text-[#E87722]" />
+            <p className="text-xs font-bold text-gray-500 uppercase tracking-wider">
+              Meetup notificaties ({meetupNotifs.length})
+            </p>
+          </div>
+          <div className="divide-y divide-gray-50">
+            {meetupNotifs.map(n => (
+              <Link key={n.id} href={n.link ?? '/dashboard/meetup'} className="flex items-center gap-4 px-5 py-4 hover:bg-gray-50 transition-colors">
+                <div className="w-9 h-9 bg-orange-50 rounded-full flex items-center justify-center shrink-0">
+                  <MapPin className="w-4 h-4 text-[#E87722]" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm text-gray-700 leading-snug">{n.message}</p>
+                  <p className="text-xs text-gray-400 mt-0.5">{timeAgo(n.created_at)}</p>
+                </div>
+              </Link>
+            ))}
           </div>
         </div>
       )}
