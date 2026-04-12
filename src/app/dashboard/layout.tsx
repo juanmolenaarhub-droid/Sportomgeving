@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import Image from 'next/image'
 import {
   Home, Users, Rss, MessageCircle, Bell, User,
   LogOut, Search, MapPin, Settings,
@@ -156,11 +157,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
 
           {/* Logo */}
-          <Link
-            href="/dashboard"
-            style={{ fontFamily: "'Syne', sans-serif", fontWeight: 900, fontSize: 20, color: '#111', letterSpacing: '-0.02em' }}
-          >
-            Buddys
+          <Link href="/dashboard">
+            <Image src="/logo.png" alt="Buddys" height={36} width={120} className="object-contain" />
           </Link>
 
           {/* Desktop nav */}
