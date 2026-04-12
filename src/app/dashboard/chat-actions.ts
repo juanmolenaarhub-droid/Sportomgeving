@@ -2,6 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createAdminClient } from '@/lib/supabase-admin'
 
 // ── Feature 5: Last seen ──────────────────────────────────────────────────────
 export async function updateLastSeen() {
@@ -11,18 +12,58 @@ export async function updateLastSeen() {
   await supabase.from('profiles').update({ last_seen_at: new Date().toISOString() }).eq('id', user.id)
 }
 
-// ── Feature 6: Read receipts ──────────────────────────────────────────────────
+// ── Feature 6: Read receipts — admin client bypast RLS ────────────────────────
 export async function markMessagesAsRead(conversationId: string) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Niet ingelogd' }
 
-  await supabase
+  const admin = createAdminClient()
+  await admin
     .from('chat_messages')
     .update({ read_at: new Date().toISOString() })
     .eq('conversation_id', conversationId)
     .neq('sender_id', user.id)
     .is('read_at', null)
+
+  return { success: true }
+}
+
+// ── Berichtverwijdering ───────────────────────────────────────────────────────
+export async function deleteMessageForAll(messageId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Niet ingelogd' }
+
+  const admin = createAdminClient()
+
+  // Verificeer: bericht bestaat en is van ons
+  const { data: msg } = await admin
+    .from('chat_messages')
+    .select('sender_id, read_at')
+    .eq('id', messageId)
+    .single()
+
+  if (!msg) return { error: 'Bericht niet gevonden' }
+  if (msg.sender_id !== user.id) return { error: 'Geen toegang' }
+
+  await admin
+    .from('chat_messages')
+    .update({ deleted_for_all: true, content: '' })
+    .eq('id', messageId)
+
+  return { success: true }
+}
+
+export async function deleteMessageForMe(messageId: string) {
+  const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Niet ingelogd' }
+
+  await supabase.from('deleted_messages').upsert(
+    { message_id: messageId, user_id: user.id },
+    { onConflict: 'message_id,user_id' }
+  )
 
   return { success: true }
 }

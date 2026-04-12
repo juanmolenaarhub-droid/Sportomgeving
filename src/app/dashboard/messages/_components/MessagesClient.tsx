@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, Check, X, MessageCircle, Clock, Send,
-  MoreVertical, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
+  MoreVertical, MoreHorizontal, EyeOff, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
@@ -13,6 +13,7 @@ import { deleteConversation } from '../../safety-actions'
 import {
   updateLastSeen, markMessagesAsRead,
   createAppointment, sendImageMessage,
+  deleteMessageForAll, deleteMessageForMe,
 } from '../../chat-actions'
 import { ReportUserModal } from './ReportUserModal'
 import { ConversationStarters } from './ConversationStarters'
@@ -41,6 +42,7 @@ type ChatMessage = {
   message_type?: string
   image_url?: string | null
   read_at?: string | null
+  deleted_for_all?: boolean
 }
 
 const PHONE_REGEX = /(\+316\d{8}|0031\s*6\s*\d{8}|06[-\s]?\d{8})/
@@ -164,7 +166,10 @@ export default function MessagesClient({
 
   // Feature 3: Reacties
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({})
-  const [, setHoveredMsgId] = useState<string | null>(null)
+
+  // Berichtverwijdering
+  const [deletedForMeIds, setDeletedForMeIds] = useState<Set<string>>(new Set())
+  const [msgMenuFor, setMsgMenuFor] = useState<string | null>(null)
 
   // Feature 4: Afbeeldingen
   const [pendingImage, setPendingImage] = useState<File | null>(null)
@@ -205,14 +210,14 @@ export default function MessagesClient({
 
   // Berichten + realtime per gesprek
   useEffect(() => {
-    if (!selected?.accepted) { setMessages([]); setReactions({}); setAppointments({}); return }
+    if (!selected?.accepted) { setMessages([]); setReactions({}); setAppointments({}); setDeletedForMeIds(new Set()); return }
     const convId = selected.requestId
     setLoadingMessages(true)
 
     // Laad berichten + afspraken + reacties parallel
     Promise.all([
       supabase.from('chat_messages')
-        .select('id, conversation_id, sender_id, content, created_at, message_type, image_url, read_at')
+        .select('id, conversation_id, sender_id, content, created_at, message_type, image_url, read_at, deleted_for_all')
         .eq('conversation_id', convId)
         .order('created_at', { ascending: true }),
       supabase.from('training_appointments')
@@ -234,20 +239,26 @@ export default function MessagesClient({
       for (const a of apptRes.data ?? []) apptMap[a.id] = a as AppointmentData
       setAppointments(apptMap)
 
-      // Laad reacties voor de geladen berichten
+      // Laad reacties + verwijderde berichten (voor mij) parallel
       const msgIds = msgs.map(m => m.id)
       if (msgIds.length > 0) {
-        supabase.from('message_reactions')
-          .select('id, message_id, user_id, emoji')
-          .in('message_id', msgIds)
-          .then(({ data }) => {
-            const rMap: Record<string, Reaction[]> = {}
-            for (const r of data ?? []) {
-              if (!rMap[r.message_id]) rMap[r.message_id] = []
-              rMap[r.message_id].push(r as Reaction)
-            }
-            setReactions(rMap)
-          })
+        Promise.all([
+          supabase.from('message_reactions')
+            .select('id, message_id, user_id, emoji')
+            .in('message_id', msgIds),
+          supabase.from('deleted_messages')
+            .select('message_id')
+            .eq('user_id', currentUserId)
+            .in('message_id', msgIds),
+        ]).then(([reactRes, deletedRes]) => {
+          const rMap: Record<string, Reaction[]> = {}
+          for (const r of reactRes.data ?? []) {
+            if (!rMap[r.message_id]) rMap[r.message_id] = []
+            rMap[r.message_id].push(r as Reaction)
+          }
+          setReactions(rMap)
+          setDeletedForMeIds(new Set((deletedRes.data ?? []).map(r => r.message_id)))
+        })
       }
 
       // Feature 6: markeer berichten als gelezen
@@ -411,6 +422,19 @@ export default function MessagesClient({
       notes,
     )
     if (result.error) setToast('Afspraak kon niet worden verzonden')
+  }
+
+  async function handleDeleteMsgForAll(messageId: string) {
+    setMsgMenuFor(null)
+    const result = await deleteMessageForAll(messageId)
+    if (result.error) { setToast('Verwijderen mislukt'); return }
+    setMessages(prev => prev.map(m => m.id === messageId ? { ...m, deleted_for_all: true, content: '' } : m))
+  }
+
+  async function handleDeleteMsgForMe(messageId: string) {
+    setMsgMenuFor(null)
+    const result = await deleteMessageForMe(messageId)
+    if (!result.error) setDeletedForMeIds(prev => new Set([...prev, messageId]))
   }
 
   function handleDeleteConfirm() {
@@ -584,11 +608,14 @@ export default function MessagesClient({
               )}
 
               {messages.map(msg => {
+                if (deletedForMeIds.has(msg.id)) return null
+
                 const fromMe = msg.sender_id === currentUserId
                 const msgReactions = reactions[msg.id] ?? []
                 const readStatus = getReadStatus(msg)
                 const isAppointment = msg.message_type === 'appointment'
                 const isImage = msg.message_type === 'image'
+                const isDeleted = !!msg.deleted_for_all
                 const appt = isAppointment ? appointments[msg.content] : null
 
                 return (
@@ -596,38 +623,27 @@ export default function MessagesClient({
                     key={msg.id}
                     className={`group flex flex-col ${fromMe ? 'items-end' : 'items-start'} mb-1`}
                   >
-                    <div className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}>
+                    <div className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2 relative`}>
                       {!fromMe && <Avatar name={selected.otherUserName} size="xs" />}
 
                       {/* Bericht inhoud */}
-                      {isAppointment && appt ? (
-                        <AppointmentCard
-                          appointment={appt}
-                          currentUserId={currentUserId}
-                          otherUserName={selected.otherUserName}
-                          fromMe={fromMe}
-                        />
+                      {isDeleted ? (
+                        <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${fromMe ? 'rounded-br-sm' : 'rounded-bl-sm'} bg-gray-50 border border-gray-100`}>
+                          <span className="text-gray-400 italic">Dit bericht is verwijderd</span>
+                          <p className="text-[10px] mt-1 text-gray-300">{formatTime(msg.created_at)}</p>
+                        </div>
+                      ) : isAppointment && appt ? (
+                        <AppointmentCard appointment={appt} currentUserId={currentUserId} otherUserName={selected.otherUserName} fromMe={fromMe} />
                       ) : isImage && msg.image_url ? (
-                        <button
-                          onClick={() => setLightboxSrc(msg.image_url!)}
-                          className={`rounded-2xl overflow-hidden max-w-[240px] ${fromMe ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
-                        >
-                          <img
-                            src={msg.image_url}
-                            alt="Afbeelding"
-                            className="w-full h-auto max-h-64 object-cover block"
-                            loading="lazy"
-                          />
-                          <p className={`text-[10px] px-3 py-1 ${fromMe ? 'bg-[#111] text-white/60 text-right' : 'bg-gray-100 text-gray-400'}`}>
-                            {formatTime(msg.created_at)}
-                          </p>
+                        <button onClick={() => setLightboxSrc(msg.image_url!)} className={`rounded-2xl overflow-hidden max-w-[240px] ${fromMe ? 'rounded-br-sm' : 'rounded-bl-sm'}`}>
+                          <img src={msg.image_url} alt="Afbeelding" className="w-full h-auto max-h-64 object-cover block" loading="lazy" />
+                          <p className={`text-[10px] px-3 py-1 ${fromMe ? 'bg-[#111] text-white/60 text-right' : 'bg-gray-100 text-gray-400'}`}>{formatTime(msg.created_at)}</p>
                         </button>
                       ) : (
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'}`}>
                           {msg.content}
                           <div className={`flex items-center gap-1 mt-1 ${fromMe ? 'justify-end' : 'justify-start'}`}>
                             <span className={`text-[10px] ${fromMe ? 'text-white/60' : 'text-gray-400'}`}>{formatTime(msg.created_at)}</span>
-                            {/* Feature 6: leesbevestiging */}
                             {readStatus && (
                               <span style={{ fontSize: 10 }} className={readStatus === 'read' ? 'text-[#E87722]' : 'text-white/40'}>
                                 {readStatus === 'read' ? '✓✓' : '✓'}
@@ -636,15 +652,46 @@ export default function MessagesClient({
                           </div>
                         </div>
                       )}
+
+                      {/* Verwijderknop — verschijnt bij hover, alleen eigen berichten */}
+                      {fromMe && !isDeleted && (
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-center relative">
+                          <button
+                            onClick={() => setMsgMenuFor(msgMenuFor === msg.id ? null : msg.id)}
+                            className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
+                          >
+                            <MoreHorizontal className="w-3 h-3 text-gray-500" />
+                          </button>
+                          {msgMenuFor === msg.id && (
+                            <div className="absolute right-0 bottom-8 z-50 bg-white rounded-xl shadow-xl border border-black/8 overflow-hidden w-52">
+                              <button
+                                onClick={() => handleDeleteMsgForAll(msg.id)}
+                                disabled={!!msg.read_at}
+                                className="w-full flex items-start gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left disabled:opacity-40"
+                              >
+                                <Trash2 className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
+                                <div>
+                                  <p>Verwijderen voor iedereen</p>
+                                  {msg.read_at && <p className="text-xs text-gray-400 font-normal">Al gelezen</p>}
+                                </div>
+                              </button>
+                              <div className="border-t border-black/5" />
+                              <button
+                                onClick={() => handleDeleteMsgForMe(msg.id)}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left"
+                              >
+                                <EyeOff className="w-4 h-4 text-gray-400" />
+                                Verwijder voor mij
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
 
-                    {/* Feature 3: Reacties */}
-                    {!isAppointment && (
-                      <div
-                        className={`${fromMe ? 'mr-2' : 'ml-8'}`}
-                        onMouseEnter={() => setHoveredMsgId(msg.id)}
-                        onMouseLeave={() => setHoveredMsgId(null)}
-                      >
+                    {/* Reacties */}
+                    {!isAppointment && !isDeleted && (
+                      <div className={`${fromMe ? 'mr-8' : 'ml-8'}`}>
                         <MessageReactions
                           messageId={msg.id}
                           reactions={msgReactions}
