@@ -757,7 +757,7 @@ export async function getMeetupDetail(meetupId: string) {
 
   const [{ data: creator }, { data: participants }] = await Promise.all([
     supabase.from('profiles').select('id, full_name, username, avatar_url, bio').eq('id', meetup.creator_id).single(),
-    supabase.from('meetup_participants').select('user_id, status, message, joined_at, accepted_at').eq('meetup_id', meetupId),
+    supabase.from('meetup_participants').select('user_id, status, message, joined_at').eq('meetup_id', meetupId),
   ])
 
   const participantUserIds = (participants ?? []).map(p => p.user_id)
