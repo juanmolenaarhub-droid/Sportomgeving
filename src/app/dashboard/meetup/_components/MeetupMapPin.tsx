@@ -1,9 +1,7 @@
 'use client'
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
-  'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#EC4899',
-  'Voetbal': '#10B981', default: '#111111',
+  default: '#E87722',
 }
 const SPORT_EMOJIS: Record<string, string> = {
   'Hardlopen': '🏃', 'Fietsen': '🚴', 'Zwemmen': '🏊', 'Gym': '💪',
