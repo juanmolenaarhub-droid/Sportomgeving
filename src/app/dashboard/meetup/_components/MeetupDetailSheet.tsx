@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { ArrowLeft, CalendarDays, MapPin, Users, Globe, Lock, Eye } from 'lucide-react'
+import { ArrowLeft, CalendarDays, MapPin, Users, Globe, Lock } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import {
   getMeetupDetailForModal,
@@ -88,6 +88,7 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
   const [data, setData] = useState<MeetupModalDetail | null>(null)
   const [loading, setLoading] = useState(true)
   const [fetchError, setFetchError] = useState(false)
+  const [retryCount, setRetryCount] = useState(0)
   const [tab, setTab] = useState<Tab>('info')
   const [visible, setVisible] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -96,6 +97,8 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
   const [, startTransition] = useTransition()
 
   useEffect(() => {
+    setLoading(true)
+    setFetchError(false)
     getMeetupDetailForModal(meetupId)
       .then(d => {
         setData(d)
@@ -106,7 +109,7 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
       .finally(() => setLoading(false))
     const t = setTimeout(() => setVisible(true), 20)
     return () => clearTimeout(t)
-  }, [meetupId])
+  }, [meetupId, retryCount])
 
   function handleClose() {
     setVisible(false)
@@ -251,9 +254,9 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
         {/* ── STICKY TABS ── */}
         <div style={{ display: 'flex', background: '#fff', borderBottom: '1px solid #F3F4F6', flexShrink: 0 }}>
           {([
-            { key: 'info' as const, label: 'Info' },
-            { key: 'aanwezig' as const, label: `Aanwezig${data ? ` (${data.acceptedParticipants.length})` : ''}` },
-            { key: 'geinteresseerd' as const, label: `Geïnteresseerd${data ? ` (${data.interestedParticipants.length})` : ''}` },
+            { key: 'info' as const, label: 'Info', count: null },
+            { key: 'aanwezig' as const, label: 'Aanwezig', count: data?.acceptedParticipants.length ?? null },
+            { key: 'geinteresseerd' as const, label: 'Geïnteresseerd', count: null },
           ]).map(t => (
             <button
               key={t.key}
@@ -264,9 +267,13 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
                 fontSize: 12, fontWeight: tab === t.key ? 600 : 400,
                 color: tab === t.key ? '#111' : '#9CA3AF',
                 transition: 'all 0.15s', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}
             >
               {t.label}
+              {t.count !== null && (
+                <span style={{ fontSize: 11, color: '#9CA3AF', fontWeight: 400 }}>{t.count}</span>
+              )}
             </button>
           ))}
         </div>
@@ -279,7 +286,13 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <p style={{ fontSize: 32, marginBottom: 12 }}>⚠️</p>
               <p style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>Kon meetup niet laden</p>
-              <p style={{ fontSize: 13, color: '#9CA3AF', margin: 0 }}>Probeer de pagina te verversen</p>
+              <p style={{ fontSize: 13, color: '#9CA3AF', margin: '0 0 20px' }}>Controleer je verbinding en probeer opnieuw</p>
+              <button
+                onClick={() => setRetryCount(c => c + 1)}
+                style={{ background: '#111', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+              >
+                Probeer opnieuw
+              </button>
             </div>
           ) : tab === 'info' ? (
             <InfoTab data={data} />
@@ -543,7 +556,7 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
   if (!data.isCreator) {
     return (
       <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-        <Eye size={32} color="#9CA3AF" style={{ display: 'block', margin: '0 auto 12px' }} />
+        <Lock size={32} color="#9CA3AF" style={{ display: 'block', margin: '0 auto 12px' }} />
         <p style={{ fontSize: 14, color: '#9CA3AF', margin: 0 }}>Alleen zichtbaar voor de organisator</p>
       </div>
     )
@@ -652,7 +665,7 @@ function FooterButton({ meetup, isCreator, myStatus, onInterest, actionPending }
   }
   if (myStatus === 'interesse') {
     return (
-      <button disabled style={{ ...base, background: '#E5E7EB', color: '#9CA3AF', cursor: 'not-allowed' }}>
+      <button disabled style={{ ...base, background: '#9CA3AF', color: '#fff', cursor: 'not-allowed' }}>
         Wacht op acceptatie...
       </button>
     )

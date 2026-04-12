@@ -574,12 +574,14 @@ export async function getMeetupDetailForModal(meetupId: string): Promise<MeetupM
 
   const [{ data: creatorRaw }, { data: allParticipants }] = await Promise.all([
     supabase.from('profiles')
-      .select('id, full_name, username, avatar_url, banner_url, bio, city, sport, created_at')
+      .select('*')
       .eq('id', meetup.creator_id).single(),
     supabase.from('meetup_participants')
       .select('user_id, status, message, joined_at, attended')
       .eq('meetup_id', meetupId),
   ])
+
+  if (!creatorRaw) return null
 
   // Stats kolommen bestaan pas na SQL-migratie — veilig ophalen
   let statsData = { meetups_hosted: 0, meetups_joined: 0, meetups_attended: 0, organizer_rating: null as number | null, organizer_review_count: 0 }
@@ -655,7 +657,7 @@ export async function getMeetupDetailForModal(meetupId: string): Promise<MeetupM
       createdAt: meetup.created_at,
     },
     creator: {
-      id: creatorRaw!.id,
+      id: creatorRaw.id,
       name: creatorRaw?.full_name ?? (creatorRaw as unknown as { username?: string })?.username ?? 'Onbekend',
       avatarUrl: creatorRaw?.avatar_url ?? null,
       bannerUrl: (creatorRaw as unknown as { banner_url?: string | null })?.banner_url ?? null,
