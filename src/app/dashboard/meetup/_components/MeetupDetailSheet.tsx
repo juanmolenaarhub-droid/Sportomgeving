@@ -87,6 +87,7 @@ type Props = {
 export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess }: Props) {
   const [data, setData] = useState<MeetupModalDetail | null>(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(false)
   const [tab, setTab] = useState<Tab>('info')
   const [visible, setVisible] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
@@ -95,11 +96,14 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
   const [, startTransition] = useTransition()
 
   useEffect(() => {
-    getMeetupDetailForModal(meetupId).then(d => {
-      setData(d)
-      if (d) setMyStatus(d.myStatus)
-      setLoading(false)
-    })
+    getMeetupDetailForModal(meetupId)
+      .then(d => {
+        setData(d)
+        if (d) setMyStatus(d.myStatus)
+        if (!d) setFetchError(true)
+      })
+      .catch(() => setFetchError(true))
+      .finally(() => setLoading(false))
     const t = setTimeout(() => setVisible(true), 20)
     return () => clearTimeout(t)
   }, [meetupId])
@@ -268,15 +272,17 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
         </div>
 
         {/* ── SCROLLABLE CONTENT ── */}
-        <div style={{ flex: 1, overflowY: 'auto', paddingBottom: 90 }}>
+        <div style={{ flex: 1, overflowY: 'auto', minHeight: 0, paddingBottom: 90, background: '#fff' }}>
           {loading ? (
             <LoadingSkeleton />
-          ) : !data ? (
-            <div style={{ textAlign: 'center', padding: '40px 20px', color: '#9CA3AF' }}>
-              <p>Kon gegevens niet laden.</p>
+          ) : fetchError || !data ? (
+            <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+              <p style={{ fontSize: 32, marginBottom: 12 }}>⚠️</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>Kon meetup niet laden</p>
+              <p style={{ fontSize: 13, color: '#9CA3AF', margin: 0 }}>Probeer de pagina te verversen</p>
             </div>
           ) : tab === 'info' ? (
-            <InfoTab data={data} myStatus={myStatus} onInterest={handleInterest} actionPending={actionPending} />
+            <InfoTab data={data} />
           ) : tab === 'aanwezig' ? (
             <AanwezigTab data={data} actionPending={actionPending} onMarkAttended={handleMarkAttended} onRemove={handleRemove} />
           ) : (
@@ -315,11 +321,8 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
 
 // ─── Tab 1: Info ──────────────────────────────────────────────────────────────
 
-function InfoTab({ data, myStatus, onInterest, actionPending }: {
+function InfoTab({ data }: {
   data: MeetupModalDetail
-  myStatus: string | null
-  onInterest: () => void
-  actionPending: string | null
 }) {
   const m = data.meetup
   const c = data.creator
