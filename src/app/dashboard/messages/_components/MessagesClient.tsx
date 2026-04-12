@@ -602,7 +602,7 @@ export default function MessagesClient({
       <div className="h-[calc(100vh-8rem)] flex bg-white rounded-2xl border border-gray-100 overflow-hidden">
 
         {/* ── Linker kolom ── */}
-        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-100 ${selected ? 'hidden md:flex' : 'flex'}`}>
+        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-100 ${(selected || activeMeetupId) ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-5 border-b border-gray-100">
             <h1 className="text-xl font-black text-black mb-4">Berichten</h1>
             <div className="relative">
