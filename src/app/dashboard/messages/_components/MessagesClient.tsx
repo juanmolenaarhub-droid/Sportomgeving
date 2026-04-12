@@ -31,6 +31,8 @@ export type ConversationItem = {
   createdAt: string
   accepted: boolean
   otherUserLastSeen?: string | null
+  lastMessage?: string | null
+  lastMessageType?: string | null
 }
 
 type ChatMessage = {
@@ -170,6 +172,17 @@ export default function MessagesClient({
   // Berichtverwijdering
   const [deletedForMeIds, setDeletedForMeIds] = useState<Set<string>>(new Set())
   const [msgMenuFor, setMsgMenuFor] = useState<string | null>(null)
+
+  // Lange-druk preview
+  const [previewConv, setPreviewConv] = useState<ConversationItem | null>(null)
+  const longPressTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  function startLongPress(conv: ConversationItem) {
+    longPressTimer.current = setTimeout(() => setPreviewConv(conv), 500)
+  }
+  function cancelLongPress() {
+    if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null }
+  }
 
   // Feature 4: Afbeeldingen
   const [pendingImage, setPendingImage] = useState<File | null>(null)
@@ -506,7 +519,13 @@ export default function MessagesClient({
                 return (
                   <button
                     key={conv.requestId}
-                    onClick={() => setSelected(conv)}
+                    onClick={() => { cancelLongPress(); setSelected(conv) }}
+                    onMouseDown={() => startLongPress(conv)}
+                    onMouseUp={cancelLongPress}
+                    onMouseLeave={cancelLongPress}
+                    onTouchStart={() => startLongPress(conv)}
+                    onTouchEnd={cancelLongPress}
+                    onTouchMove={cancelLongPress}
                     className={`w-full flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left ${selected?.requestId === conv.requestId ? 'bg-gray-100' : ''}`}
                   >
                     <div className="relative shrink-0">
@@ -519,9 +538,12 @@ export default function MessagesClient({
                         <p className="font-bold text-sm text-black truncate">{conv.otherUserName}</p>
                         <span className="text-xs text-gray-400 shrink-0 ml-2">{timeAgo(conv.createdAt)}</span>
                       </div>
-                      {conv.sport && <p className="text-xs text-gray-400 mb-0.5">{conv.sport}</p>}
+                      {conv.sport && <p className="text-xs text-[#E87722] font-semibold mb-0.5">{conv.sport}</p>}
                       <p className={`text-xs truncate ${!conv.accepted ? 'text-black font-semibold' : 'text-gray-400'}`}>
-                        {conv.message ?? 'Wil jouw sportbuddy worden'}
+                        {conv.accepted
+                          ? (conv.lastMessageType === 'image' ? '📷 Afbeelding' : conv.lastMessageType === 'appointment' ? '📅 Afspraak voorstel' : conv.lastMessage ?? conv.message ?? 'Wil jouw sportbuddy worden')
+                          : (conv.message ?? 'Wil jouw sportbuddy worden')
+                        }
                       </p>
                     </div>
                   </button>
@@ -655,7 +677,7 @@ export default function MessagesClient({
 
                       {/* Verwijderknop — verschijnt bij hover, alleen eigen berichten */}
                       {fromMe && !isDeleted && (
-                        <div className="opacity-0 group-hover:opacity-100 transition-opacity shrink-0 self-center relative">
+                        <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0 self-center relative">
                           <button
                             onClick={() => setMsgMenuFor(msgMenuFor === msg.id ? null : msg.id)}
                             className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
@@ -843,6 +865,74 @@ export default function MessagesClient({
       {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
 
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
+
+      {/* Lange-druk preview sheet */}
+      {previewConv && (
+        <div
+          className="fixed inset-0 z-[80] flex items-end justify-center"
+          style={{ backgroundColor: 'rgba(17,17,17,0.4)' }}
+          onClick={() => setPreviewConv(null)}
+        >
+          <div
+            className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl overflow-hidden"
+            onClick={e => e.stopPropagation()}
+          >
+            {/* Handle */}
+            <div className="flex justify-center pt-3 pb-1">
+              <div className="w-10 h-1 bg-gray-200 rounded-full" />
+            </div>
+
+            {/* Header */}
+            <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
+              <div className="relative">
+                <Avatar name={previewConv.otherUserName} size="md" />
+                {onlineUsers.has(previewConv.otherUserId) && (
+                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
+                )}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="font-black text-black text-base">{previewConv.otherUserName}</p>
+                {previewConv.sport && (
+                  <p className="text-xs font-semibold text-[#E87722]">{previewConv.sport}</p>
+                )}
+              </div>
+              <p className="text-xs text-gray-400">{timeAgo(previewConv.createdAt)}</p>
+            </div>
+
+            {/* Laatste bericht preview */}
+            <div className="px-5 py-4 min-h-[80px] flex items-center">
+              {previewConv.lastMessageType === 'image' ? (
+                <p className="text-sm text-gray-500 italic">📷 Afbeelding</p>
+              ) : previewConv.lastMessageType === 'appointment' ? (
+                <p className="text-sm text-gray-500 italic">📅 Afspraak voorstel</p>
+              ) : previewConv.lastMessage ? (
+                <p className="text-sm text-gray-700 leading-relaxed line-clamp-3">{previewConv.lastMessage}</p>
+              ) : previewConv.message ? (
+                <p className="text-sm text-gray-500 italic leading-relaxed line-clamp-3">{previewConv.message}</p>
+              ) : (
+                <p className="text-sm text-gray-400 italic">Nog geen berichten</p>
+              )}
+            </div>
+
+            {/* Acties */}
+            <div className="px-5 pb-6 pt-2 flex gap-3">
+              <button
+                onClick={() => setPreviewConv(null)}
+                className="flex-1 py-3 rounded-2xl border border-black/10 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
+              >
+                Sluiten
+              </button>
+              <button
+                onClick={() => { setSelected(previewConv); setPreviewConv(null) }}
+                style={{ fontFamily: "'Syne', sans-serif" }}
+                className="flex-1 py-3 rounded-2xl bg-[#111] text-white text-sm font-bold hover:bg-[#333] transition-colors"
+              >
+                Chat openen
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }
