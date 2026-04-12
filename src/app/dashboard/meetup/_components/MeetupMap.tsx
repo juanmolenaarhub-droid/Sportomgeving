@@ -1,52 +1,31 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useState } from 'react'
+import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/mapbox'
+import 'mapbox-gl/dist/mapbox-gl.css'
 import type { MeetupListItem } from '@/app/actions/meetups'
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#E87722',
-  'Fietsen': '#3B82F6',
-  'Zwemmen': '#06B6D4',
-  'Gym': '#22C55E',
-  'Tennis': '#8B5CF6',
-  'Padel': '#8B5CF6',
-  default: '#6B7280',
+  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#EC4899',
+  'Voetbal': '#10B981', default: '#6B7280',
+}
+const SPORT_EMOJIS: Record<string, string> = {
+  'Hardlopen': '🏃', 'Fietsen': '🚴', 'Zwemmen': '🏊', 'Gym': '💪',
+  'Tennis': '🎾', 'Padel': '🏸', 'Voetbal': '⚽', 'Yoga': '🧘',
+  'Wandelen': '🚶', 'Golf': '⛳', 'Boksen': '🥊', 'Klimmen': '🧗',
+  default: '🏅',
 }
 
-function getSportColor(sport: string) {
-  return SPORT_COLORS[sport] ?? SPORT_COLORS.default
-}
-
-function makeIcon(color: string, pulse: boolean) {
-  const pulse_css = pulse ? `
-    @keyframes meetup-pulse {
-      0%, 100% { transform: scale(1); opacity: 1; }
-      50% { transform: scale(1.4); opacity: 0.7; }
-    }
-    .pulse-ring {
-      animation: meetup-pulse 1.5s ease-in-out infinite;
-    }
-  ` : ''
-
-  return `
-    <svg width="36" height="44" viewBox="0 0 36 44" xmlns="http://www.w3.org/2000/svg">
-      <style>${pulse_css}</style>
-      <g class="${pulse ? 'pulse-ring' : ''}">
-        <ellipse cx="18" cy="40" rx="6" ry="2.5" fill="rgba(0,0,0,0.15)"/>
-        <path d="M18 0 C8 0 0 8 0 18 C0 30 18 44 18 44 C18 44 36 30 36 18 C36 8 28 0 18 0Z" fill="${color}"/>
-        <circle cx="18" cy="18" r="8" fill="white" opacity="0.9"/>
-      </g>
-    </svg>
-  `
-}
+function getSportColor(s: string) { return SPORT_COLORS[s] ?? SPORT_COLORS.default }
+function getSportEmoji(s: string) { return SPORT_EMOJIS[s] ?? SPORT_EMOJIS.default }
 
 function timeUntilExpiry(expiresAt: string) {
   const diff = new Date(expiresAt).getTime() - Date.now()
   if (diff <= 0) return 'Verlopen'
   const hours = Math.floor(diff / 3600000)
   const mins = Math.floor((diff % 3600000) / 60000)
-  if (hours > 0) return `${hours}u ${mins}m`
-  return `${mins} min`
+  return hours > 0 ? `${hours}u ${mins}m` : `${mins} min`
 }
 
 function formatMeetupDate(date: string | null, time: string | null) {
@@ -63,122 +42,176 @@ type Props = {
 }
 
 export default function MeetupMap({ meetups, center, currentUserId, onInterest }: Props) {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const mapInstanceRef = useRef<any>(null)
-
-  useEffect(() => {
-    if (!mapRef.current || mapInstanceRef.current) return
-
-    // Dynamisch importeren om SSR-fouten te voorkomen
-    import('leaflet').then(L => {
-      if (!mapRef.current || mapInstanceRef.current) return
-
-      // Fix standaard Leaflet icon paden voor Next.js
-      delete (L.Icon.Default.prototype as any)._getIconUrl
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-      })
-
-      const map = L.map(mapRef.current!, { zoomControl: true, scrollWheelZoom: true }).setView(center, 13)
-      mapInstanceRef.current = map
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-      }).addTo(map)
-
-      meetups.forEach(meetup => {
-        const color = getSportColor(meetup.sport)
-        const isPulse = meetup.isSpontaneous
-        const svgIcon = L.divIcon({
-          html: makeIcon(color, isPulse),
-          className: '',
-          iconSize: [36, 44],
-          iconAnchor: [18, 44],
-          popupAnchor: [0, -44],
-        })
-
-        const spotsLeft = meetup.maxParticipants - meetup.acceptedCount
-        const dateLabel = meetup.isSpontaneous
-          ? `<span style="color:#ef4444;font-weight:700">⚡ Spontaan — verloopt over ${timeUntilExpiry(meetup.expiresAt ?? '')}</span>`
-          : `<span style="color:#6b7280">${formatMeetupDate(meetup.date, meetup.time) ?? ''}</span>`
-
-        let actionBtn = ''
-        if (meetup.myStatus === 'geaccepteerd') {
-          actionBtn = `<a href="/dashboard/messages?tab=meetups" style="display:block;margin-top:10px;background:#111;color:#fff;text-align:center;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;text-decoration:none">Bekijk chat →</a>`
-        } else if (meetup.myStatus === 'interesse') {
-          actionBtn = `<p style="margin-top:10px;font-size:12px;color:#9ca3af;font-style:italic">Wacht op acceptatie...</p>`
-        } else if (meetup.status === 'open' && meetup.creatorId !== currentUserId) {
-          actionBtn = `<button data-meetup-id="${meetup.id}" class="meetup-interest-btn" style="margin-top:10px;width:100%;background:#E87722;color:#fff;border:none;padding:8px 12px;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer">Interesse tonen</button>`
-        }
-
-        const popup = L.popup({ maxWidth: 280, className: 'meetup-popup' }).setContent(`
-          <div style="font-family:'DM Sans',sans-serif;padding:4px 2px">
-            <div style="display:flex;align-items:center;gap:6px;margin-bottom:6px">
-              <span style="background:${color};color:#fff;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px">${meetup.sport}</span>
-              ${meetup.status === 'vol' ? `<span style="background:#fef3c7;color:#d97706;font-size:11px;font-weight:700;padding:3px 8px;border-radius:999px">Vol</span>` : ''}
-            </div>
-            <p style="font-size:15px;font-weight:800;color:#111;margin:0 0 4px">${meetup.title}</p>
-            <p style="font-size:12px;color:#6b7280;margin:0 0 4px">${dateLabel}</p>
-            <p style="font-size:12px;color:#374151;margin:0 0 6px">📍 ${meetup.locationName}</p>
-            <p style="font-size:12px;color:#6b7280;margin:0 0 4px">
-              👤 <strong>${meetup.creatorName}</strong>
-            </p>
-            <p style="font-size:12px;color:#6b7280;margin:0">
-              ${meetup.acceptedCount} geaccepteerd / ${meetup.maxParticipants} max
-              ${meetup.interestedCount > 0 ? ` · ${meetup.interestedCount} geïnteresseerd` : ''}
-              ${spotsLeft > 0 ? ` · <strong style="color:#059669">${spotsLeft} plekken over</strong>` : ''}
-            </p>
-            ${actionBtn}
-            <a href="/dashboard/meetup/${meetup.id}" style="display:block;margin-top:6px;text-align:center;font-size:12px;color:#E87722;font-weight:600;text-decoration:none">Bekijk details →</a>
-          </div>
-        `)
-
-        const marker = L.marker([meetup.latitude, meetup.longitude], { icon: svgIcon })
-          .addTo(map)
-          .bindPopup(popup)
-
-        marker.on('popupopen', () => {
-          const btn = document.querySelector(`[data-meetup-id="${meetup.id}"]`) as HTMLButtonElement | null
-          if (btn) {
-            btn.addEventListener('click', () => {
-              map.closePopup()
-              onInterest(meetup.id)
-            })
-          }
-        })
-      })
-    })
-
-    return () => {
-      if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
-        mapInstanceRef.current = null
-      }
-    }
-  }, []) // Eenmalig mounten
-
-  // Update markers wanneer meetups veranderen — herlaad kaart
-  useEffect(() => {
-    if (!mapInstanceRef.current) return
-    // Simpele aanpak: reload kaart bij filter-wijzigingen
-  }, [meetups])
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selectedMeetup = meetups.find(m => m.id === selectedId) ?? null
 
   return (
     <>
       <style>{`
-        .leaflet-container { font-family: 'DM Sans', sans-serif; }
-        .meetup-popup .leaflet-popup-content-wrapper {
-          border-radius: 16px;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.15);
-          border: 1px solid rgba(0,0,0,0.06);
-          background: #FAFAF8;
+        @keyframes meetup-pulse {
+          0% { box-shadow: 0 0 0 0 rgba(239,68,68,0.6), 0 2px 8px rgba(0,0,0,0.25); }
+          70% { box-shadow: 0 0 0 10px rgba(239,68,68,0), 0 2px 8px rgba(0,0,0,0.25); }
+          100% { box-shadow: 0 0 0 0 rgba(239,68,68,0), 0 2px 8px rgba(0,0,0,0.25); }
         }
-        .meetup-popup .leaflet-popup-tip { background: #FAFAF8; }
+        .meetup-pill { cursor: pointer; user-select: none; transition: transform 0.15s, opacity 0.15s; }
+        .meetup-pill:hover { transform: scale(1.08); opacity: 0.95; }
+        .meetup-popup .mapboxgl-popup-content {
+          padding: 0; border-radius: 16px; overflow: hidden;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.18); border: 1px solid rgba(0,0,0,0.07);
+          font-family: 'DM Sans', sans-serif; min-width: 260px;
+        }
+        .meetup-popup .mapboxgl-popup-tip { border-top-color: #fff; }
+        .meetup-popup .mapboxgl-popup-close-button { display: none; }
       `}</style>
-      <div ref={mapRef} style={{ width: '100%', height: '100%', borderRadius: 16 }} />
+
+      <Map
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        initialViewState={{ longitude: center[1], latitude: center[0], zoom: 13 }}
+        style={{ width: '100%', height: '100%', borderRadius: 16 }}
+        mapStyle="mapbox://styles/mapbox/light-v11"
+        onClick={() => setSelectedId(null)}
+      >
+        <NavigationControl position="top-right" showCompass={false} />
+
+        {meetups.map(m => {
+          const color = getSportColor(m.sport)
+          const emoji = getSportEmoji(m.sport)
+          const shortTitle = m.title.length > 18 ? m.title.slice(0, 16) + '…' : m.title
+          const isSelected = m.id === selectedId
+
+          return (
+            <Marker
+              key={m.id}
+              longitude={m.longitude}
+              latitude={m.latitude}
+              anchor="bottom"
+              onClick={(e: { originalEvent: MouseEvent }) => { e.originalEvent.stopPropagation(); setSelectedId(m.id) }}
+            >
+              <div
+                className="meetup-pill"
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 4,
+                  height: 32, padding: '0 10px', borderRadius: 20,
+                  background: color, color: '#fff',
+                  fontSize: 12, fontWeight: 700,
+                  whiteSpace: 'nowrap',
+                  boxShadow: m.isSpontaneous
+                    ? '0 0 0 0 rgba(239,68,68,0.6), 0 2px 8px rgba(0,0,0,0.25)'
+                    : '0 2px 8px rgba(0,0,0,0.25)',
+                  animation: m.isSpontaneous ? 'meetup-pulse 2s infinite' : 'none',
+                  outline: isSelected ? `3px solid ${color}` : 'none',
+                  outlineOffset: 2,
+                  transform: isSelected ? 'scale(1.1)' : undefined,
+                }}
+              >
+                <span>{emoji}</span>
+                <span>{shortTitle}</span>
+              </div>
+            </Marker>
+          )
+        })}
+
+        {selectedMeetup && (
+          <Popup
+            longitude={selectedMeetup.longitude}
+            latitude={selectedMeetup.latitude}
+            anchor="bottom"
+            onClose={() => setSelectedId(null)}
+            closeButton={false}
+            offset={[0, -8] as [number, number]}
+            className="meetup-popup"
+            maxWidth="300px"
+          >
+            <PopupContent
+              meetup={selectedMeetup}
+              currentUserId={currentUserId}
+              onInterest={() => { setSelectedId(null); onInterest(selectedMeetup.id) }}
+            />
+          </Popup>
+        )}
+      </Map>
     </>
+  )
+}
+
+function PopupContent({
+  meetup, currentUserId, onInterest
+}: {
+  meetup: MeetupListItem
+  currentUserId: string
+  onInterest: () => void
+}) {
+  const color = getSportColor(meetup.sport)
+  const spotsLeft = meetup.maxParticipants - meetup.acceptedCount
+
+  const dateLabel = meetup.isSpontaneous
+    ? `⚡ Spontaan — verloopt over ${timeUntilExpiry(meetup.expiresAt ?? '')}`
+    : formatMeetupDate(meetup.date, meetup.time)
+
+  return (
+    <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+      {/* Sport-color header */}
+      <div style={{ background: color, padding: '10px 14px 8px', display: 'flex', alignItems: 'center', gap: 6 }}>
+        <span style={{ fontSize: 13, fontWeight: 800, color: '#fff' }}>{meetup.sport}</span>
+        {meetup.status === 'vol' && (
+          <span style={{ background: 'rgba(255,255,255,0.25)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 999 }}>Vol</span>
+        )}
+        {meetup.isSpontaneous && (
+          <span style={{ background: 'rgba(255,255,255,0.2)', color: '#fff', fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 999, marginLeft: 'auto' }}>⚡ Nu</span>
+        )}
+      </div>
+
+      {/* Body */}
+      <div style={{ padding: '10px 14px 12px' }}>
+        <p style={{ fontSize: 15, fontWeight: 800, color: '#111', margin: '0 0 5px', lineHeight: 1.3 }}>{meetup.title}</p>
+
+        {dateLabel && (
+          <p style={{ fontSize: 11, color: meetup.isSpontaneous ? '#ef4444' : '#6b7280', margin: '0 0 3px', fontWeight: meetup.isSpontaneous ? 700 : 400 }}>
+            {dateLabel}
+          </p>
+        )}
+
+        <p style={{ fontSize: 11, color: '#374151', margin: '0 0 3px' }}>📍 {meetup.locationName}</p>
+        <p style={{ fontSize: 11, color: '#6b7280', margin: '0 0 8px' }}>
+          👤 <strong>{meetup.creatorName}</strong>
+          {' · '}{meetup.acceptedCount}/{meetup.maxParticipants} deelnemers
+          {spotsLeft > 0 && <span style={{ color: '#059669', fontWeight: 700 }}> · {spotsLeft} plekken</span>}
+        </p>
+
+        {/* Footer actions */}
+        {meetup.myStatus === 'geaccepteerd' ? (
+          <a
+            href="/dashboard/messages?tab=meetups"
+            style={{ display: 'block', background: '#111', color: '#fff', textAlign: 'center', padding: '7px 12px', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}
+          >
+            Bekijk chat →
+          </a>
+        ) : meetup.myStatus === 'interesse' ? (
+          <p style={{ fontSize: 11, color: '#9ca3af', fontStyle: 'italic', margin: '4px 0 0' }}>Wacht op acceptatie...</p>
+        ) : meetup.status === 'open' && meetup.creatorId !== currentUserId ? (
+          <div style={{ display: 'flex', gap: 6, marginTop: 4 }}>
+            <button
+              onClick={onInterest}
+              style={{ flex: 1, background: color, color: '#fff', border: 'none', padding: '7px 0', borderRadius: 10, fontSize: 12, fontWeight: 700, cursor: 'pointer' }}
+            >
+              Interesse tonen
+            </button>
+            <a
+              href={`/dashboard/meetup/${meetup.id}`}
+              style={{ flex: 1, display: 'block', textAlign: 'center', background: '#f3f4f6', color: '#374151', padding: '7px 0', borderRadius: 10, fontSize: 12, fontWeight: 700, textDecoration: 'none' }}
+            >
+              Details →
+            </a>
+          </div>
+        ) : (
+          <a
+            href={`/dashboard/meetup/${meetup.id}`}
+            style={{ display: 'block', textAlign: 'center', fontSize: 12, color: color, fontWeight: 600, textDecoration: 'none', marginTop: 4 }}
+          >
+            Bekijk details →
+          </a>
+        )}
+      </div>
+    </div>
   )
 }

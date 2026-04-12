@@ -1,71 +1,105 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useState } from 'react'
+import Map, { Marker, Popup } from 'react-map-gl/mapbox'
+import 'mapbox-gl/dist/mapbox-gl.css'
 
 const SPORT_COLORS: Record<string, string> = {
   'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
-  'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#8B5CF6', default: '#6B7280',
+  'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#EC4899',
+  'Voetbal': '#10B981', default: '#6B7280',
+}
+const SPORT_EMOJIS: Record<string, string> = {
+  'Hardlopen': '🏃', 'Fietsen': '🚴', 'Zwemmen': '🏊', 'Gym': '💪',
+  'Tennis': '🎾', 'Padel': '🏸', 'Voetbal': '⚽', default: '🏅',
 }
 
-type Props = {
-  meetups: {
-    id: string; sport: string; title: string; city: string
-    latitude: number; longitude: number; status: string; is_spontaneous: boolean
-  }[]
+type MeetupPin = {
+  id: string; sport: string; title: string; city: string
+  latitude: number; longitude: number; status: string; is_spontaneous: boolean
 }
+type Props = { meetups: MeetupPin[] }
 
 export default function AdminMeetupMap({ meetups }: Props) {
-  const mapRef = useRef<HTMLDivElement>(null)
-  const instanceRef = useRef<any>(null)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+  const selected = meetups.find(m => m.id === selectedId)
 
-  useEffect(() => {
-    if (!mapRef.current || instanceRef.current) return
+  return (
+    <>
+      <style>{`
+        .admin-popup .mapboxgl-popup-content {
+          padding: 0; border-radius: 12px; overflow: hidden;
+          box-shadow: 0 4px 20px rgba(0,0,0,0.15); border: 1px solid rgba(0,0,0,0.07);
+          font-family: 'DM Sans', sans-serif;
+        }
+        .admin-popup .mapboxgl-popup-close-button { display: none; }
+      `}</style>
 
-    import('leaflet').then(L => {
-      if (!mapRef.current || instanceRef.current) return
+      <Map
+        mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
+        initialViewState={{ longitude: 5.3, latitude: 52.3, zoom: 7 }}
+        style={{ width: '100%', height: '100%' }}
+        mapStyle="mapbox://styles/mapbox/light-v11"
+        onClick={() => setSelectedId(null)}
+        attributionControl={false}
+      >
+        {meetups.map(m => {
+          const color = SPORT_COLORS[m.sport] ?? SPORT_COLORS.default
+          const emoji = SPORT_EMOJIS[m.sport] ?? SPORT_EMOJIS.default
+          const shortTitle = m.title.length > 16 ? m.title.slice(0, 14) + '…' : m.title
+          return (
+            <Marker
+              key={m.id}
+              longitude={m.longitude}
+              latitude={m.latitude}
+              anchor="bottom"
+              onClick={(e: { originalEvent: MouseEvent }) => { e.originalEvent.stopPropagation(); setSelectedId(m.id) }}
+            >
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 4,
+                height: 28, padding: '0 8px', borderRadius: 20,
+                background: color, color: '#fff',
+                fontSize: 11, fontWeight: 700, whiteSpace: 'nowrap',
+                boxShadow: '0 2px 6px rgba(0,0,0,0.22)',
+                cursor: 'pointer', transition: 'transform 0.15s',
+              }}>
+                <span>{emoji}</span>
+                <span>{shortTitle}</span>
+              </div>
+            </Marker>
+          )
+        })}
 
-      delete (L.Icon.Default.prototype as any)._getIconUrl
-      L.Icon.Default.mergeOptions({
-        iconRetinaUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon-2x.png',
-        iconUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-icon.png',
-        shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/images/marker-shadow.png',
-      })
-
-      // Centreer op Nederland
-      const map = L.map(mapRef.current!, { zoomControl: true }).setView([52.3, 5.3], 7)
-      instanceRef.current = map
-
-      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '© OpenStreetMap contributors',
-        maxZoom: 19,
-      }).addTo(map)
-
-      meetups.forEach(m => {
-        const color = SPORT_COLORS[m.sport] ?? SPORT_COLORS.default
-        const svg = `<svg width="28" height="34" viewBox="0 0 28 34" xmlns="http://www.w3.org/2000/svg">
-          <path d="M14 0C6.3 0 0 6.3 0 14C0 23.3 14 34 14 34C14 34 28 23.3 28 14C28 6.3 21.7 0 14 0Z" fill="${color}"/>
-          <circle cx="14" cy="14" r="6" fill="white" opacity="0.9"/>
-        </svg>`
-
-        const icon = L.divIcon({ html: svg, className: '', iconSize: [28, 34], iconAnchor: [14, 34], popupAnchor: [0, -34] })
-
-        L.marker([m.latitude, m.longitude], { icon })
-          .addTo(map)
-          .bindPopup(`
-            <div style="font-family:'DM Sans',sans-serif;padding:2px">
-              <span style="background:${color};color:#fff;font-size:10px;font-weight:700;padding:2px 7px;border-radius:999px">${m.sport}</span>
-              <p style="font-weight:800;font-size:13px;margin:5px 0 2px">${m.title}</p>
-              <p style="font-size:11px;color:#6b7280">📍 ${m.city}</p>
-              <a href="/dashboard/meetup/${m.id}" style="font-size:11px;color:#E87722;font-weight:600">Bekijk →</a>
+        {selected && (
+          <Popup
+            longitude={selected.longitude}
+            latitude={selected.latitude}
+            anchor="bottom"
+            onClose={() => setSelectedId(null)}
+            closeButton={false}
+            offset={[0, -8] as [number, number]}
+            className="admin-popup"
+            maxWidth="240px"
+          >
+            <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+              <div style={{ background: SPORT_COLORS[selected.sport] ?? SPORT_COLORS.default, padding: '8px 12px' }}>
+                <span style={{ fontSize: 12, fontWeight: 800, color: '#fff' }}>{selected.sport}</span>
+                {selected.is_spontaneous && <span style={{ marginLeft: 6, fontSize: 10, color: 'rgba(255,255,255,0.85)' }}>⚡ Spontaan</span>}
+              </div>
+              <div style={{ padding: '8px 12px 10px' }}>
+                <p style={{ fontSize: 13, fontWeight: 800, color: '#111', margin: '0 0 4px' }}>{selected.title}</p>
+                <p style={{ fontSize: 11, color: '#6b7280', margin: 0 }}>📍 {selected.city}</p>
+                <a
+                  href={`/dashboard/meetup/${selected.id}`}
+                  style={{ display: 'block', marginTop: 8, fontSize: 11, color: '#E87722', fontWeight: 600, textDecoration: 'none' }}
+                >
+                  Bekijk →
+                </a>
+              </div>
             </div>
-          `)
-      })
-    })
-
-    return () => {
-      if (instanceRef.current) { instanceRef.current.remove(); instanceRef.current = null }
-    }
-  }, [])
-
-  return <div ref={mapRef} style={{ width: '100%', height: '100%' }} />
+          </Popup>
+        )}
+      </Map>
+    </>
+  )
 }

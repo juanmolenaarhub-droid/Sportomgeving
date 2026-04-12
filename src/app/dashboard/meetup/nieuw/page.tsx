@@ -12,14 +12,22 @@ const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 // Mini kaartje voor locatiepreview
 const LocationPreviewMap = dynamic(() => import('../_components/LocationPreviewMap'), { ssr: false })
 
-type GeoResult = { lat: number; lon: number; display_name: string; address?: { city?: string; town?: string; village?: string; municipality?: string } }
+type GeoResult = { lat: number; lon: number; display_name: string; city: string }
 
 async function geocode(query: string): Promise<GeoResult[]> {
-  const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(query)}&format=json&addressdetails=1&limit=5&countrycodes=nl`, {
-    headers: { 'Accept-Language': 'nl' },
-  })
+  const token = process.env.NEXT_PUBLIC_MAPBOX_TOKEN
+  if (!token) return []
+  const res = await fetch(
+    `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?country=nl&language=nl&limit=5&access_token=${token}`
+  )
   if (!res.ok) return []
-  return res.json()
+  const data = await res.json()
+  return (data.features ?? []).map((f: { center: [number, number]; place_name: string; context?: { id: string; text: string }[] }) => {
+    const city = f.context?.find(c => c.id.startsWith('place.'))?.text
+      ?? f.context?.find(c => c.id.startsWith('locality.'))?.text
+      ?? ''
+    return { lat: f.center[1], lon: f.center[0], display_name: f.place_name, city }
+  })
 }
 
 export default function NewMeetupPage() {
@@ -69,10 +77,9 @@ export default function NewMeetupPage() {
   }
 
   function handleSelectLocation(r: GeoResult) {
-    const city = r.address?.city ?? r.address?.town ?? r.address?.village ?? r.address?.municipality ?? ''
     const nameParts = r.display_name.split(',')
     const shortName = nameParts.slice(0, 2).join(',').trim()
-    setSelectedLocation({ lat: parseFloat(r.lat as any), lon: parseFloat(r.lon as any), name: shortName, city })
+    setSelectedLocation({ lat: r.lat, lon: r.lon, name: shortName, city: r.city })
     setLocationQuery(shortName)
     setLocationResults([])
   }
