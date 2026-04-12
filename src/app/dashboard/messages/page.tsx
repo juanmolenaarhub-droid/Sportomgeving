@@ -47,12 +47,12 @@ export default async function MessagesPage() {
     ]
 
     const uniqueIds = [...new Set(otherIds)]
-    let profileMap: Record<string, { full_name: string | null; username: string | null }> = {}
+    let profileMap: Record<string, { full_name: string | null; username: string | null; last_seen_at: string | null }> = {}
 
     if (uniqueIds.length > 0) {
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, username')
+        .select('id, full_name, username, last_seen_at')
         .in('id', uniqueIds)
 
       profileMap = Object.fromEntries((profiles ?? []).map(p => [p.id, p]))
@@ -73,6 +73,7 @@ export default async function MessagesPage() {
         message: r.message,
         createdAt: r.created_at,
         accepted: false,
+        otherUserLastSeen: profileMap[r.from_user_id]?.last_seen_at ?? null,
       })
     }
 
@@ -86,6 +87,7 @@ export default async function MessagesPage() {
         message: r.message,
         createdAt: r.created_at,
         accepted: true,
+        otherUserLastSeen: profileMap[r.to_user_id]?.last_seen_at ?? null,
       })
     }
 
@@ -99,6 +101,7 @@ export default async function MessagesPage() {
         message: r.message,
         createdAt: r.created_at,
         accepted: true,
+        otherUserLastSeen: profileMap[r.from_user_id]?.last_seen_at ?? null,
       })
     }
   }

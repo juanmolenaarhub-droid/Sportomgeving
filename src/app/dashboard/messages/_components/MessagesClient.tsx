@@ -4,13 +4,22 @@ import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import {
   Search, Check, X, MessageCircle, Clock, Send,
-  MoreVertical, AlertTriangle, Flag, Trash2
+  MoreVertical, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
 import { deleteConversation } from '../../safety-actions'
+import {
+  updateLastSeen, markMessagesAsRead,
+  createAppointment, sendImageMessage,
+} from '../../chat-actions'
 import { ReportUserModal } from './ReportUserModal'
+import { ConversationStarters } from './ConversationStarters'
+import { AfspraakModal } from './AfspraakModal'
+import { AppointmentCard, type AppointmentData } from './AppointmentCard'
+import { MessageReactions, type Reaction } from './MessageReactions'
+import { ImageLightbox } from './ImageLightbox'
 
 export type ConversationItem = {
   requestId: string
@@ -20,6 +29,7 @@ export type ConversationItem = {
   message: string | null
   createdAt: string
   accepted: boolean
+  otherUserLastSeen?: string | null
 }
 
 type ChatMessage = {
@@ -28,62 +38,54 @@ type ChatMessage = {
   sender_id: string
   content: string
   created_at: string
+  message_type?: string
+  image_url?: string | null
+  read_at?: string | null
 }
 
 const PHONE_REGEX = /(\+316\d{8}|0031\s*6\s*\d{8}|06[-\s]?\d{8})/
-
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
 function formatTime(dateStr: string): string {
-  const d = new Date(dateStr)
-  return d.toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
+  return new Date(dateStr).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
 }
 
 function timeAgo(dateStr: string): string {
   const diff = Date.now() - new Date(dateStr).getTime()
-  const mins = Math.floor(diff / 60000)
+  const mins  = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
-  const days = Math.floor(diff / 86400000)
-  if (mins < 1) return 'Zojuist'
+  const days  = Math.floor(diff / 86400000)
+  if (mins < 1)  return 'Zojuist'
   if (mins < 60) return `${mins} min`
   if (hours < 24) return `${hours} uur`
   return `${days} dag${days > 1 ? 'en' : ''}`
 }
 
+function lastSeenLabel(lastSeen: string | null | undefined, isOnline: boolean): string {
+  if (isOnline) return 'Online'
+  if (!lastSeen) return 'Offline'
+  const diff = Date.now() - new Date(lastSeen).getTime()
+  const mins  = Math.floor(diff / 60000)
+  const hours = Math.floor(diff / 3600000)
+  const days  = Math.floor(diff / 86400000)
+  if (mins < 2)   return 'Zojuist actief'
+  if (mins < 60)  return `${mins} min geleden actief`
+  if (hours < 24) return `${hours} uur geleden actief`
+  return `${days} dag${days > 1 ? 'en' : ''} geleden actief`
+}
+
 // ── Verwijder bevestigingsdialog ──────────────────────────────────────────────
-function DeleteDialog({
-  onClose,
-  onConfirm,
-  isPending,
-}: {
-  onClose: () => void
-  onConfirm: () => void
-  isPending: boolean
-}) {
+function DeleteDialog({ onClose, onConfirm, isPending }: { onClose: () => void; onConfirm: () => void; isPending: boolean }) {
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
-      <div
-        className="bg-[#F5F0E8] w-full max-w-sm rounded-2xl shadow-2xl p-6"
-        onClick={e => e.stopPropagation()}
-      >
-        <h3 style={{ ...SYNE, fontWeight: 800, fontSize: 17, color: '#111' }} className="mb-2">
-          Chat verwijderen?
-        </h3>
+      <div className="bg-[#F5F0E8] w-full max-w-sm rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+        <h3 style={{ ...SYNE, fontWeight: 800, fontSize: 17, color: '#111' }} className="mb-2">Chat verwijderen?</h3>
         <p className="text-sm text-gray-600 leading-relaxed mb-6">
           Weet je zeker dat je deze chat wilt verwijderen? De berichten verdwijnen alleen bij jou. De andere persoon kan de chat nog steeds zien.
         </p>
         <div className="flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-black/12 text-sm font-bold text-gray-600 hover:bg-black/5 transition-colors"
-          >
-            Annuleren
-          </button>
-          <button
-            onClick={onConfirm}
-            disabled={isPending}
-            className="flex-1 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50"
-          >
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-black/12 text-sm font-bold text-gray-600 hover:bg-black/5 transition-colors">Annuleren</button>
+          <button onClick={onConfirm} disabled={isPending} className="flex-1 py-3 rounded-xl text-sm font-bold text-red-500 hover:bg-red-50 transition-colors disabled:opacity-50">
             {isPending ? 'Verwijderen...' : 'Verwijderen'}
           </button>
         </div>
@@ -93,55 +95,31 @@ function DeleteDialog({
 }
 
 // ── Drie-puntjes menu ─────────────────────────────────────────────────────────
-function ChatMenu({
-  onReport,
-  onDelete,
-  onClose,
-}: {
-  onReport: () => void
-  onDelete: () => void
-  onClose: () => void
-}) {
+function ChatMenu({ onReport, onDelete, onClose }: { onReport: () => void; onDelete: () => void; onClose: () => void }) {
   const ref = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
-    function handleClick(e: MouseEvent) {
-      if (ref.current && !ref.current.contains(e.target as Node)) onClose()
-    }
-    document.addEventListener('mousedown', handleClick)
-    return () => document.removeEventListener('mousedown', handleClick)
+    function h(e: MouseEvent) { if (ref.current && !ref.current.contains(e.target as Node)) onClose() }
+    document.addEventListener('mousedown', h)
+    return () => document.removeEventListener('mousedown', h)
   }, [onClose])
-
   return (
     <div ref={ref} className="absolute right-4 top-14 z-50 bg-white rounded-xl shadow-xl border border-black/8 overflow-hidden w-52">
-      <button
-        onClick={() => { onReport(); onClose() }}
-        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors text-left"
-      >
-        <Flag className="w-4 h-4 text-[#E87722]" />
-        Gebruiker rapporteren
+      <button onClick={() => { onReport(); onClose() }} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors text-left">
+        <Flag className="w-4 h-4 text-[#E87722]" /> Gebruiker rapporteren
       </button>
       <div className="border-t border-black/5" />
-      <button
-        onClick={() => { onDelete(); onClose() }}
-        className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors text-left"
-      >
-        <Trash2 className="w-4 h-4" />
-        Chat verwijderen
+      <button onClick={() => { onDelete(); onClose() }} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors text-left">
+        <Trash2 className="w-4 h-4" /> Chat verwijderen
       </button>
     </div>
   )
 }
 
-// ── Toast notificatie ─────────────────────────────────────────────────────────
+// ── Toast ─────────────────────────────────────────────────────────────────────
 function Toast({ message, onDone }: { message: string; onDone: () => void }) {
-  useEffect(() => {
-    const t = setTimeout(onDone, 3500)
-    return () => clearTimeout(t)
-  }, [onDone])
-
+  useEffect(() => { const t = setTimeout(onDone, 3500); return () => clearTimeout(t) }, [onDone])
   return (
-    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] bg-[#111] text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl animate-fade-in">
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-[80] bg-[#111] text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl">
       {message}
     </div>
   )
@@ -156,6 +134,9 @@ export default function MessagesClient({
   currentUserId: string
 }) {
   const router = useRouter()
+  const supabase = createClient()
+
+  // Basis state
   const [conversations, setConversations] = useState(initialConversations)
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests'>('inbox')
   const [search, setSearch] = useState('')
@@ -166,10 +147,11 @@ export default function MessagesClient({
   const [onlineUsers, setOnlineUsers] = useState<Set<string>>(new Set())
   const [isPending, startTransition] = useTransition()
 
-  // Menu & modals
+  // Modals & menu
   const [showMenu, setShowMenu] = useState(false)
   const [showReportModal, setShowReportModal] = useState(false)
   const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showAfspraakModal, setShowAfspraakModal] = useState(false)
   const [toast, setToast] = useState<string | null>(null)
 
   // Telefoonwaarschuwing
@@ -177,18 +159,38 @@ export default function MessagesClient({
   const hasPhoneNumber = PHONE_REGEX.test(newMessage)
   const showPhoneWarning = hasPhoneNumber && !phoneWarningDismissed
 
+  // Feature 2: Afspraken
+  const [appointments, setAppointments] = useState<Record<string, AppointmentData>>({})
+
+  // Feature 3: Reacties
+  const [reactions, setReactions] = useState<Record<string, Reaction[]>>({})
+  const [, setHoveredMsgId] = useState<string | null>(null)
+
+  // Feature 4: Afbeeldingen
+  const [pendingImage, setPendingImage] = useState<File | null>(null)
+  const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null)
+  const [uploadingImage, setUploadingImage] = useState(false)
+  const [lightboxSrc, setLightboxSrc] = useState<string | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
   useEffect(() => {
     if (!hasPhoneNumber) setPhoneWarningDismissed(false)
   }, [hasPhoneNumber])
-
-  const messagesEndRef = useRef<HTMLDivElement>(null)
-  const supabase = createClient()
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Online presence
+  // Feature 5: Update last_seen_at bij mount + elke 60s
+  useEffect(() => {
+    updateLastSeen()
+    const interval = setInterval(updateLastSeen, 60000)
+    return () => clearInterval(interval)
+  }, [])
+
+  // Online presence via Supabase Realtime
   useEffect(() => {
     const channel = supabase.channel('online-users', {
       config: { presence: { key: currentUserId } },
@@ -197,25 +199,129 @@ export default function MessagesClient({
       .on('presence', { event: 'sync' }, () => setOnlineUsers(new Set(Object.keys(channel.presenceState()))))
       .on('presence', { event: 'join' }, ({ key }) => setOnlineUsers(prev => new Set([...prev, key])))
       .on('presence', { event: 'leave' }, ({ key }) => setOnlineUsers(prev => { const s = new Set(prev); s.delete(key); return s }))
-      .subscribe(async (status) => {
-        if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() })
-      })
+      .subscribe(async status => { if (status === 'SUBSCRIBED') await channel.track({ online_at: new Date().toISOString() }) })
     return () => { supabase.removeChannel(channel) }
   }, [currentUserId])
 
   // Berichten + realtime per gesprek
   useEffect(() => {
-    if (!selected?.accepted) { setMessages([]); return }
+    if (!selected?.accepted) { setMessages([]); setReactions({}); setAppointments({}); return }
     const convId = selected.requestId
     setLoadingMessages(true)
-    supabase.from('chat_messages').select('*').eq('conversation_id', convId).order('created_at', { ascending: true })
-      .then(({ data }) => { setMessages((data ?? []) as ChatMessage[]); setLoadingMessages(false) })
 
-    const channel = supabase.channel(`chat:${convId}`)
+    // Laad berichten + afspraken + reacties parallel
+    Promise.all([
+      supabase.from('chat_messages')
+        .select('id, conversation_id, sender_id, content, created_at, message_type, image_url, read_at')
+        .eq('conversation_id', convId)
+        .order('created_at', { ascending: true }),
+      supabase.from('training_appointments')
+        .select('id, proposed_by, proposed_to, sport, location, proposed_date, notes, status')
+        .eq('conversation_id', convId),
+      supabase.from('message_reactions')
+        .select('id, message_id, user_id, emoji')
+        .in('message_id',
+          // Placeholder — we'll refetch after messages load if needed
+          ['00000000-0000-0000-0000-000000000000']
+        ),
+    ]).then(([msgRes, apptRes]) => {
+      const msgs = (msgRes.data ?? []) as ChatMessage[]
+      setMessages(msgs)
+      setLoadingMessages(false)
+
+      // Afspraken map
+      const apptMap: Record<string, AppointmentData> = {}
+      for (const a of apptRes.data ?? []) apptMap[a.id] = a as AppointmentData
+      setAppointments(apptMap)
+
+      // Laad reacties voor de geladen berichten
+      const msgIds = msgs.map(m => m.id)
+      if (msgIds.length > 0) {
+        supabase.from('message_reactions')
+          .select('id, message_id, user_id, emoji')
+          .in('message_id', msgIds)
+          .then(({ data }) => {
+            const rMap: Record<string, Reaction[]> = {}
+            for (const r of data ?? []) {
+              if (!rMap[r.message_id]) rMap[r.message_id] = []
+              rMap[r.message_id].push(r as Reaction)
+            }
+            setReactions(rMap)
+          })
+      }
+
+      // Feature 6: markeer berichten als gelezen
+      markMessagesAsRead(convId)
+    })
+
+    // Realtime: nieuwe berichten
+    const chatChannel = supabase.channel(`chat:${convId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${convId}` },
-        (payload) => setMessages(prev => prev.some(m => m.id === payload.new.id) ? prev : [...prev, payload.new as ChatMessage])
-      ).subscribe()
-    return () => { supabase.removeChannel(channel) }
+        (payload) => {
+          const newMsg = payload.new as ChatMessage
+          setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
+
+          // Als het een afspraakbericht is, laad de afspraak
+          if (newMsg.message_type === 'appointment' && newMsg.content) {
+            supabase.from('training_appointments')
+              .select('id, proposed_by, proposed_to, sport, location, proposed_date, notes, status')
+              .eq('id', newMsg.content)
+              .single()
+              .then(({ data }) => {
+                if (data) setAppointments(prev => ({ ...prev, [data.id]: data as AppointmentData }))
+              })
+          }
+
+          // Markeer ook meteen als gelezen als het niet van ons is
+          if (newMsg.sender_id !== currentUserId) markMessagesAsRead(convId)
+        }
+      )
+      // Feature 6: update read_at op bestaande berichten
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${convId}` },
+        (payload) => {
+          const updated = payload.new as ChatMessage
+          setMessages(prev => prev.map(m => m.id === updated.id ? { ...m, read_at: updated.read_at } : m))
+        }
+      )
+      .subscribe()
+
+    // Realtime: reacties
+    const reactChannel = supabase.channel(`reactions:${convId}`)
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' },
+        (payload) => {
+          const r = payload.new as Reaction
+          setReactions(prev => ({
+            ...prev,
+            [r.message_id]: [...(prev[r.message_id] ?? []).filter(x => x.id !== r.id), r],
+          }))
+        }
+      )
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' },
+        (payload) => {
+          const r = payload.old as { id: string; message_id: string }
+          setReactions(prev => ({
+            ...prev,
+            [r.message_id]: (prev[r.message_id] ?? []).filter(x => x.id !== r.id),
+          }))
+        }
+      )
+      .subscribe()
+
+    // Realtime: afspraak status updates
+    const apptChannel = supabase.channel(`appointments:${convId}`)
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'training_appointments', filter: `conversation_id=eq.${convId}` },
+        (payload) => {
+          const updated = payload.new as AppointmentData
+          setAppointments(prev => ({ ...prev, [updated.id]: updated }))
+        }
+      )
+      .subscribe()
+
+    return () => {
+      supabase.removeChannel(chatChannel)
+      supabase.removeChannel(reactChannel)
+      supabase.removeChannel(apptChannel)
+    }
   }, [selected?.requestId, selected?.accepted])
 
   const handleAccept = useCallback((requestId: string) => {
@@ -244,8 +350,67 @@ export default function MessagesClient({
       conversation_id: selected.requestId,
       sender_id: currentUserId,
       content,
+      message_type: 'text',
     })
     if (error) setNewMessage(content)
+  }
+
+  // Feature 4: Afbeelding verzenden
+  async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setPendingImage(file)
+    const url = URL.createObjectURL(file)
+    setPendingImagePreview(url)
+  }
+
+  async function sendImage() {
+    if (!pendingImage || !selected?.accepted || uploadingImage) return
+    setUploadingImage(true)
+    const ext  = pendingImage.name.split('.').pop() ?? 'jpg'
+    const path = `${currentUserId}/${Date.now()}.${ext}`
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('chat-images')
+      .upload(path, pendingImage, { contentType: pendingImage.type })
+
+    if (uploadError) {
+      setToast('Afbeelding uploaden mislukt')
+      setUploadingImage(false)
+      return
+    }
+
+    const { data: urlData } = supabase.storage.from('chat-images').getPublicUrl(uploadData.path)
+    const result = await sendImageMessage(selected.requestId, urlData.publicUrl)
+
+    setUploadingImage(false)
+    if (result.error) {
+      setToast('Afbeelding verzenden mislukt')
+    } else {
+      setPendingImage(null)
+      if (pendingImagePreview) { URL.revokeObjectURL(pendingImagePreview); setPendingImagePreview(null) }
+    }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  function cancelImage() {
+    setPendingImage(null)
+    if (pendingImagePreview) { URL.revokeObjectURL(pendingImagePreview); setPendingImagePreview(null) }
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
+  async function handleAfspraakSubmit({ location, proposedDate, notes }: { location: string; proposedDate: string; notes: string }) {
+    if (!selected) return
+    const isoDate = new Date(proposedDate).toISOString()
+    const result = await createAppointment(
+      selected.requestId,
+      selected.otherUserId,
+      selected.sport,
+      location,
+      isoDate,
+      notes,
+    )
+    if (result.error) setToast('Afspraak kon niet worden verzonden')
   }
 
   function handleDeleteConfirm() {
@@ -264,12 +429,20 @@ export default function MessagesClient({
   const filtered = (activeTab === 'requests' ? conversations.filter(c => !c.accepted) : conversations.filter(c => c.accepted))
     .filter(c => c.otherUserName.toLowerCase().includes(search.toLowerCase()))
   const requests = conversations.filter(c => !c.accepted)
+  const showStarters = messages.length === 0 && !loadingMessages && selected?.accepted === true
+
+  // Feature 6: check of mijn laatste bericht gelezen is
+  function getReadStatus(msg: ChatMessage): 'read' | 'sent' | null {
+    if (msg.sender_id !== currentUserId) return null
+    if (msg.message_type === 'appointment') return null
+    return msg.read_at ? 'read' : 'sent'
+  }
 
   return (
     <>
       <div className="h-[calc(100vh-8rem)] flex bg-white rounded-2xl border border-gray-100 overflow-hidden">
 
-        {/* Linker kolom */}
+        {/* ── Linker kolom ── */}
         <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-100 ${selected ? 'hidden md:flex' : 'flex'}`}>
           <div className="p-5 border-b border-gray-100">
             <h1 className="text-xl font-black text-black mb-4">Berichten</h1>
@@ -286,20 +459,12 @@ export default function MessagesClient({
           </div>
 
           <div className="flex border-b border-gray-100">
-            <button
-              onClick={() => setActiveTab('inbox')}
-              className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
-            >
+            <button onClick={() => setActiveTab('inbox')} className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
               Inbox
             </button>
-            <button
-              onClick={() => setActiveTab('requests')}
-              className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}
-            >
+            <button onClick={() => setActiveTab('requests')} className={`flex-1 py-3 text-sm font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
               Volgverzoeken
-              {requests.length > 0 && (
-                <span className="ml-1.5 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>
-              )}
+              {requests.length > 0 && <span className="ml-1.5 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>}
             </button>
           </div>
 
@@ -342,7 +507,7 @@ export default function MessagesClient({
           </div>
         </div>
 
-        {/* Chat */}
+        {/* ── Chat ── */}
         {selected ? (
           <div className="flex-1 flex flex-col min-w-0 relative">
             {/* Header */}
@@ -357,7 +522,7 @@ export default function MessagesClient({
               <div className="flex-1">
                 <p className="font-black text-black text-sm">{selected.otherUserName}</p>
                 <p className="text-xs font-medium" style={{ color: onlineUsers.has(selected.otherUserId) ? '#22c55e' : '#9ca3af' }}>
-                  {onlineUsers.has(selected.otherUserId) ? 'Online' : 'Offline'}
+                  {lastSeenLabel(selected.otherUserLastSeen, onlineUsers.has(selected.otherUserId))}
                 </p>
               </div>
               {!selected.accepted && (
@@ -373,22 +538,13 @@ export default function MessagesClient({
                   </button>
                 </div>
               )}
-              {/* Drie-puntjes menu */}
-              <button
-                onClick={() => setShowMenu(v => !v)}
-                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500"
-              >
+              <button onClick={() => setShowMenu(v => !v)} className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-gray-100 transition-colors text-gray-500">
                 <MoreVertical className="w-4 h-4" />
               </button>
             </div>
 
-            {/* Dropdown menu */}
             {showMenu && (
-              <ChatMenu
-                onReport={() => setShowReportModal(true)}
-                onDelete={() => setShowDeleteDialog(true)}
-                onClose={() => setShowMenu(false)}
-              />
+              <ChatMenu onReport={() => setShowReportModal(true)} onDelete={() => setShowDeleteDialog(true)} onClose={() => setShowMenu(false)} />
             )}
 
             {/* Verzoek banner */}
@@ -401,21 +557,18 @@ export default function MessagesClient({
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button onClick={() => handleDecline(selected.requestId)} disabled={isPending}
-                    className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                    Weigeren
-                  </button>
+                    className="text-xs font-bold text-white bg-red-500 hover:bg-red-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">Weigeren</button>
                   <button onClick={() => handleAccept(selected.requestId)} disabled={isPending}
-                    className="text-xs font-bold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
-                    Accepteren
-                  </button>
+                    className="text-xs font-bold text-white bg-green-500 hover:bg-green-600 px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">Accepteren</button>
                 </div>
               </div>
             )}
 
             {/* Berichten */}
-            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+            <div className="flex-1 overflow-y-auto p-4 space-y-1">
+              {/* Initieel bericht van het verzoek */}
               {selected.message && (
-                <div className="flex justify-start items-end gap-2">
+                <div className="flex justify-start items-end gap-2 mb-2">
                   <Avatar name={selected.otherUserName} size="xs" />
                   <div className="max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed bg-gray-100 text-gray-800 rounded-bl-sm">
                     {selected.message}
@@ -423,25 +576,97 @@ export default function MessagesClient({
                   </div>
                 </div>
               )}
+
               {loadingMessages && (
                 <div className="flex justify-center py-4">
                   <div className="w-5 h-5 border-2 border-gray-200 border-t-gray-500 rounded-full animate-spin" />
                 </div>
               )}
+
               {messages.map(msg => {
                 const fromMe = msg.sender_id === currentUserId
+                const msgReactions = reactions[msg.id] ?? []
+                const readStatus = getReadStatus(msg)
+                const isAppointment = msg.message_type === 'appointment'
+                const isImage = msg.message_type === 'image'
+                const appt = isAppointment ? appointments[msg.content] : null
+
                 return (
-                  <div key={msg.id} className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}>
-                    {!fromMe && <Avatar name={selected.otherUserName} size="xs" />}
-                    <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'}`}>
-                      {msg.content}
-                      <p className={`text-[10px] mt-1 ${fromMe ? 'text-white/60' : 'text-gray-400'}`}>{formatTime(msg.created_at)}</p>
+                  <div
+                    key={msg.id}
+                    className={`group flex flex-col ${fromMe ? 'items-end' : 'items-start'} mb-1`}
+                  >
+                    <div className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2`}>
+                      {!fromMe && <Avatar name={selected.otherUserName} size="xs" />}
+
+                      {/* Bericht inhoud */}
+                      {isAppointment && appt ? (
+                        <AppointmentCard
+                          appointment={appt}
+                          currentUserId={currentUserId}
+                          otherUserName={selected.otherUserName}
+                          fromMe={fromMe}
+                        />
+                      ) : isImage && msg.image_url ? (
+                        <button
+                          onClick={() => setLightboxSrc(msg.image_url!)}
+                          className={`rounded-2xl overflow-hidden max-w-[240px] ${fromMe ? 'rounded-br-sm' : 'rounded-bl-sm'}`}
+                        >
+                          <img
+                            src={msg.image_url}
+                            alt="Afbeelding"
+                            className="w-full h-auto max-h-64 object-cover block"
+                            loading="lazy"
+                          />
+                          <p className={`text-[10px] px-3 py-1 ${fromMe ? 'bg-[#111] text-white/60 text-right' : 'bg-gray-100 text-gray-400'}`}>
+                            {formatTime(msg.created_at)}
+                          </p>
+                        </button>
+                      ) : (
+                        <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm leading-relaxed ${fromMe ? 'bg-[#111111] text-white rounded-br-sm' : 'bg-gray-100 text-gray-800 rounded-bl-sm'}`}>
+                          {msg.content}
+                          <div className={`flex items-center gap-1 mt-1 ${fromMe ? 'justify-end' : 'justify-start'}`}>
+                            <span className={`text-[10px] ${fromMe ? 'text-white/60' : 'text-gray-400'}`}>{formatTime(msg.created_at)}</span>
+                            {/* Feature 6: leesbevestiging */}
+                            {readStatus && (
+                              <span style={{ fontSize: 10 }} className={readStatus === 'read' ? 'text-[#E87722]' : 'text-white/40'}>
+                                {readStatus === 'read' ? '✓✓' : '✓'}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                      )}
                     </div>
+
+                    {/* Feature 3: Reacties */}
+                    {!isAppointment && (
+                      <div
+                        className={`${fromMe ? 'mr-2' : 'ml-8'}`}
+                        onMouseEnter={() => setHoveredMsgId(msg.id)}
+                        onMouseLeave={() => setHoveredMsgId(null)}
+                      >
+                        <MessageReactions
+                          messageId={msg.id}
+                          reactions={msgReactions}
+                          currentUserId={currentUserId}
+                          fromMe={fromMe}
+                          onReactionChange={(id, updated) => setReactions(prev => ({ ...prev, [id]: updated }))}
+                        />
+                      </div>
+                    )}
                   </div>
                 )
               })}
               <div ref={messagesEndRef} />
             </div>
+
+            {/* Feature 1: Gespreksopeners (alleen als nog geen berichten) */}
+            {showStarters && (
+              <ConversationStarters
+                sport={selected.sport}
+                onSelect={text => setNewMessage(text)}
+              />
+            )}
 
             {/* Telefoonwaarschuwing */}
             {showPhoneWarning && (
@@ -454,11 +679,29 @@ export default function MessagesClient({
                   </p>
                 </div>
                 <div className="flex justify-end">
-                  <button
-                    onClick={() => setPhoneWarningDismissed(true)}
-                    className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] transition-colors px-4 py-1.5 rounded-lg"
-                  >
+                  <button onClick={() => setPhoneWarningDismissed(true)} className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] transition-colors px-4 py-1.5 rounded-lg">
                     Akkoord
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Feature 4: Afbeelding preview */}
+            {pendingImagePreview && (
+              <div className="mx-4 mb-2 bg-white border border-black/8 rounded-2xl p-3 flex items-center gap-3">
+                <img src={pendingImagePreview} alt="Preview" className="w-14 h-14 rounded-xl object-cover" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs font-bold text-gray-700 truncate">{pendingImage?.name}</p>
+                  <p className="text-xs text-gray-400">{pendingImage ? Math.round(pendingImage.size / 1024) + ' KB' : ''}</p>
+                </div>
+                <div className="flex gap-2 shrink-0">
+                  <button onClick={cancelImage} className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">Annuleer</button>
+                  <button
+                    onClick={sendImage}
+                    disabled={uploadingImage}
+                    className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
+                  >
+                    {uploadingImage ? 'Sturen...' : 'Verzenden'}
                   </button>
                 </div>
               </div>
@@ -467,17 +710,44 @@ export default function MessagesClient({
             {/* Input */}
             {selected.accepted ? (
               <div className="p-4 border-t border-gray-100">
-                <div className="flex items-center gap-3 bg-gray-50 rounded-2xl px-4 py-2.5">
+                <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-2">
+                  {/* Feature 4: Afbeelding upload */}
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={!!pendingImage}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all disabled:opacity-30 shrink-0"
+                  >
+                    <ImageIcon className="w-4 h-4" />
+                  </button>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={handleImageSelect}
+                  />
+
+                  {/* Feature 2: Afspraak button */}
+                  <button
+                    onClick={() => setShowAfspraakModal(true)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all shrink-0"
+                  >
+                    <CalendarDays className="w-4 h-4" />
+                  </button>
+
                   <input
                     type="text"
                     value={newMessage}
                     onChange={e => setNewMessage(e.target.value)}
-                    onKeyDown={e => e.key === 'Enter' && sendMessage()}
+                    onKeyDown={e => e.key === 'Enter' && !e.shiftKey && sendMessage()}
                     placeholder="Schrijf een bericht..."
                     className="flex-1 bg-transparent text-sm text-black focus:outline-none"
                   />
-                  <button onClick={sendMessage} disabled={!newMessage.trim() || showPhoneWarning}
-                    className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0">
+                  <button
+                    onClick={sendMessage}
+                    disabled={!newMessage.trim() || showPhoneWarning}
+                    className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0"
+                  >
                     <Send className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
@@ -499,7 +769,7 @@ export default function MessagesClient({
         )}
       </div>
 
-      {/* Modals */}
+      {/* ── Modals & overlays ── */}
       {showReportModal && selected && (
         <ReportUserModal
           otherUserId={selected.otherUserId}
@@ -511,12 +781,19 @@ export default function MessagesClient({
       )}
 
       {showDeleteDialog && (
-        <DeleteDialog
-          onClose={() => setShowDeleteDialog(false)}
-          onConfirm={handleDeleteConfirm}
-          isPending={isPending}
+        <DeleteDialog onClose={() => setShowDeleteDialog(false)} onConfirm={handleDeleteConfirm} isPending={isPending} />
+      )}
+
+      {showAfspraakModal && selected && (
+        <AfspraakModal
+          sport={selected.sport}
+          otherUserName={selected.otherUserName}
+          onClose={() => setShowAfspraakModal(false)}
+          onSubmit={handleAfspraakSubmit}
         />
       )}
+
+      {lightboxSrc && <ImageLightbox src={lightboxSrc} onClose={() => setLightboxSrc(null)} />}
 
       {toast && <Toast message={toast} onDone={() => setToast(null)} />}
     </>
