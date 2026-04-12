@@ -1,10 +1,11 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { MapPin, List, Plus, ChevronDown, Clock, Users, Zap, Calendar } from 'lucide-react'
-import type { MeetupListItem } from '@/app/actions/meetups'
+import { getMeetups, type MeetupListItem } from '@/app/actions/meetups'
+import { createClient } from '@/lib/supabase'
 import InterestModal from './InterestModal'
 
 const MeetupMap = dynamic(() => import('./MeetupMap'), { ssr: false, loading: () => (
@@ -81,6 +82,21 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
     }
     return true
   })
+
+  const refreshMeetups = useCallback(async () => {
+    const fresh = await getMeetups({ latitude: center[0], longitude: center[1], radiusKm: 50 })
+    setMeetups(fresh)
+  }, [center])
+
+  useEffect(() => {
+    const supabase = createClient()
+    const channel = supabase
+      .channel('meetups-live')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'meetups' }, () => { refreshMeetups() })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'meetup_participants' }, () => { refreshMeetups() })
+      .subscribe()
+    return () => { supabase.removeChannel(channel) }
+  }, [refreshMeetups])
 
   function showToast(msg: string) {
     setToast(msg)
