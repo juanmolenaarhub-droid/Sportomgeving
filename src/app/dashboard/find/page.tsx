@@ -36,10 +36,42 @@ type Buddy = {
   sports: { label: string; level: string }[]
   following: boolean
   requested: boolean
-  openFollow?: boolean // premium: geen verzoek nodig
+  openFollow?: boolean
   post?: StoryPost
   bannerUrl?: string
   avatarUrl?: string
+  beschikbaarheid?: string[]
+  lastSeenAt?: string | null
+  compatibilityScore?: number
+}
+
+const SPORT_REQUEST_CHIPS: Record<string, string[]> = {
+  'Hardlopen': ['Zin in een ochtendrun? 🏃', 'Wanneer train jij normaal?', 'Ik zoek een hardloopmaatje!'],
+  'Fietsen':   ['Zin om samen te fietsen? 🚴', 'Welke routes doe jij?', 'Zoek fietsmaatje voor weekendtochten!'],
+  'Zwemmen':   ['Zin om samen te zwemmen? 🏊', 'Train jij ook vroeg ochtend?', 'Ik zoek baantraining gezelschap!'],
+  'Gym':       ['Zin om samen te trainen? 💪', 'Ik zoek een spotterbuddy!', 'Wanneer ga jij naar de gym?'],
+  'Voetbal':   ['Zin voor een potje voetbal? ⚽', 'Wanneer speel jij normaal?', 'Op zoek naar 1-op-1 maatje!'],
+  'Tennis':    ['Zin voor een set tennis? 🎾', 'Welk niveau speel jij?', 'Op zoek naar tennisvriend!'],
+  'Yoga':      ['Zin om samen te yogen? 🧘', 'Welk type yoga doe jij?', 'Zoek yogamaatje voor in het park!'],
+  'Padel':     ['Zin voor padel? 🎾', 'Ik zoek een dubbelpartner!', 'Wanneer speel jij normaal?'],
+  'Golf':      ['Zin voor een rondje? ⛳', 'Welke baan ken jij?', 'Op zoek naar golfpartner!'],
+}
+const DEFAULT_REQUEST_CHIPS = ['Hoi! Zin om samen te sporten? 💪', 'Wanneer ben jij beschikbaar?', 'Laten we iets plannen!']
+
+const BESCHIKBAARHEID_LABELS: Record<string, string> = {
+  ochtend: '☀️ Ochtend',
+  middag:  '🌤 Middag',
+  avond:   '🌙 Avond',
+  weekend: '📅 Weekend',
+}
+
+function getActivityStatus(lastSeenAt: string | null | undefined): 'online' | 'recent' | null {
+  if (!lastSeenAt) return null
+  const diff = Date.now() - new Date(lastSeenAt).getTime()
+  const hours = diff / (1000 * 60 * 60)
+  if (hours < 24) return 'online'
+  if (hours < 24 * 7) return 'recent'
+  return null
 }
 
 const ALL_BUDDIES: Buddy[] = [
@@ -108,8 +140,8 @@ function getLevelStyle(level: string) {
   return 'bg-gray-100 text-gray-500'
 }
 
-// ── Verzoek modal ──────────────────────────────────────────────────────────────
-function RequestModal({
+// ── Buddy verzoek popover ──────────────────────────────────────────────────────
+function BuddyRequestPopover({
   buddy,
   onClose,
   onSend,
@@ -121,6 +153,8 @@ function RequestModal({
   const [message, setMessage] = useState('')
   const [sending, setSending] = useState(false)
   const MAX = 300
+
+  const chips = SPORT_REQUEST_CHIPS[buddy.sports?.[0]?.label ?? ''] ?? DEFAULT_REQUEST_CHIPS
 
   async function handleSend() {
     setSending(true)
@@ -143,7 +177,7 @@ function RequestModal({
         })
       }
     } catch (_) {
-      // silently continue — UI updates regardless
+      // silently continue
     }
     onSend(message)
     setSending(false)
@@ -151,17 +185,23 @@ function RequestModal({
 
   return (
     <div className="fixed inset-0 z-[60] bg-black/50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={onClose}>
-      <div
-        className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden"
-        onClick={e => e.stopPropagation()}
-      >
+      <div className="bg-white w-full sm:max-w-sm rounded-t-3xl sm:rounded-2xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
+
         {/* Header */}
         <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
             <StoryAvatar name={buddy.name} size="sm" />
             <div>
               <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#111' }}>{buddy.name}</p>
-              <p className="text-xs text-gray-400">{buddy.region}</p>
+              <div className="flex items-center gap-1.5 mt-0.5">
+                <p className="text-xs text-gray-400">{buddy.region}</p>
+                {buddy.sports[0] && (
+                  <>
+                    <span className="text-gray-200">·</span>
+                    <span className="text-xs font-semibold text-[#E87722]">{buddy.sports[0].label}</span>
+                  </>
+                )}
+              </div>
             </div>
           </div>
           <button onClick={onClose} className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center hover:bg-gray-200 transition-colors">
@@ -169,19 +209,35 @@ function RequestModal({
           </button>
         </div>
 
-        {/* Body */}
-        <div className="px-5 py-4">
-          <p className="text-sm font-semibold text-black mb-1">Stuur een volgverzoek</p>
-          <p className="text-xs text-gray-400 mb-4">
-            {buddy.name} krijgt jouw verzoek en kan het accepteren of weigeren.
-            Voeg optioneel een persoonlijk berichtje toe.
-          </p>
+        {/* Snelle chips */}
+        <div className="px-5 pt-4 pb-3">
+          <p className="text-[10px] font-bold text-gray-400 uppercase tracking-wider mb-2.5">Snel starten</p>
+          <div className="flex flex-col gap-1.5">
+            {chips.map(chip => (
+              <button
+                key={chip}
+                onClick={() => setMessage(chip)}
+                className="text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all"
+                style={{
+                  border: `1.5px solid ${message === chip ? '#E87722' : '#F0F0F0'}`,
+                  background: message === chip ? '#FFF5EE' : 'white',
+                  color: message === chip ? '#E87722' : '#444',
+                  cursor: 'pointer',
+                }}
+              >
+                {chip}
+              </button>
+            ))}
+          </div>
+        </div>
 
+        {/* Vrij tekstveld */}
+        <div className="px-5 pb-3">
           <textarea
             value={message}
             onChange={e => setMessage(e.target.value.slice(0, MAX))}
-            placeholder={`Hoi ${buddy.name.split(' ')[0]}, ik zou graag met jou willen sporten...`}
-            rows={4}
+            placeholder="Of schrijf zelf iets..."
+            rows={3}
             className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722] resize-none leading-relaxed"
             style={{ fontFamily: "'DM Sans', sans-serif" }}
           />
@@ -192,20 +248,17 @@ function RequestModal({
 
         {/* Acties */}
         <div className="px-5 pb-5 flex gap-3">
-          <button
-            onClick={onClose}
-            className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-          >
+          <button onClick={onClose} className="flex-1 py-3 rounded-xl border border-gray-200 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors">
             Annuleren
           </button>
           <button
             onClick={handleSend}
             disabled={sending}
-            className="flex-1 py-3 rounded-xl bg-[#111111] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#333] transition-colors disabled:opacity-50"
+            className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#d06a1a] transition-colors disabled:opacity-50"
             style={SYNE}
           >
             <Send className="w-4 h-4" />
-            {sending ? 'Verzenden...' : 'Verstuur verzoek'}
+            {sending ? 'Verzenden...' : 'Stuur verzoek'}
           </button>
         </div>
       </div>
@@ -340,6 +393,7 @@ export default function FindPage() {
   const [showFilters, setShowFilters] = useState(false)
   const [selectedBuddy, setSelectedBuddy] = useState<Buddy | null>(null)
   const [requestTarget, setRequestTarget] = useState<Buddy | null>(null)
+  const [myBeschikbaarheid, setMyBeschikbaarheid] = useState<string[]>([])
 
   // Laad echte gebruikers uit Supabase
   useEffect(() => {
@@ -359,7 +413,7 @@ export default function FindPage() {
       // Haal alle profielen op behalve de eigen gebruiker en geblokkeerden
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, username, region, bio, avatar_url, banner_url, age')
+        .select('id, full_name, username, region, bio, avatar_url, banner_url, age, last_seen_at, beschikbaarheid')
         .neq('id', user.id)
         .eq('is_active', true)
         .limit(50)
@@ -367,6 +421,20 @@ export default function FindPage() {
       if (!profiles || profiles.length === 0) return
 
       const profileIds = profiles.map(p => p.id)
+
+      // Haal eigen profiel + sporten op voor compatibiliteitsscore
+      const [{ data: myProfile }, { data: mySportsData }] = await Promise.all([
+        supabase.from('profiles').select('region, beschikbaarheid').eq('id', user.id).single(),
+        supabase.from('user_sports').select('level, sports(name)').eq('user_id', user.id),
+      ])
+      const myBeschArr: string[] = (myProfile as any)?.beschikbaarheid ?? []
+      const myRegionStr: string = (myProfile as any)?.region ?? ''
+      const levelLabel: Record<string, string> = { beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd' }
+      const mySportsArr = (mySportsData ?? []).map(s => ({
+        label: (Array.isArray(s.sports) ? (s.sports[0] as any)?.name : (s.sports as any)?.name) ?? '',
+        level: levelLabel[s.level] ?? s.level,
+      }))
+      setMyBeschikbaarheid(myBeschArr)
 
       // Haal sporten op via user_sports + sports join
       const { data: userSports } = await supabase
@@ -389,23 +457,39 @@ export default function FindPage() {
       const sportsMap: Record<string, { label: string; level: string }[]> = {}
       for (const us of userSports ?? []) {
         if (!sportsMap[us.user_id]) sportsMap[us.user_id] = []
-        const name = (Array.isArray(us.sports) ? us.sports[0]?.name : (us.sports as any)?.name) ?? 'Sport'
-        const levelLabel: Record<string, string> = { beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd' }
+        const name = (Array.isArray(us.sports) ? (us.sports[0] as any)?.name : (us.sports as any)?.name) ?? 'Sport'
         sportsMap[us.user_id].push({ label: name, level: levelLabel[us.level] ?? us.level })
       }
 
-      const realBuddies: Buddy[] = profiles.filter(p => !blockedIds.has(p.id)).map(p => ({
-        id: p.id,
-        name: p.full_name ?? p.username ?? 'Onbekend',
-        region: (p as any).region ?? '',
-        age: (p as any).age ?? 0,
-        bio: (p as any).bio ?? '',
-        sports: sportsMap[p.id] ?? [],
-        avatarUrl: p.avatar_url ?? undefined,
-        bannerUrl: (p as any).banner_url ?? undefined,
-        following: requestMap[p.id] === 'accepted',
-        requested: requestMap[p.id] === 'pending',
-      }))
+      const realBuddies: Buddy[] = profiles.filter(p => !blockedIds.has(p.id)).map(p => {
+        const sports = sportsMap[p.id] ?? []
+        const beschikbaarheid: string[] = (p as any).beschikbaarheid ?? []
+        const lastSeenAt: string | null = (p as any).last_seen_at ?? null
+
+        // Compatibiliteitsscore (max 100)
+        let score = 0
+        const sharedSports = sports.filter(bs => mySportsArr.some(ms => ms.label === bs.label))
+        if (sharedSports.length > 0) score += 40
+        if (sharedSports.some(bs => mySportsArr.find(ms => ms.label === bs.label)?.level === bs.level)) score += 20
+        score += Math.min(beschikbaarheid.filter(s => myBeschArr.includes(s)).length * 10, 30)
+        if (myRegionStr && (p as any).region && (p as any).region.toLowerCase() === myRegionStr.toLowerCase()) score += 10
+
+        return {
+          id: p.id,
+          name: p.full_name ?? p.username ?? 'Onbekend',
+          region: (p as any).region ?? '',
+          age: (p as any).age ?? 0,
+          bio: (p as any).bio ?? '',
+          sports,
+          avatarUrl: p.avatar_url ?? undefined,
+          bannerUrl: (p as any).banner_url ?? undefined,
+          following: requestMap[p.id] === 'accepted',
+          requested: requestMap[p.id] === 'pending',
+          beschikbaarheid,
+          lastSeenAt,
+          compatibilityScore: score,
+        }
+      })
 
       setBuddies(realBuddies)
     }
@@ -533,7 +617,7 @@ export default function FindPage() {
           <h2 className="text-lg font-black text-black mb-4">Al volgend</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {following.map(buddy => (
-              <BuddyCard key={buddy.id} buddy={buddy} onOpen={() => setSelectedBuddy(buddy)} onRequest={() => openRequest(buddy)} />
+              <BuddyCard key={buddy.id} buddy={buddy} myBeschikbaarheid={myBeschikbaarheid} onOpen={() => setSelectedBuddy(buddy)} onRequest={() => openRequest(buddy)} />
             ))}
           </div>
         </section>
@@ -544,7 +628,7 @@ export default function FindPage() {
           <h2 className="text-lg font-black text-black mb-4">{following.length > 0 ? 'Ontdek meer buddies' : 'Aanbevolen voor jou'}</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
             {suggested.map(buddy => (
-              <BuddyCard key={buddy.id} buddy={buddy} onOpen={() => setSelectedBuddy(buddy)} onRequest={() => openRequest(buddy)} />
+              <BuddyCard key={buddy.id} buddy={buddy} myBeschikbaarheid={myBeschikbaarheid} onOpen={() => setSelectedBuddy(buddy)} onRequest={() => openRequest(buddy)} />
             ))}
           </div>
         </section>
@@ -567,30 +651,52 @@ export default function FindPage() {
         />
       )}
 
-      {/* Verzoek modal */}
+      {/* Verzoek popover */}
       {requestTarget && (
-        <RequestModal
+        <BuddyRequestPopover
           buddy={requestTarget}
           onClose={() => setRequestTarget(null)}
-          onSend={(_msg) => confirmRequest(requestTarget.id)}
+          onSend={() => confirmRequest(requestTarget.id)}
         />
       )}
     </div>
   )
 }
 
-function BuddyCard({ buddy, onOpen, onRequest }: { buddy: Buddy; onOpen: () => void; onRequest: () => void }) {
+function BuddyCard({ buddy, myBeschikbaarheid, onOpen, onRequest }: { buddy: Buddy; myBeschikbaarheid: string[]; onOpen: () => void; onRequest: () => void }) {
+  const activityStatus = getActivityStatus(buddy.lastSeenAt)
+  const score = buddy.compatibilityScore ?? 0
+  const sharedSlots = (buddy.beschikbaarheid ?? []).filter(s => myBeschikbaarheid.includes(s))
+
   return (
     <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden hover:shadow-md hover:border-gray-200 transition-all group">
       <div className="p-4 pb-3">
         <div className="flex items-start justify-between mb-3">
-          <button onClick={onOpen}>
+          {/* Avatar met activiteitsdot */}
+          <button onClick={onOpen} className="relative">
             <StoryAvatar name={buddy.name} size="lg" posts={buddy.post ? [buddy.post] : []} />
+            {activityStatus && (
+              <span
+                className="absolute bottom-0.5 right-0.5 w-3.5 h-3.5 rounded-full border-2 border-white"
+                style={{ background: activityStatus === 'online' ? '#22C55E' : '#F59E0B' }}
+              />
+            )}
           </button>
-          <div onClick={e => e.stopPropagation()}>
+
+          <div className="flex flex-col items-end gap-1.5" onClick={e => e.stopPropagation()}>
+            {/* Compatibiliteitsbadge */}
+            {score >= 50 && (
+              <span
+                className="text-[10px] font-black px-2 py-0.5 rounded-full text-white"
+                style={{ background: score >= 80 ? '#E87722' : score >= 60 ? '#111111' : '#999' }}
+              >
+                {score}% match
+              </span>
+            )}
             <FollowButton buddy={buddy} onRequest={onRequest} size="sm" />
           </div>
         </div>
+
         <button onClick={onOpen} className="text-left w-full">
           <div className="flex items-center gap-1.5">
             <h3 className="font-black text-black text-sm group-hover:text-[#E87722] transition-colors">{buddy.name}</h3>
@@ -600,7 +706,9 @@ function BuddyCard({ buddy, onOpen, onRequest }: { buddy: Buddy; onOpen: () => v
           <p className="text-xs text-gray-500 mt-2 line-clamp-2 leading-relaxed">{buddy.bio}</p>
         </button>
       </div>
-      <div className="px-4 pb-4 flex flex-wrap gap-1.5">
+
+      {/* Sport badges */}
+      <div className="px-4 pb-2 flex flex-wrap gap-1.5">
         {buddy.sports.slice(0, 2).map(sport => (
           <span key={sport.label} className="flex items-center gap-1.5 text-xs font-semibold bg-gray-50 px-2.5 py-1 rounded-full text-gray-600">
             {sport.label}
@@ -609,6 +717,30 @@ function BuddyCard({ buddy, onOpen, onRequest }: { buddy: Buddy; onOpen: () => v
         ))}
         {buddy.sports.length > 2 && <span className="text-xs text-gray-400 font-medium px-2 py-1">+{buddy.sports.length - 2}</span>}
       </div>
+
+      {/* Beschikbaarheid pills */}
+      {(buddy.beschikbaarheid ?? []).length > 0 && (
+        <div className="px-4 pb-4 flex flex-wrap gap-1">
+          {(buddy.beschikbaarheid ?? []).map(slot => {
+            const label = BESCHIKBAARHEID_LABELS[slot]
+            if (!label) return null
+            const shared = sharedSlots.includes(slot)
+            return (
+              <span
+                key={slot}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                style={{
+                  borderColor: shared ? '#E87722' : '#E5E5E5',
+                  background:  shared ? '#FFF8F4' : 'white',
+                  color:       shared ? '#E87722' : '#bbb',
+                }}
+              >
+                {label}
+              </span>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }

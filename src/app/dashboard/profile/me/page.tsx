@@ -8,6 +8,13 @@ import { createClient } from '@/lib/supabase'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
 import { validateImageFile } from '@/lib/validateFile'
 
+const BESCHIKBAARHEID_META: Record<string, { emoji: string; label: string; sub: string }> = {
+  ochtend: { emoji: '☀️', label: 'Ochtend', sub: '06–12' },
+  middag:  { emoji: '🌤', label: 'Middag',  sub: '12–17' },
+  avond:   { emoji: '🌙', label: 'Avond',   sub: '17–22' },
+  weekend: { emoji: '📅', label: 'Weekend', sub: 'Za & Zo' },
+}
+
 type Profile = {
   id: string
   full_name: string | null
@@ -19,6 +26,7 @@ type Profile = {
   age: number | null
   gender: string | null
   goal: string | null
+  beschikbaarheid: string[] | null
 }
 
 type UserSport = {
@@ -101,6 +109,7 @@ function EditModal({ profile, sports, onClose, onSaved }: {
   const [bio, setBio] = useState(profile.bio ?? '')
   const [gender, setGender] = useState(profile.gender ?? '')
   const [goal, setGoal] = useState(profile.goal ?? 'geen')
+  const [beschikbaarheid, setBeschikbaarheid] = useState<string[]>(profile.beschikbaarheid ?? [])
   const [avatarFile, setAvatarFile] = useState<File | null>(null)
   const [avatarPreview, setAvatarPreview] = useState(profile.avatar_url ?? '')
   const [bannerFile, setBannerFile] = useState<File | null>(null)
@@ -174,10 +183,11 @@ function EditModal({ profile, sports, onClose, onSaved }: {
         region:     sanitizeText(limitLength(region, 80)),
         age:        age ? parseInt(age) : null,
         bio:        sanitizeText(limitLength(bio, 500)),
-        gender:     gender || null,
-        goal:       goal || null,
-        avatar_url: avatarUrl,
-        banner_url: bannerUrl,
+        gender:          gender || null,
+        goal:            goal || null,
+        beschikbaarheid: beschikbaarheid.length > 0 ? beschikbaarheid : [],
+        avatar_url:      avatarUrl,
+        banner_url:      bannerUrl,
       }).eq('id', user.id)
 
       if (profileError) throw new Error(profileError.message)
@@ -198,9 +208,10 @@ function EditModal({ profile, sports, onClose, onSaved }: {
         age: age ? parseInt(age) : null,
         bio: sanitizeText(limitLength(bio, 500)),
         gender: gender || null,
-        goal: goal || null,
-        avatar_url: avatarUrl,
-        banner_url: bannerUrl,
+        goal:            goal || null,
+        beschikbaarheid: beschikbaarheid.length > 0 ? beschikbaarheid : [],
+        avatar_url:      avatarUrl,
+        banner_url:      bannerUrl,
       }
 
       // Haal bijgewerkte sporten op
@@ -311,6 +322,42 @@ function EditModal({ profile, sports, onClose, onSaved }: {
             </div>
           </div>
 
+          {/* Beschikbaarheid */}
+          <div>
+            <label className="block text-xs font-bold text-gray-600 mb-2">Beschikbaarheid</label>
+            <div className="grid grid-cols-2 gap-2">
+              {Object.entries(BESCHIKBAARHEID_META).map(([value, meta]) => {
+                const selected = beschikbaarheid.includes(value)
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setBeschikbaarheid(prev =>
+                      prev.includes(value) ? prev.filter(v => v !== value) : [...prev, value]
+                    )}
+                    className="relative flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-left"
+                    style={{
+                      border: `1.5px solid ${selected ? '#E87722' : '#E5E5E5'}`,
+                      background: selected ? '#FFF5EE' : 'white',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    <span style={{ fontSize: 20 }}>{meta.emoji}</span>
+                    <div>
+                      <p style={{ fontSize: 12, fontWeight: 700, color: selected ? '#E87722' : '#111' }}>{meta.label}</p>
+                      <p style={{ fontSize: 10, color: '#aaa' }}>{meta.sub}</p>
+                    </div>
+                    {selected && (
+                      <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#E87722] rounded-full flex items-center justify-center">
+                        <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                      </span>
+                    )}
+                  </button>
+                )
+              })}
+            </div>
+          </div>
+
           {/* Sporten */}
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-2">Sporten</label>
@@ -379,7 +426,7 @@ export default function MyProfilePage() {
       if (!user) return
 
       const [{ data: prof }, { data: sp }] = await Promise.all([
-        supabase.from('profiles').select('id, full_name, username, region, bio, avatar_url, banner_url, age, gender, goal').eq('id', user.id).single(),
+        supabase.from('profiles').select('id, full_name, username, region, bio, avatar_url, banner_url, age, gender, goal, beschikbaarheid').eq('id', user.id).single(),
         supabase.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', user.id),
       ])
 
@@ -485,6 +532,38 @@ export default function MyProfilePage() {
           ) : (
             <p className="text-sm text-gray-400">
               Nog geen sporten.{' '}
+              <button onClick={() => setShowEdit(true)} className="text-[#E87722] font-semibold hover:underline">Voeg toe</button>
+            </p>
+          )}
+        </div>
+
+        {/* Beschikbaarheid */}
+        <div className="bg-white rounded-2xl border border-gray-100 p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="font-black text-black">Beschikbaarheid</h3>
+            <button onClick={() => setShowEdit(true)} className="text-xs text-[#E87722] font-semibold hover:underline">Bewerken</button>
+          </div>
+          {loading ? (
+            <div className="grid grid-cols-2 gap-2">{[1,2,3,4].map(i => <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />)}</div>
+          ) : profile?.beschikbaarheid && profile.beschikbaarheid.length > 0 ? (
+            <div className="grid grid-cols-2 gap-2">
+              {profile.beschikbaarheid.map(slot => {
+                const meta = BESCHIKBAARHEID_META[slot]
+                if (!meta) return null
+                return (
+                  <div key={slot} className="flex items-center gap-2.5 px-3 py-2.5 rounded-xl" style={{ background: '#FFF5EE', border: '1.5px solid #FDDCBD' }}>
+                    <span style={{ fontSize: 18 }}>{meta.emoji}</span>
+                    <div>
+                      <p className="text-xs font-bold text-[#E87722]">{meta.label}</p>
+                      <p className="text-[10px] text-orange-300">{meta.sub}</p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          ) : (
+            <p className="text-sm text-gray-400">
+              Nog geen beschikbaarheid.{' '}
               <button onClick={() => setShowEdit(true)} className="text-[#E87722] font-semibold hover:underline">Voeg toe</button>
             </p>
           )}

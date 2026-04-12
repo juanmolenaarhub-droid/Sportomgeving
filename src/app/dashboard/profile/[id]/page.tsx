@@ -75,7 +75,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
   // Probeer profiel uit DB te laden (echte gebruikers)
   const { data: dbProfile } = await supabase
     .from('profiles')
-    .select('id, full_name, username, bio, avatar_url, banner_url, sports, region')
+    .select('id, full_name, username, bio, avatar_url, banner_url, sports, region, beschikbaarheid')
     .eq('id', profileId)
     .maybeSingle()
 
@@ -87,9 +87,10 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       name: dbProfile.full_name ?? dbProfile.username ?? 'Onbekend',
       region: (dbProfile as any).region ?? '',
       bio: dbProfile.bio ?? '',
-      sports: (dbProfile as any).sports ?? [],
-      avatarUrl: dbProfile.avatar_url ?? undefined,
-      bannerUrl: dbProfile.banner_url ?? undefined,
+      sports:          (dbProfile as any).sports ?? [],
+      avatarUrl:       dbProfile.avatar_url ?? undefined,
+      bannerUrl:       dbProfile.banner_url ?? undefined,
+      beschikbaarheid: (dbProfile as any).beschikbaarheid ?? [],
     }
   } else if (DEMO_PROFILES[profileId]) {
     profile = DEMO_PROFILES[profileId]

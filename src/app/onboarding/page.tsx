@@ -34,7 +34,14 @@ const LEVELS = [
   { value: 'advanced',     label: 'Professioneel' },
 ]
 
-const STEP_LABELS = ['Jouw profiel', 'Jouw sporten', 'Voorkeuren']
+const STEP_LABELS = ['Jouw profiel', 'Jouw sporten', 'Beschikbaarheid', 'Voorkeuren']
+
+const BESCHIKBAARHEID_OPTIONS = [
+  { value: 'ochtend', label: 'Ochtend', sub: '06:00 – 12:00', emoji: '☀️' },
+  { value: 'middag',  label: 'Middag',  sub: '12:00 – 17:00', emoji: '🌤' },
+  { value: 'avond',   label: 'Avond',   sub: '17:00 – 22:00', emoji: '🌙' },
+  { value: 'weekend', label: 'Weekend', sub: 'Za & Zo',       emoji: '📅' },
+]
 
 type SelectedSport = { sport_id: number; level: string }
 
@@ -64,6 +71,9 @@ export default function OnboardingPage() {
   const [selectedSports, setSelectedSports] = useState<SelectedSport[]>([])
 
   // Step 3
+  const [beschikbaarheid, setBeschikbaarheid]   = useState<string[]>([])
+
+  // Step 4
   const [taalvoorkeur, setTaalvoorkeur]         = useState('Nederlands')
   const [burgerlijkeStaat, setBurgerlijkeStaat] = useState('')
   const [radius, setRadius]                     = useState(25)
@@ -139,7 +149,7 @@ export default function OnboardingPage() {
     await supabase.from('user_sports').delete().eq('user_id', user.id)
     setStep(1); setFullName(''); setRegion(''); setAge(''); setBio('')
     setAvatarFile(null); setAvatarPreview(''); setBannerFile(null); setBannerPreview(''); setSelectedSports([])
-    setGeslacht1(''); setAndersOptie(''); setRadius(25); setGeslacht('geen')
+    setGeslacht1(''); setAndersOptie(''); setBeschikbaarheid([]); setRadius(25); setGeslacht('geen')
   }
 
   async function handleFinish() {
@@ -182,8 +192,9 @@ export default function OnboardingPage() {
         region:     sanitizeText(limitLength(region, 80)),
         age:        age ? parseInt(age) : null,
         bio:        sanitizeText(limitLength(bio, 500)),
-        gender:     geslacht1 === 'Anders' ? (andersOptie || 'Anders') : geslacht1,
-        goal:       geslacht,
+        gender:         geslacht1 === 'Anders' ? (andersOptie || 'Anders') : geslacht1,
+        goal:           geslacht,
+        beschikbaarheid: beschikbaarheid.length > 0 ? beschikbaarheid : [],
       }
       if (avatarUrl) profileData.avatar_url = avatarUrl
       if (bannerUrl) profileData.banner_url = bannerUrl
@@ -655,6 +666,68 @@ export default function OnboardingPage() {
               {step === 3 && (
                 <div>
                   <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6 }}>
+                    Wanneer ben je beschikbaar?
+                  </h1>
+                  <p style={{ fontSize: 14, color: '#666', marginBottom: 28, fontWeight: 400 }}>
+                    Zo vinden we de beste match voor jouw schema.
+                  </p>
+
+                  <div className="grid grid-cols-2 gap-3 mb-8">
+                    {BESCHIKBAARHEID_OPTIONS.map(slot => {
+                      const selected = beschikbaarheid.includes(slot.value)
+                      return (
+                        <button
+                          key={slot.value}
+                          type="button"
+                          onClick={() => setBeschikbaarheid(prev =>
+                            prev.includes(slot.value)
+                              ? prev.filter(v => v !== slot.value)
+                              : [...prev, slot.value]
+                          )}
+                          className="relative flex flex-col items-center justify-center gap-2 py-7 rounded-2xl transition-all"
+                          style={{
+                            border: `2px solid ${selected ? '#E87722' : '#E5E5E5'}`,
+                            background: selected ? '#FFF5EE' : 'white',
+                            cursor: 'pointer',
+                          }}
+                        >
+                          {selected && (
+                            <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#E87722' }}>
+                              <Check className="w-3 h-3 text-white" strokeWidth={3} />
+                            </span>
+                          )}
+                          <span style={{ fontSize: 30 }}>{slot.emoji}</span>
+                          <div className="text-center">
+                            <p style={{ ...SYNE, fontSize: 14, fontWeight: 700, color: selected ? '#E87722' : '#111' }}>{slot.label}</p>
+                            <p style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{slot.sub}</p>
+                          </div>
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  <div className="flex gap-3">
+                    <button
+                      onClick={() => goTo(2, 'back')}
+                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#111', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
+                    >
+                      ← Vorige
+                    </button>
+                    <button
+                      onClick={() => { if (beschikbaarheid.length > 0) goTo(4, 'forward') }}
+                      className="flex-1 flex items-center justify-center"
+                      style={{ ...SYNE, height: 52, background: beschikbaarheid.length === 0 ? '#F0C9A8' : '#E87722', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: beschikbaarheid.length === 0 ? 'not-allowed' : 'pointer' }}
+                    >
+                      Volgende stap →
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* ── STAP 4 ── */}
+              {step === 4 && (
+                <div>
+                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6 }}>
                     Bijna klaar!
                   </h1>
                   <p style={{ fontSize: 14, color: '#666', marginBottom: 28, fontWeight: 400 }}>
@@ -743,7 +816,7 @@ export default function OnboardingPage() {
 
                   <div className="flex gap-3">
                     <button
-                      onClick={() => goTo(2, 'back')}
+                      onClick={() => goTo(3, 'back')}
                       style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#111', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
                     >
                       ← Vorige

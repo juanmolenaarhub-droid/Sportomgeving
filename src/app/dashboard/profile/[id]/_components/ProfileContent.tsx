@@ -190,6 +190,13 @@ function RequestModal({
 
 export type FollowStatus = 'none' | 'pending' | 'pending_received' | 'accepted'
 
+const BESCHIKBAARHEID_META: Record<string, { emoji: string; label: string; sub: string }> = {
+  ochtend: { emoji: '☀️', label: 'Ochtend', sub: '06–12' },
+  middag:  { emoji: '🌤', label: 'Middag',  sub: '12–17' },
+  avond:   { emoji: '🌙', label: 'Avond',   sub: '17–22' },
+  weekend: { emoji: '📅', label: 'Weekend', sub: 'Za & Zo' },
+}
+
 export type ProfileData = {
   id: string
   name: string
@@ -199,6 +206,7 @@ export type ProfileData = {
   avatarUrl?: string
   bannerUrl?: string
   openFollow?: boolean
+  beschikbaarheid?: string[]
 }
 
 type Props = {
@@ -372,6 +380,30 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
               </div>
             )}
           </div>
+
+          {/* Beschikbaarheid */}
+          {profile.beschikbaarheid && profile.beschikbaarheid.length > 0 && (
+            <div className="bg-white rounded-2xl border border-gray-100 p-5">
+              <h3 className="font-black text-black mb-4 flex items-center gap-2">
+                <Calendar className="w-4 h-4 text-[#E87722]" /> Beschikbaarheid
+              </h3>
+              <div className="grid grid-cols-2 gap-2">
+                {profile.beschikbaarheid.map(slot => {
+                  const meta = BESCHIKBAARHEID_META[slot]
+                  if (!meta) return null
+                  return (
+                    <div key={slot} className="flex items-center gap-2 px-3 py-2.5 rounded-xl" style={{ background: '#FFF5EE', border: '1.5px solid #FDDCBD' }}>
+                      <span style={{ fontSize: 16 }}>{meta.emoji}</span>
+                      <div>
+                        <p className="text-xs font-bold text-[#E87722]">{meta.label}</p>
+                        <p style={{ fontSize: 10, color: '#FDBA74' }}>{meta.sub}</p>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            </div>
+          )}
 
           {/* Groepen */}
           <div className="bg-white rounded-2xl border border-gray-100 p-5">
