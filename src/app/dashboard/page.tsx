@@ -6,6 +6,7 @@ import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, MapPin,
   Camera, Image as ImageIcon, Zap, X, Send, Plus, ChevronDown,
   Users, Activity, Star, TrendingUp, UserPlus,
+  Footprints, Bike, Waves, Dumbbell, Trophy, Timer,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
@@ -133,9 +134,17 @@ const DEMO_SUGGESTIONS: BuddySuggestion[] = [
   { id: 'b4', name: 'Bram van Dijk', region: 'Rotterdam', sport: 'Gym' },
 ]
 
-const SPORT_ICONS: Record<string, string> = {
-  run: '🏃', cycle: '🚴', gym: '💪', swim: '🏊', yoga: '🧘',
-  voetbal: '⚽', tennis: '🎾', padel: '🏸', klimmen: '🧗', triathlon: '🏅',
+type LucideIcon = React.ComponentType<{ className?: string; style?: React.CSSProperties }>
+
+function sportIcon(activityType?: string): LucideIcon {
+  switch (activityType) {
+    case 'run':      return Footprints
+    case 'cycle':    return Bike
+    case 'swim':     return Waves
+    case 'gym':      return Dumbbell
+    case 'triathlon':return Trophy
+    default:         return Activity
+  }
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
@@ -245,87 +254,137 @@ function ActivityCard({ post, onLike, onSave }: {
   onLike: (id: string) => void
   onSave: (id: string) => void
 }) {
-  const icon = SPORT_ICONS[post.activity_type ?? ''] ?? '🏅'
+  const [expanded, setExpanded] = useState(false)
+  const SportIcon = sportIcon(post.activity_type)
+  const isLong = (post.content?.length ?? 0) > 150
+
   const pace = post.distance_km && post.duration_minutes
     ? `${Math.floor(post.duration_minutes / post.distance_km)}:${String(Math.round((post.duration_minutes / post.distance_km % 1) * 60)).padStart(2, '0')} /km`
     : null
 
+  const durationLabel = post.duration_minutes
+    ? `${Math.floor(post.duration_minutes / 60)}:${String(post.duration_minutes % 60).padStart(2, '0')}`
+    : null
+
+  const stats: { value: string; label: string }[] = []
+  if (post.distance_km)      stats.push({ value: `${post.distance_km} km`, label: 'AFSTAND' })
+  if (post.duration_minutes) stats.push({ value: `${post.duration_minutes} min`, label: 'TIJD' })
+  if (pace)                  stats.push({ value: pace, label: 'TEMPO' })
+
   return (
-    <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-      {/* Card header: user info */}
-      <div className="px-4 pt-4 pb-3 flex items-center gap-3">
+    <div className="bg-white rounded-2xl border border-[#F0EBE3] shadow-sm p-5 hover:border-[#E87722] transition-colors duration-200">
+
+      {/* Header */}
+      <div className="flex items-center gap-3">
         <Link href={`/dashboard/profile/${post.userId}`}>
           <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
-            <Link href={`/dashboard/profile/${post.userId}`} className="text-sm font-bold text-black hover:text-[#E87722] transition-colors">
+            <Link
+              href={`/dashboard/profile/${post.userId}`}
+              className="text-[15px] font-semibold text-black hover:text-[#E87722] transition-colors leading-none"
+            >
               {post.userName}
             </Link>
             {post.sport_tag && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722]/10 text-[#E87722]">
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722] text-white">
                 {post.sport_tag}
               </span>
             )}
           </div>
-          <p className="text-xs text-gray-400 mt-0.5">{post.created_at} · {post.userRegion}</p>
+          <p className="text-[13px] text-[#9CA3AF] mt-1">{post.created_at} · {post.userRegion}</p>
         </div>
         <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/5 transition-colors">
           <MoreHorizontal className="w-4 h-4 text-gray-400" />
         </button>
       </div>
 
-      {/* Activity header band */}
-      <div className="mx-4 rounded-xl overflow-hidden" style={{ background: '#E87722' }}>
-        <div className="px-4 py-3 flex items-center gap-3">
-          <span className="text-2xl">{icon}</span>
-          <div>
-            <p className="text-white font-black text-sm" style={SYNE}>{post.sport_tag ?? 'Activiteit'}</p>
-            {post.distance_km && (
-              <p className="text-white/80 text-xs font-semibold">{post.distance_km} km</p>
-            )}
-          </div>
-          {post.duration_minutes && (
-            <div className="ml-auto text-right">
-              <p className="text-white font-black text-lg" style={SYNE}>
-                {Math.floor(post.duration_minutes / 60)}:{String(post.duration_minutes % 60).padStart(2, '0')}
-              </p>
-              <p className="text-white/80 text-xs font-semibold">uur</p>
-            </div>
+      {/* Dark activity block */}
+      <div className="mt-3 rounded-xl overflow-hidden" style={{ background: '#111111' }}>
+        {/* Top row: sport name + icon + duration */}
+        <div className="px-5 py-4 flex items-center gap-3">
+          <SportIcon className="w-[18px] h-[18px] shrink-0" style={{ color: '#E87722' } as React.CSSProperties} />
+          <span className="text-white font-semibold text-base flex-1">{post.sport_tag ?? 'Activiteit'}</span>
+          {durationLabel && (
+            <span className="font-bold text-[22px] leading-none" style={{ color: '#E87722', ...SYNE }}>
+              {durationLabel}
+            </span>
           )}
         </div>
+
         {/* Stats row */}
-        {(post.distance_km || post.duration_minutes || pace) && (
-          <div className="border-t border-white/20 px-4 py-2 flex gap-6">
-            {post.distance_km && (
-              <div>
-                <p className="text-white font-black text-sm">{post.distance_km} km</p>
-                <p className="text-white/70 text-[10px] font-semibold">Afstand</p>
+        {stats.length > 0 && (
+          <div
+            className="flex"
+            style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
+          >
+            {stats.map((s, i) => (
+              <div
+                key={s.label}
+                className="flex-1 px-5 py-3"
+                style={i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.15)' } : undefined}
+              >
+                <p className="text-white font-semibold text-lg leading-none">{s.value}</p>
+                <p className="mt-1 text-xs uppercase tracking-[0.5px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                  {s.label}
+                </p>
               </div>
-            )}
-            {post.duration_minutes && (
-              <div>
-                <p className="text-white font-black text-sm">{post.duration_minutes} min</p>
-                <p className="text-white/70 text-[10px] font-semibold">Tijd</p>
-              </div>
-            )}
-            {pace && (
-              <div>
-                <p className="text-white font-black text-sm">{pace}</p>
-                <p className="text-white/70 text-[10px] font-semibold">Tempo</p>
-              </div>
-            )}
+            ))}
           </div>
         )}
       </div>
 
       {/* Text content */}
       {post.content && (
-        <p className="px-4 pt-3 text-sm text-gray-700 leading-relaxed">{post.content}</p>
+        <div className="mt-3">
+          <p className="text-[15px] leading-relaxed text-[#374151]" style={{ lineHeight: 1.6 }}>
+            {isLong && !expanded ? post.content.slice(0, 150) + '…' : post.content}
+          </p>
+          {isLong && (
+            <button
+              onClick={() => setExpanded(v => !v)}
+              className="text-xs font-bold mt-1"
+              style={{ color: '#E87722' }}
+            >
+              {expanded ? 'Minder' : 'Meer lezen'}
+            </button>
+          )}
+        </div>
       )}
 
       {/* Actions */}
-      <PostActions post={post} onLike={onLike} onSave={onSave} />
+      <div className="mt-4 pt-3 flex items-center gap-1" style={{ borderTop: '1px solid #F3F4F6' }}>
+        <button
+          onClick={() => onLike(post.id)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group"
+        >
+          <Heart
+            className="w-5 h-5 transition-all duration-150 group-hover:scale-110"
+            style={{ color: post.liked ? '#E87722' : '#9CA3AF', fill: post.liked ? '#E87722' : 'none' }}
+          />
+          <span className="text-[14px] font-semibold" style={{ color: '#6B7280' }}>{post.likes_count}</span>
+        </button>
+
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group">
+          <MessageCircle className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#E87722] transition-colors" />
+          <span className="text-[14px] font-semibold text-[#6B7280]">{post.comments_count}</span>
+        </button>
+
+        <button
+          onClick={() => onSave(post.id)}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group"
+        >
+          <Bookmark
+            className="w-5 h-5 transition-colors group-hover:text-[#E87722]"
+            style={{ color: post.saved ? '#111111' : '#9CA3AF', fill: post.saved ? '#111111' : 'none' }}
+          />
+        </button>
+
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group ml-auto">
+          <Share2 className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#E87722] transition-colors" />
+        </button>
+      </div>
     </div>
   )
 }
