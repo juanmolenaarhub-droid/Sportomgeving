@@ -34,7 +34,7 @@ body {
 .curved-text-content  { font-size: 1.5rem; }
 
 @media (min-width: 768px) {
-  .curved-block        { aspect-ratio: 5/2; }
+  .curved-block        { aspect-ratio: 3/1; }
   .curved-stat-main    { font-size: 36px; letter-spacing: -2px; }
   .curved-stat-unit    { font-size: 14px; }
   .curved-text-content { font-size: 1rem; }
