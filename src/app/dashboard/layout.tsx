@@ -41,9 +41,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const userIdRef   = useRef<string>('')
-  const cityRef     = useRef<string>('')
+  const regionRef     = useRef<string>('')
 
-  const loadBadges = useCallback(async (uid: string, city: string) => {
+  const loadBadges = useCallback(async (uid: string, region: string) => {
     // Accepted conversation IDs
     const { data: convs } = await supabase
       .from('follow_requests')
@@ -63,11 +63,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             .neq('sender_id', uid)
             .is('read_at', null)
         : Promise.resolve({ count: 0 }),
-      city
+      region
         ? supabase
             .from('meetups')
             .select('*', { count: 'exact', head: true })
-            .ilike('city', `%${city}%`)
+            .ilike('region', `%${region}%`)
             .gte('created_at', since24h)
             .eq('status', 'open')
         : Promise.resolve({ count: 0 }),
@@ -94,19 +94,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('full_name, username, avatar_url, city')
+        .select('full_name, username, avatar_url, region')
         .eq('id', user.id)
         .single()
 
       const name = profile?.full_name ?? profile?.username ?? 'Gebruiker'
-      const city = profile?.city ?? ''
+      const region = profile?.region ?? ''
       setProfileName(name)
-      // Voeg timestamp toe om browsercache te omzeilen
       const rawUrl = profile?.avatar_url ?? null
       setProfileImageUrl(rawUrl ? `${rawUrl}?t=${Date.now()}` : null)
-      cityRef.current = city
+      regionRef.current = region
 
-      await loadBadges(user.id, city)
+      await loadBadges(user.id, region)
 
       // Realtime subscriptions for badge refresh + profiel updates
       const channel = supabase
@@ -118,15 +117,15 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             if (p.avatar_url) setProfileImageUrl(`${p.avatar_url}?t=${Date.now()}`)
           })
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
-          () => loadBadges(user.id, city))
+          () => loadBadges(user.id, region))
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages' },
-          () => loadBadges(user.id, city))
+          () => loadBadges(user.id, region))
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'meetups' },
-          () => loadBadges(user.id, city))
+          () => loadBadges(user.id, region))
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_notifications' },
-          () => loadBadges(user.id, city))
+          () => loadBadges(user.id, region))
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'system_notifications' },
-          () => loadBadges(user.id, city))
+          () => loadBadges(user.id, region))
         .subscribe()
 
       cleanup = () => { supabase.removeChannel(channel) }
@@ -277,8 +276,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* ── Floating mobile pill ────────────────────────────────────────── */}
       <style>{`
         @keyframes float-up {
-          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+          from { oparegion: 0; transform: translateX(-50%) translateY(16px); }
+          to   { oparegion: 1; transform: translateX(-50%) translateY(0); }
         }
         .floating-nav { animation: float-up 0.35s cubic-bezier(.16,1,.3,1) both; }
       `}</style>
