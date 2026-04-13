@@ -4,11 +4,12 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, MapPin,
-  Camera, Image as ImageIcon, Zap, X, Send, Plus,
+  Camera, Image as ImageIcon, Zap, X, Plus,
   Users, Activity, Star, TrendingUp, UserPlus,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
+import PostComposer from './_components/PostComposer'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
@@ -732,99 +733,6 @@ function EmptyState() {
   )
 }
 
-function PostComposerModal({ isOpen, onClose, userName, avatarUrl, onPost }: {
-  isOpen: boolean
-  onClose: () => void
-  userName: string
-  avatarUrl?: string | null
-  onPost: (content: string, sport: string) => void
-}) {
-  const [content, setContent] = useState('')
-  const [sport, setSport] = useState('')
-  const SPORTS = ['Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal', 'Tennis', 'Padel', 'Yoga', 'Boksen', 'Klimmen']
-
-  function handlePost() {
-    if (!content.trim()) return
-    onPost(content, sport)
-    setContent('')
-    setSport('')
-    onClose()
-  }
-
-  if (!isOpen) return null
-
-  return (
-    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
-      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
-      <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg mx-4 p-5 space-y-4 shadow-2xl">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <p className="font-black text-black" style={SYNE}>Nieuw bericht</p>
-          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-black/5 transition-colors">
-            <X className="w-4 h-4 text-gray-400" />
-          </button>
-        </div>
-
-        {/* User */}
-        <div className="flex items-center gap-3">
-          <Avatar name={userName} imageUrl={avatarUrl ?? null} size="sm" />
-          <p className="text-sm font-bold text-black">{userName}</p>
-        </div>
-
-        {/* Text input */}
-        <textarea
-          rows={4}
-          value={content}
-          onChange={e => setContent(e.target.value)}
-          placeholder="Deel je training, vraag een buddy, of schrijf iets..."
-          className="w-full text-sm text-gray-700 placeholder-gray-300 bg-[#F5F0E8] rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 transition"
-          autoFocus
-        />
-
-        {/* Sport tag */}
-        <div>
-          <p className="text-xs font-bold text-gray-400 mb-2">Sport-tag</p>
-          <div className="flex flex-wrap gap-1.5">
-            {SPORTS.map(s => (
-              <button
-                key={s}
-                onClick={() => setSport(sport === s ? '' : s)}
-                className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                style={{
-                  background: sport === s ? '#E87722' : '#F3F4F6',
-                  color: sport === s ? 'white' : '#6B7280',
-                }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
-        </div>
-
-        {/* Media + share */}
-        <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F5F0E8] text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-            <ImageIcon className="w-3.5 h-3.5" /> Foto
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F5F0E8] text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-            <Camera className="w-3.5 h-3.5" /> Video
-          </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F5F0E8] text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors">
-            <Zap className="w-3.5 h-3.5 text-[#E87722]" /> Activiteit
-          </button>
-          <button
-            onClick={handlePost}
-            disabled={!content.trim()}
-            className="ml-auto flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-black text-white transition-all disabled:opacity-40"
-            style={{ ...SYNE, background: '#E87722' }}
-          >
-            <Send className="w-3.5 h-3.5" /> Delen
-          </button>
-        </div>
-      </div>
-    </div>
-  )
-}
 
 function NewPostsBanner({ count, onRefresh }: { count: number; onRefresh: () => void }) {
   if (count === 0) return null
@@ -1055,12 +963,10 @@ export default function FeedPage() {
   return (
     <>
       <NewPostsBanner count={newPostsCount} onRefresh={handleRefreshFeed} />
-      <PostComposerModal
+      <PostComposer
         isOpen={composerOpen}
         onClose={() => setComposerOpen(false)}
-        userName={displayName}
-        avatarUrl={profile?.avatar_url}
-        onPost={handleNewPost}
+        onPosted={() => handleNewPost('', '')}
       />
 
       {/* Floating action button — mobile only */}
