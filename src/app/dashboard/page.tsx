@@ -6,7 +6,7 @@ import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, MapPin,
   Camera, Image as ImageIcon, Zap, X, Send, Plus, ChevronDown,
   Users, Activity, Star, TrendingUp, UserPlus,
-  Footprints, Bike, Waves, Dumbbell, Trophy, Timer,
+  Footprints, Bike, Waves, Dumbbell, Medal, PersonStanding,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
@@ -142,8 +142,23 @@ function sportIcon(activityType?: string): LucideIcon {
     case 'cycle':    return Bike
     case 'swim':     return Waves
     case 'gym':      return Dumbbell
-    case 'triathlon':return Trophy
+    case 'triathlon':return Medal
+    case 'yoga':     return PersonStanding
     default:         return Activity
+  }
+}
+
+type SportGradient = { from: string; via: string; to: string }
+
+function sportGradient(activityType?: string): SportGradient {
+  switch (activityType) {
+    case 'run':       return { from: '#0F172A', via: '#1E3A5F', to: '#0F172A' }
+    case 'cycle':     return { from: '#064E3B', via: '#065F46', to: '#064E3B' }
+    case 'swim':      return { from: '#0C4A6E', via: '#075985', to: '#0C4A6E' }
+    case 'gym':       return { from: '#1C1917', via: '#292524', to: '#1C1917' }
+    case 'triathlon': return { from: '#312E81', via: '#3730A3', to: '#312E81' }
+    case 'yoga':      return { from: '#1A1A2E', via: '#16213E', to: '#1A1A2E' }
+    default:          return { from: '#111827', via: '#1F2937', to: '#111827' }
   }
 }
 
@@ -255,8 +270,11 @@ function ActivityCard({ post, onLike, onSave }: {
   onSave: (id: string) => void
 }) {
   const [expanded, setExpanded] = useState(false)
+  const [likeAnimate, setLikeAnimate] = useState(false)
+
   const SportIcon = sportIcon(post.activity_type)
-  const isLong = (post.content?.length ?? 0) > 150
+  const gradient  = sportGradient(post.activity_type)
+  const isLong    = (post.content?.length ?? 0) > 150
 
   const pace = post.distance_km && post.duration_minutes
     ? `${Math.floor(post.duration_minutes / post.distance_km)}:${String(Math.round((post.duration_minutes / post.distance_km % 1) * 60)).padStart(2, '0')} /km`
@@ -267,17 +285,25 @@ function ActivityCard({ post, onLike, onSave }: {
     : null
 
   const stats: { value: string; label: string }[] = []
-  if (post.distance_km)      stats.push({ value: `${post.distance_km} km`, label: 'AFSTAND' })
-  if (post.duration_minutes) stats.push({ value: `${post.duration_minutes} min`, label: 'TIJD' })
-  if (pace)                  stats.push({ value: pace, label: 'TEMPO' })
+  if (post.distance_km)      stats.push({ value: `${post.distance_km} km`,      label: 'AFSTAND' })
+  if (post.duration_minutes) stats.push({ value: `${post.duration_minutes} min`, label: 'TIJD'    })
+  if (pace)                  stats.push({ value: pace,                           label: 'TEMPO'   })
+
+  function handleLike() {
+    setLikeAnimate(true)
+    onLike(post.id)
+    setTimeout(() => setLikeAnimate(false), 300)
+  }
 
   return (
-    <div className="bg-white rounded-2xl border border-[#F0EBE3] shadow-sm p-5 hover:border-[#E87722] transition-colors duration-200">
+    <div className="animate-fade-in-up bg-white rounded-[20px] shadow-md hover:shadow-lg transition-shadow duration-300 overflow-hidden">
 
-      {/* Header */}
-      <div className="flex items-center gap-3">
+      {/* ── Header ─────────────────────────────────────────────────── */}
+      <div className="flex items-center gap-3 px-5 py-4">
         <Link href={`/dashboard/profile/${post.userId}`}>
-          <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
+          <div className="ring-2 ring-gray-100 rounded-full">
+            <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
+          </div>
         </Link>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 flex-wrap">
@@ -288,45 +314,78 @@ function ActivityCard({ post, onLike, onSave }: {
               {post.userName}
             </Link>
             {post.sport_tag && (
-              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722] text-white">
+              <span
+                className="text-[10px] font-bold px-2 py-0.5 rounded-full border"
+                style={{ background: '#FFF7ED', color: '#E87722', borderColor: '#FED7AA' }}
+              >
                 {post.sport_tag}
               </span>
             )}
           </div>
-          <p className="text-[13px] text-[#9CA3AF] mt-1">{post.created_at} · {post.userRegion}</p>
+          <p className="text-sm text-gray-400 mt-0.5">{post.created_at} · {post.userRegion}</p>
         </div>
-        <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/5 transition-colors">
+        <button className="w-8 h-8 rounded-lg flex items-center justify-center hover:bg-black/5 transition-colors">
           <MoreHorizontal className="w-4 h-4 text-gray-400" />
         </button>
       </div>
 
-      {/* Dark activity block */}
-      <div className="mt-3 rounded-xl overflow-hidden" style={{ background: '#111111' }}>
-        {/* Top row: sport name + icon + duration */}
-        <div className="px-5 py-4 flex items-center gap-3">
-          <SportIcon className="w-[18px] h-[18px] shrink-0" style={{ color: '#E87722' } as React.CSSProperties} />
-          <span className="text-white font-semibold text-base flex-1">{post.sport_tag ?? 'Activiteit'}</span>
+      {/* ── Gradient visual block ───────────────────────────────────── */}
+      <div
+        className="mx-4 rounded-2xl overflow-hidden relative"
+        style={{
+          background: `linear-gradient(135deg, ${gradient.from} 0%, ${gradient.via} 50%, ${gradient.to} 100%)`,
+          minHeight: 180,
+        }}
+      >
+        {/* Dot pattern overlay */}
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.07) 1px, transparent 1px)',
+            backgroundSize: '20px 20px',
+          }}
+        />
+
+        {/* Top row: sport name + icon + total duration */}
+        <div className="relative flex items-center gap-2.5 px-5 pt-5 pb-4">
+          <SportIcon className="w-5 h-5 shrink-0 text-white" />
+          <span className="text-white font-semibold text-base flex-1 tracking-wide" style={SYNE}>
+            {post.sport_tag ?? 'Activiteit'}
+          </span>
           {durationLabel && (
-            <span className="font-bold text-[22px] leading-none" style={{ color: '#E87722', ...SYNE }}>
+            <span
+              className="font-black text-[28px] leading-none tabular-nums"
+              style={{ color: '#E87722', fontFamily: "'Syne', sans-serif" }}
+            >
               {durationLabel}
             </span>
           )}
         </div>
 
-        {/* Stats row */}
+        {/* Main stat: distance big + centered */}
+        {post.distance_km && (
+          <div className="relative text-center py-2">
+            <span className="text-white font-black leading-none" style={{ fontSize: 52, fontFamily: "'Syne', sans-serif" }}>
+              {post.distance_km}
+            </span>
+            <span className="text-white/60 font-bold text-xl ml-1.5">KM</span>
+          </div>
+        )}
+
+        {/* Stats row at bottom */}
         {stats.length > 0 && (
-          <div
-            className="flex"
-            style={{ borderTop: '1px solid rgba(255,255,255,0.1)' }}
-          >
+          <div className="relative flex mt-2 mb-1">
             {stats.map((s, i) => (
               <div
                 key={s.label}
                 className="flex-1 px-5 py-3"
-                style={i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.15)' } : undefined}
+                style={i > 0 ? { borderLeft: '1px solid rgba(255,255,255,0.2)' } : undefined}
               >
-                <p className="text-white font-semibold text-lg leading-none">{s.value}</p>
-                <p className="mt-1 text-xs uppercase tracking-[0.5px]" style={{ color: 'rgba(255,255,255,0.5)' }}>
+                <p className="text-white font-bold text-lg leading-none tabular-nums">{s.value}</p>
+                <p
+                  className="mt-1 text-xs uppercase"
+                  style={{ color: 'rgba(255,255,255,0.5)', letterSpacing: '0.5px' }}
+                >
                   {s.label}
                 </p>
               </div>
@@ -335,10 +394,10 @@ function ActivityCard({ post, onLike, onSave }: {
         )}
       </div>
 
-      {/* Text content */}
+      {/* ── Text content ───────────────────────────────────────────── */}
       {post.content && (
-        <div className="mt-3">
-          <p className="text-[15px] leading-relaxed text-[#374151]" style={{ lineHeight: 1.6 }}>
+        <div className="px-5 pt-3.5">
+          <p className="text-[15px] text-[#374151]" style={{ lineHeight: 1.6 }}>
             {isLong && !expanded ? post.content.slice(0, 150) + '…' : post.content}
           </p>
           {isLong && (
@@ -353,36 +412,43 @@ function ActivityCard({ post, onLike, onSave }: {
         </div>
       )}
 
-      {/* Actions */}
-      <div className="mt-4 pt-3 flex items-center gap-1" style={{ borderTop: '1px solid #F3F4F6' }}>
+      {/* ── Action bar ─────────────────────────────────────────────── */}
+      <div className="flex items-center gap-1 px-4 pt-3 pb-4 mt-2 border-t border-gray-100">
         <button
-          onClick={() => onLike(post.id)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group"
+          onClick={handleLike}
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-orange-50 transition-colors"
         >
           <Heart
-            className="w-5 h-5 transition-all duration-150 group-hover:scale-110"
-            style={{ color: post.liked ? '#E87722' : '#9CA3AF', fill: post.liked ? '#E87722' : 'none' }}
+            className="w-5 h-5 transition-transform duration-150"
+            style={{
+              color: post.liked ? '#E87722' : '#9CA3AF',
+              fill:  post.liked ? '#E87722' : 'none',
+              transform: likeAnimate ? 'scale(1.35)' : 'scale(1)',
+            }}
           />
-          <span className="text-[14px] font-semibold" style={{ color: '#6B7280' }}>{post.likes_count}</span>
+          <span className="text-sm font-medium text-gray-500">{post.likes_count}</span>
         </button>
 
-        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group">
-          <MessageCircle className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#E87722] transition-colors" />
-          <span className="text-[14px] font-semibold text-[#6B7280]">{post.comments_count}</span>
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors group">
+          <MessageCircle className="w-5 h-5 text-gray-400 group-hover:text-[#E87722] transition-colors" />
+          <span className="text-sm font-medium text-gray-500">{post.comments_count}</span>
         </button>
 
         <button
           onClick={() => onSave(post.id)}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group"
+          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors"
         >
           <Bookmark
-            className="w-5 h-5 transition-colors group-hover:text-[#E87722]"
-            style={{ color: post.saved ? '#111111' : '#9CA3AF', fill: post.saved ? '#111111' : 'none' }}
+            className="w-5 h-5 transition-colors"
+            style={{
+              color: post.saved ? '#111111' : '#9CA3AF',
+              fill:  post.saved ? '#111111' : 'none',
+            }}
           />
         </button>
 
-        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group ml-auto">
-          <Share2 className="w-5 h-5 text-[#9CA3AF] group-hover:text-[#E87722] transition-colors" />
+        <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-gray-50 transition-colors group ml-auto">
+          <Share2 className="w-5 h-5 text-gray-400 group-hover:text-[#E87722] transition-colors" />
         </button>
       </div>
     </div>
