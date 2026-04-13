@@ -131,12 +131,14 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     profile = {
       id: dbProfile.id,
       name: dbProfile.full_name ?? dbProfile.username ?? 'Onbekend',
+      username:        dbProfile.username ?? undefined,
       region: db.region ?? '',
       bio: dbProfile.bio ?? '',
       sports:          mappedSports,
       avatarUrl:       dbProfile.avatar_url ?? undefined,
       bannerUrl:       dbProfile.banner_url ?? undefined,
       beschikbaarheid: db.beschikbaarheid ?? [],
+      createdAt:       dbProfile.created_at ?? undefined,
       stats: {
         volgers:  followersCount ?? 0,
         volgend:  followingCount ?? 0,
@@ -165,6 +167,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
       profile={profile}
       followStatus={followStatus}
       currentUserId={user.id}
+      isOwnProfile={user.id === profileId}
     />
   )
 }
