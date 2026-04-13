@@ -246,13 +246,13 @@ export default function ProfielInstellingenPage() {
         </button>
         <input ref={bannerInputRef} type="file" accept="image/*" className="hidden" onChange={handleBannerUpload} />
 
-        {/* Avatar */}
-        <div className="px-5 pb-5 flex items-end gap-4 -mt-8">
+        {/* Avatar + naam */}
+        <div className="px-5 pb-5 -mt-8">
           <button
             onClick={() => avatarInputRef.current?.click()}
             className="relative shrink-0 group"
           >
-            <div className="ring-4 ring-white rounded-full">
+            <div className="ring-4 ring-white rounded-full inline-block">
               <Avatar name={form.full_name || 'G'} imageUrl={form.avatar_url} size="lg" />
             </div>
             <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
@@ -263,7 +263,7 @@ export default function ProfielInstellingenPage() {
             </div>
           </button>
           <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
-          <div className="pb-1">
+          <div className="mt-3">
             <p style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>{form.full_name || 'Jouw naam'}</p>
             <p className="text-xs text-gray-400">@{form.username || 'gebruikersnaam'}</p>
           </div>
