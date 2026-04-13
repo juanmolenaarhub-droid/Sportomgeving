@@ -47,7 +47,7 @@ export default function MeetupMap({ meetups, center, currentUserId, onInterestSu
       >
         <NavigationControl position="top-right" showCompass={false} />
 
-        {meetups.map(m => (
+        {meetups.filter(m => m.latitude != null && m.longitude != null).map(m => (
           <Marker
             key={m.id}
             longitude={m.longitude}
@@ -67,7 +67,7 @@ export default function MeetupMap({ meetups, center, currentUserId, onInterestSu
           </Marker>
         ))}
 
-        {selectedMeetup && (
+        {selectedMeetup && selectedMeetup.latitude != null && selectedMeetup.longitude != null && (
           <Popup
             longitude={selectedMeetup.longitude}
             latitude={selectedMeetup.latitude}
