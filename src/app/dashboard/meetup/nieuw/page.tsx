@@ -194,7 +194,7 @@ export default function NewMeetupPage() {
               {mode === 'spontaan' && <Check className="w-4 h-4 text-[#E87722] ml-auto" />}
             </div>
             <p className="text-xs text-gray-500">Ik ga nú sporten</p>
-            <p className="text-xs text-gray-400 mt-1">Verloopt na 3 uur</p>
+            <p className="text-xs text-gray-400 mt-1">Verloopt na 12 uur</p>
           </button>
 
           <button

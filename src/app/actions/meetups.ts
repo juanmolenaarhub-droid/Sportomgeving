@@ -62,18 +62,19 @@ export async function createMeetup(params: CreateMeetupParams) {
 
   const now = new Date()
 
-  // Spontaan: expires_at = now + 3 uur
+  // Spontaan: expires_at = now + 12 uur
+  // Gepland:  expires_at = datum+tijd + 12 uur
   let expiresAt: string | null = null
   if (params.isSpontaneous) {
-    const exp = new Date(now.getTime() + 3 * 60 * 60 * 1000)
-    expiresAt = exp.toISOString()
+    expiresAt = new Date(now.getTime() + 12 * 60 * 60 * 1000).toISOString()
   } else {
-    // Gepland: valideer datum
     if (!params.date || !params.time) return { success: false, error: 'Datum en tijd zijn verplicht voor geplande meetups' }
     const meetupDate = new Date(`${params.date}T${params.time}:00`)
     if (meetupDate <= now) return { success: false, error: 'Datum moet in de toekomst liggen' }
     const maxDate = new Date(now.getTime() + 14 * 24 * 60 * 60 * 1000)
     if (meetupDate > maxDate) return { success: false, error: 'Datum mag maximaal 14 dagen vooruit zijn' }
+    // 12 uur na de geplande starttijd
+    expiresAt = new Date(meetupDate.getTime() + 12 * 60 * 60 * 1000).toISOString()
   }
 
   const { data: meetup, error } = await supabase.from('meetups').insert({
@@ -419,8 +420,15 @@ export async function getMeetups(params: {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
 
-  // Verloop spontane meetups
-  try { await supabase.rpc('expire_spontaneous_meetups') } catch { /* ignore */ }
+  // Zet verlopen meetups (spontaan én gepland) op status 'verlopen'
+  try {
+    await supabase
+      .from('meetups')
+      .update({ status: 'verlopen' })
+      .in('status', ['open', 'vol'])
+      .lt('expires_at', new Date().toISOString())
+      .not('expires_at', 'is', null)
+  } catch { /* ignore */ }
 
   let query = supabase
     .from('meetups')
