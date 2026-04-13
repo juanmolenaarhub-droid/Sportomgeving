@@ -1,5 +1,4 @@
 -- Voer dit uit in Supabase SQL Editor
--- Tabellen voor opgeslagen content en profielweergaven
 
 -- ── saved_content ─────────────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS saved_content (
@@ -13,7 +12,8 @@ CREATE TABLE IF NOT EXISTS saved_content (
 
 ALTER TABLE saved_content ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY IF NOT EXISTS "users_own_saved_content" ON saved_content
+DROP POLICY IF EXISTS "users_own_saved_content" ON saved_content;
+CREATE POLICY "users_own_saved_content" ON saved_content
   USING (auth.uid() = user_id)
   WITH CHECK (auth.uid() = user_id);
 
@@ -29,12 +29,12 @@ CREATE TABLE IF NOT EXISTS profile_views (
 
 ALTER TABLE profile_views ENABLE ROW LEVEL SECURITY;
 
--- Profiel-eigenaar mag zijn eigen views inzien
-CREATE POLICY IF NOT EXISTS "profile_owner_can_read_views" ON profile_views
+DROP POLICY IF EXISTS "profile_owner_can_read_views" ON profile_views;
+CREATE POLICY "profile_owner_can_read_views" ON profile_views
   FOR SELECT USING (auth.uid() = profile_user_id);
 
--- Iedereen mag een view aanmaken (insert)
-CREATE POLICY IF NOT EXISTS "anyone_can_insert_view" ON profile_views
+DROP POLICY IF EXISTS "anyone_can_insert_view" ON profile_views;
+CREATE POLICY "anyone_can_insert_view" ON profile_views
   FOR INSERT WITH CHECK (auth.uid() = viewer_user_id);
 
 CREATE INDEX IF NOT EXISTS profile_views_profile_user_id_idx ON profile_views(profile_user_id);
