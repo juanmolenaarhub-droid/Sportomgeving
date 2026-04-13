@@ -101,14 +101,22 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       const name = profile?.full_name ?? profile?.username ?? 'Gebruiker'
       const city = profile?.city ?? ''
       setProfileName(name)
-      setProfileImageUrl(profile?.avatar_url ?? null)
+      // Voeg timestamp toe om browsercache te omzeilen
+      const rawUrl = profile?.avatar_url ?? null
+      setProfileImageUrl(rawUrl ? `${rawUrl}?t=${Date.now()}` : null)
       cityRef.current = city
 
       await loadBadges(user.id, city)
 
-      // Realtime subscriptions for badge refresh
+      // Realtime subscriptions for badge refresh + profiel updates
       const channel = supabase
         .channel('layout-badges')
+        .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
+          (payload) => {
+            const p = payload.new as { full_name?: string; username?: string; avatar_url?: string }
+            if (p.full_name || p.username) setProfileName(p.full_name ?? p.username ?? name)
+            if (p.avatar_url) setProfileImageUrl(`${p.avatar_url}?t=${Date.now()}`)
+          })
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
           () => loadBadges(user.id, city))
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages' },
