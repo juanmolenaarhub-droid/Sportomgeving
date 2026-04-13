@@ -1,7 +1,7 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import ProfileContent, { type FollowStatus, type ProfileData, type MeetupStats } from './_components/ProfileContent'
+import ProfileContent, { type FollowStatus, type ProfileData } from './_components/ProfileContent'
 
 // Demo profielen voor IDs die nog niet in de DB staan
 const DEMO_PROFILES: Record<string, ProfileData> = {
@@ -82,7 +82,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     { count: groupsCount },
   ] = await Promise.all([
     supabase.from('profiles')
-      .select('id, full_name, username, bio, avatar_url, banner_url, region, beschikbaarheid, meetups_hosted, meetups_joined, meetups_attended, organizer_rating, organizer_review_count, created_at')
+      .select('id, full_name, username, bio, avatar_url, banner_url, region, beschikbaarheid, created_at')
       .eq('id', profileId)
       .maybeSingle(),
     supabase.from('user_sports')
@@ -116,18 +116,6 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
   if (dbProfile) {
     const db = dbProfile as any
-    const meetupStats: MeetupStats | undefined =
-      db.meetups_hosted != null
-        ? {
-            meetupsHosted:        db.meetups_hosted ?? 0,
-            meetupsJoined:        db.meetups_joined ?? 0,
-            meetupsAttended:      db.meetups_attended ?? 0,
-            organizerRating:      db.organizer_rating ?? null,
-            organizerReviewCount: db.organizer_review_count ?? 0,
-            createdAt:            db.created_at ?? new Date().toISOString(),
-          }
-        : undefined
-
     profile = {
       id: dbProfile.id,
       name: dbProfile.full_name ?? dbProfile.username ?? 'Onbekend',
@@ -145,7 +133,6 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         posts:    postsCount ?? 0,
         groepen:  groupsCount ?? 0,
       },
-      meetupStats,
     }
   } else if (DEMO_PROFILES[profileId]) {
     profile = DEMO_PROFILES[profileId]
