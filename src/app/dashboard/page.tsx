@@ -1,402 +1,1087 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-import { UserPlus, MapPin, Award, ArrowRight, MessageCircle, Heart, Bell, Users, Lightbulb, ThumbsUp, Bug } from 'lucide-react'
+import {
+  Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, MapPin,
+  Camera, Image as ImageIcon, Zap, X, Send, Plus, ChevronDown,
+  Users, Activity, Star, TrendingUp, UserPlus,
+} from 'lucide-react'
+import { Avatar } from '@/components/Avatar'
+import { createClient } from '@/lib/supabase'
 
-function FeedbackWidget() {
-  const [selected, setSelected] = useState<string | null>(null)
-  const [sent, setSent] = useState(false)
+// ─── Design tokens ────────────────────────────────────────────────────────────
+const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
-  if (sent) {
-    return (
-      <div className="flex flex-col items-center py-4 gap-2 text-center">
-        <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-          <ThumbsUp className="w-5 h-5 text-green-600" />
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+type UserProfile = {
+  id: string
+  full_name: string | null
+  username: string | null
+  avatar_url: string | null
+  region: string | null
+  sport: string | null
+}
+
+type Post = {
+  id: string
+  userId: string
+  userName: string
+  userRegion: string
+  userAvatarUrl?: string
+  content: string
+  sport_tag?: string
+  activity_type?: string
+  distance_km?: number
+  duration_minutes?: number
+  image_url?: string
+  likes_count: number
+  comments_count: number
+  liked: boolean
+  saved: boolean
+  created_at: string
+  is_sponsored?: boolean
+  sponsor_name?: string
+}
+
+type Story = {
+  id: string
+  userName: string
+  avatarUrl?: string
+  mediaUrl?: string
+}
+
+type BuddySuggestion = {
+  id: string
+  name: string
+  region: string
+  sport: string
+  avatarUrl?: string
+}
+
+// ─── Demo data ────────────────────────────────────────────────────────────────
+
+const DEMO_STORIES: Story[] = [
+  { id: 's1', userName: 'Tim van Berg', mediaUrl: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=200&q=80' },
+  { id: 's2', userName: 'Sarah Jansen', mediaUrl: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=200&q=80' },
+  { id: 's3', userName: 'Marco de Wit', mediaUrl: 'https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=200&q=80' },
+  { id: 's4', userName: 'Lisa Hoek', mediaUrl: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=200&q=80' },
+  { id: 's5', userName: 'Kevin Storm' },
+  { id: 's6', userName: 'Emma Kool' },
+]
+
+const DEMO_POSTS: Post[] = [
+  {
+    id: 'd1', userId: '1', userName: 'Tim van Berg', userRegion: 'Amsterdam',
+    content: 'Geweldige ochtendrun door het Vondelpark. De lucht was perfect en ik voelde me sterk vandaag. Wie wil er volgende week mee?',
+    sport_tag: 'Hardlopen', activity_type: 'run', distance_km: 10.4, duration_minutes: 52,
+    image_url: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80',
+    likes_count: 24, comments_count: 5, liked: false, saved: false, created_at: '2 min geleden',
+  },
+  {
+    id: 'd2', userId: '2', userName: 'Sarah Jansen', userRegion: 'Utrecht',
+    content: 'Vandaag 45km gefietst langs de Vecht. Prachtig weer en geweldig uitzicht. De route is een aanrader!',
+    sport_tag: 'Fietsen', activity_type: 'cycle', distance_km: 45, duration_minutes: 105,
+    image_url: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&q=80',
+    likes_count: 41, comments_count: 8, liked: true, saved: false, created_at: '1 uur geleden',
+  },
+  {
+    id: 'd3', userId: '3', userName: 'Marco de Wit', userRegion: 'Rotterdam',
+    content: 'PR vandaag op deadlift: 160kg. Zes maanden hard werken heeft zijn vruchten afgeworpen. Op zoek naar een trainingsbuddy voor zware sessies!',
+    sport_tag: 'Gym', activity_type: 'gym',
+    likes_count: 67, comments_count: 12, liked: false, saved: true, created_at: '3 uur geleden',
+  },
+  {
+    id: 'd4', userId: '4', userName: 'Lisa Hoek', userRegion: 'Amsterdam',
+    content: 'Yoga in het park. Wie wil volgende week ook komen? Elke zondagochtend 9:00 bij het Vondelpark paviljoen.',
+    sport_tag: 'Yoga',
+    image_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
+    likes_count: 89, comments_count: 21, liked: false, saved: false, created_at: 'Gisteren',
+  },
+  {
+    id: 'd5', userId: '5', userName: 'Kevin Storm', userRegion: 'Den Haag',
+    content: 'Triathlon training week 8. Zwemmen ging super, fiets ook goed. Nu focussen op de run. Nog 3 weken tot de race!',
+    sport_tag: 'Triathlon', activity_type: 'swim', distance_km: 2.4, duration_minutes: 48,
+    likes_count: 34, comments_count: 7, liked: false, saved: false, created_at: 'Gisteren',
+  },
+  {
+    id: 'd6', userId: '6', userName: 'Anna de Boer', userRegion: 'Amsterdam',
+    content: 'Nieuwe padel partner gezocht! Ik speel op niveau 4 en zoek iemand voor wekelijkse sessies in Amsterdam-West.',
+    sport_tag: 'Padel',
+    likes_count: 15, comments_count: 9, liked: false, saved: false, created_at: '2 dagen geleden',
+  },
+  {
+    id: 'd7', userId: '7', userName: 'Daan Bakker', userRegion: 'Haarlem',
+    content: 'Net terug van een fantastische klimsessie. Boulderprobleem V6 eindelijk geflashed na twee weken proberen!',
+    sport_tag: 'Klimmen',
+    image_url: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&q=80',
+    likes_count: 52, comments_count: 14, liked: false, saved: false, created_at: '2 dagen geleden',
+  },
+  {
+    id: 'd8', userId: '2', userName: 'Sarah Jansen', userRegion: 'Utrecht',
+    content: 'Ochtendzwemmen vóór het werk is echt de beste start van de dag. 2km open water!',
+    sport_tag: 'Zwemmen', activity_type: 'swim', distance_km: 2, duration_minutes: 40,
+    likes_count: 28, comments_count: 4, liked: false, saved: false, created_at: '3 dagen geleden',
+  },
+]
+
+const DEMO_SUGGESTIONS: BuddySuggestion[] = [
+  { id: 'b1', name: 'Roos Vermeer', region: 'Amsterdam', sport: 'Hardlopen' },
+  { id: 'b2', name: 'Joris Bakker', region: 'Amsterdam', sport: 'Fietsen' },
+  { id: 'b3', name: 'Nadia El-Amin', region: 'Utrecht', sport: 'Yoga' },
+  { id: 'b4', name: 'Bram van Dijk', region: 'Rotterdam', sport: 'Gym' },
+]
+
+const SPORT_ICONS: Record<string, string> = {
+  run: '🏃', cycle: '🚴', gym: '💪', swim: '🏊', yoga: '🧘',
+  voetbal: '⚽', tennis: '🎾', padel: '🏸', klimmen: '🧗', triathlon: '🏅',
+}
+
+// ─── Sub-components ───────────────────────────────────────────────────────────
+
+function PostComposerBar({
+  userName, avatarUrl, onOpen,
+}: { userName: string; avatarUrl?: string | null; onOpen: () => void }) {
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 p-4">
+      <div className="flex items-center gap-3">
+        <Avatar name={userName} imageUrl={avatarUrl ?? null} size="sm" />
+        <button
+          onClick={onOpen}
+          className="flex-1 text-left px-4 py-2.5 rounded-xl bg-[#F5F0E8] text-sm text-gray-400 font-medium hover:bg-[#ede8df] transition-colors"
+        >
+          Wat ben je aan het doen, {userName.split(' ')[0]}?
+        </button>
+        <div className="flex items-center gap-1">
+          <button onClick={onOpen} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[#F5F0E8] transition-colors" title="Video">
+            <Camera className="w-4 h-4 text-gray-400" />
+          </button>
+          <button onClick={onOpen} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[#F5F0E8] transition-colors" title="Foto">
+            <ImageIcon className="w-4 h-4 text-gray-400" />
+          </button>
+          <button onClick={onOpen} className="w-9 h-9 rounded-xl flex items-center justify-center hover:bg-[#F5F0E8] transition-colors" title="Activiteit">
+            <Zap className="w-4 h-4 text-[#E87722]" />
+          </button>
         </div>
-        <p className="text-sm font-bold text-black">Bedankt!</p>
-        <p className="text-xs text-gray-400">We nemen je feedback mee.</p>
+      </div>
+    </div>
+  )
+}
+
+function StoriesBar({ stories, userName, avatarUrl, onAddStory }: {
+  stories: Story[]
+  userName: string
+  avatarUrl?: string | null
+  onAddStory: () => void
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 p-4">
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+        {/* Own story */}
+        <button onClick={onAddStory} className="flex flex-col items-center gap-1.5 shrink-0 group">
+          <div className="relative w-14 h-14">
+            <div className="w-14 h-14 rounded-full overflow-hidden ring-2 ring-black/8">
+              <Avatar name={userName} imageUrl={avatarUrl ?? null} size="lg" />
+            </div>
+            <div className="absolute bottom-0 right-0 w-5 h-5 bg-[#E87722] rounded-full flex items-center justify-center ring-2 ring-white">
+              <Plus className="w-3 h-3 text-white" strokeWidth={3} />
+            </div>
+          </div>
+          <span className="text-[10px] font-bold text-gray-500 w-14 text-center truncate">Jouw verhaal</span>
+        </button>
+
+        {/* Buddy stories */}
+        {stories.map(story => (
+          <button key={story.id} className="flex flex-col items-center gap-1.5 shrink-0">
+            <div className="w-14 h-14 rounded-full ring-2 ring-[#E87722] ring-offset-2 overflow-hidden">
+              {story.mediaUrl ? (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={story.mediaUrl} alt={story.userName} className="w-full h-full object-cover" />
+              ) : (
+                <Avatar name={story.userName} imageUrl={null} size="lg" />
+              )}
+            </div>
+            <span className="text-[10px] font-bold text-gray-500 w-14 text-center truncate">
+              {story.userName.split(' ')[0]}
+            </span>
+          </button>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+type FeedTab = 'buddies' | 'ontdekken' | 'trending'
+
+function FeedTabs({ active, onChange }: { active: FeedTab; onChange: (t: FeedTab) => void }) {
+  const tabs: { key: FeedTab; label: string }[] = [
+    { key: 'buddies',    label: 'Buddies'    },
+    { key: 'ontdekken', label: 'Ontdekken'  },
+    { key: 'trending',  label: 'Trending'   },
+  ]
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 p-1.5 flex gap-1">
+      {tabs.map(tab => (
+        <button
+          key={tab.key}
+          onClick={() => onChange(tab.key)}
+          className="flex-1 py-2 rounded-xl text-sm font-bold transition-all"
+          style={{
+            ...SYNE,
+            background: active === tab.key ? '#111111' : 'transparent',
+            color: active === tab.key ? 'white' : '#6B7280',
+          }}
+        >
+          {tab.label}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function ActivityCard({ post, onLike, onSave }: {
+  post: Post
+  onLike: (id: string) => void
+  onSave: (id: string) => void
+}) {
+  const icon = SPORT_ICONS[post.activity_type ?? ''] ?? '🏅'
+  const pace = post.distance_km && post.duration_minutes
+    ? `${Math.floor(post.duration_minutes / post.distance_km)}:${String(Math.round((post.duration_minutes / post.distance_km % 1) * 60)).padStart(2, '0')} /km`
+    : null
+
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
+      {/* Card header: user info */}
+      <div className="px-4 pt-4 pb-3 flex items-center gap-3">
+        <Link href={`/dashboard/profile/${post.userId}`}>
+          <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={`/dashboard/profile/${post.userId}`} className="text-sm font-bold text-black hover:text-[#E87722] transition-colors">
+              {post.userName}
+            </Link>
+            {post.sport_tag && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722]/10 text-[#E87722]">
+                {post.sport_tag}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-0.5">{post.created_at} · {post.userRegion}</p>
+        </div>
+        <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/5 transition-colors">
+          <MoreHorizontal className="w-4 h-4 text-gray-400" />
+        </button>
+      </div>
+
+      {/* Activity header band */}
+      <div className="mx-4 rounded-xl overflow-hidden" style={{ background: '#E87722' }}>
+        <div className="px-4 py-3 flex items-center gap-3">
+          <span className="text-2xl">{icon}</span>
+          <div>
+            <p className="text-white font-black text-sm" style={SYNE}>{post.sport_tag ?? 'Activiteit'}</p>
+            {post.distance_km && (
+              <p className="text-white/80 text-xs font-semibold">{post.distance_km} km</p>
+            )}
+          </div>
+          {post.duration_minutes && (
+            <div className="ml-auto text-right">
+              <p className="text-white font-black text-lg" style={SYNE}>
+                {Math.floor(post.duration_minutes / 60)}:{String(post.duration_minutes % 60).padStart(2, '0')}
+              </p>
+              <p className="text-white/80 text-xs font-semibold">uur</p>
+            </div>
+          )}
+        </div>
+        {/* Stats row */}
+        {(post.distance_km || post.duration_minutes || pace) && (
+          <div className="border-t border-white/20 px-4 py-2 flex gap-6">
+            {post.distance_km && (
+              <div>
+                <p className="text-white font-black text-sm">{post.distance_km} km</p>
+                <p className="text-white/70 text-[10px] font-semibold">Afstand</p>
+              </div>
+            )}
+            {post.duration_minutes && (
+              <div>
+                <p className="text-white font-black text-sm">{post.duration_minutes} min</p>
+                <p className="text-white/70 text-[10px] font-semibold">Tijd</p>
+              </div>
+            )}
+            {pace && (
+              <div>
+                <p className="text-white font-black text-sm">{pace}</p>
+                <p className="text-white/70 text-[10px] font-semibold">Tempo</p>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Text content */}
+      {post.content && (
+        <p className="px-4 pt-3 text-sm text-gray-700 leading-relaxed">{post.content}</p>
+      )}
+
+      {/* Actions */}
+      <PostActions post={post} onLike={onLike} onSave={onSave} />
+    </div>
+  )
+}
+
+function PostActions({ post, onLike, onSave }: {
+  post: Post
+  onLike: (id: string) => void
+  onSave: (id: string) => void
+}) {
+  return (
+    <div className="px-4 py-3 flex items-center gap-1 border-t border-black/5 mt-3">
+      <button
+        onClick={() => onLike(post.id)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors group"
+      >
+        <Heart
+          className="w-4 h-4 transition-all"
+          style={{
+            color: post.liked ? '#E87722' : '#9CA3AF',
+            fill: post.liked ? '#E87722' : 'none',
+          }}
+        />
+        <span className="text-xs font-bold" style={{ color: post.liked ? '#E87722' : '#9CA3AF' }}>
+          {post.likes_count}
+        </span>
+      </button>
+
+      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors">
+        <MessageCircle className="w-4 h-4 text-gray-400" />
+        <span className="text-xs font-bold text-gray-400">{post.comments_count}</span>
+      </button>
+
+      <button
+        onClick={() => onSave(post.id)}
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors"
+      >
+        <Bookmark
+          className="w-4 h-4 transition-all"
+          style={{
+            color: post.saved ? '#E87722' : '#9CA3AF',
+            fill: post.saved ? '#E87722' : 'none',
+          }}
+        />
+      </button>
+
+      <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl hover:bg-[#F5F0E8] transition-colors ml-auto">
+        <Share2 className="w-4 h-4 text-gray-400" />
+      </button>
+    </div>
+  )
+}
+
+function PostCard({ post, onLike, onSave }: {
+  post: Post
+  onLike: (id: string) => void
+  onSave: (id: string) => void
+}) {
+  const [expanded, setExpanded] = useState(false)
+  const isLong = post.content.length > 150
+
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
+      {/* Sponsored label */}
+      {post.is_sponsored && (
+        <div className="px-4 pt-3 pb-0">
+          <span className="text-[10px] font-bold text-gray-400 uppercase tracking-wide">Gesponsord · {post.sponsor_name}</span>
+        </div>
+      )}
+
+      {/* User info + timestamp — ABOVE content like requested */}
+      <div className="px-4 pt-4 pb-3 flex items-center gap-3">
+        <Link href={`/dashboard/profile/${post.userId}`}>
+          <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
+        </Link>
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <Link href={`/dashboard/profile/${post.userId}`} className="text-sm font-bold text-black hover:text-[#E87722] transition-colors">
+              {post.userName}
+            </Link>
+            {post.sport_tag && (
+              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722]/10 text-[#E87722]">
+                {post.sport_tag}
+              </span>
+            )}
+          </div>
+          <p className="text-xs text-gray-400 mt-0.5">{post.created_at} · {post.userRegion}</p>
+        </div>
+        <button className="w-7 h-7 rounded-lg flex items-center justify-center hover:bg-black/5 transition-colors">
+          <MoreHorizontal className="w-4 h-4 text-gray-400" />
+        </button>
+      </div>
+
+      {/* Text content */}
+      <div className="px-4">
+        <p className="text-sm text-gray-700 leading-relaxed">
+          {isLong && !expanded ? post.content.slice(0, 150) + '…' : post.content}
+        </p>
+        {isLong && (
+          <button
+            onClick={() => setExpanded(v => !v)}
+            className="text-xs font-bold text-[#E87722] mt-1 flex items-center gap-0.5"
+          >
+            {expanded ? 'Minder' : 'Meer lezen'} <ChevronDown className={`w-3 h-3 transition-transform ${expanded ? 'rotate-180' : ''}`} />
+          </button>
+        )}
+      </div>
+
+      {/* Image */}
+      {post.image_url && (
+        <div className="mt-3 mx-4 rounded-xl overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={post.image_url}
+            alt="post afbeelding"
+            className="w-full object-cover max-h-80"
+          />
+        </div>
+      )}
+
+      {/* Actions */}
+      <PostActions post={post} onLike={onLike} onSave={onSave} />
+    </div>
+  )
+}
+
+function BuddySuggestionsRow({ buddies, onClose, onRequest }: {
+  buddies: BuddySuggestion[]
+  onClose: () => void
+  onRequest: (id: string) => void
+}) {
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 p-4">
+      <div className="flex items-center justify-between mb-3">
+        <p className="text-sm font-black text-black" style={SYNE}>Suggesties voor jou</p>
+        <button onClick={onClose} className="w-6 h-6 rounded-lg flex items-center justify-center hover:bg-black/5 transition-colors">
+          <X className="w-3.5 h-3.5 text-gray-400" />
+        </button>
+      </div>
+      <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
+        {buddies.map(buddy => (
+          <div key={buddy.id} className="shrink-0 w-36 bg-[#F5F0E8] rounded-xl p-3 flex flex-col items-center gap-2 text-center">
+            <Avatar name={buddy.name} imageUrl={buddy.avatarUrl ?? null} size="sm" />
+            <div>
+              <p className="text-xs font-bold text-black leading-tight">{buddy.name}</p>
+              <p className="text-[10px] text-gray-400 mt-0.5 flex items-center justify-center gap-0.5">
+                <MapPin className="w-2.5 h-2.5" />{buddy.region}
+              </p>
+              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722]/10 text-[#E87722]">
+                {buddy.sport}
+              </span>
+            </div>
+            <button
+              onClick={() => onRequest(buddy.id)}
+              className="w-full py-1.5 rounded-lg text-[10px] font-black transition-colors"
+              style={{ ...SYNE, background: '#111111', color: 'white' }}
+            >
+              Buddy verzoek
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function RightSidebar({ profile, buddyCount }: {
+  profile: UserProfile | null
+  buddyCount: number
+}) {
+  const displayName = profile?.full_name ?? profile?.username ?? 'Jij'
+  const ACTIVE_BUDDIES = [
+    { name: 'Tim van Berg', sport: 'Hardlopen' },
+    { name: 'Sarah Jansen', sport: 'Fietsen' },
+    { name: 'Marco de Wit', sport: 'Gym' },
+  ]
+  const TRENDING_SPORTS = ['Hardlopen', 'Padel', 'Gym']
+
+  return (
+    <div className="space-y-4 sticky top-24">
+      {/* Blok 1 — Mini profiel */}
+      <div className="bg-white rounded-2xl border border-black/8 p-4">
+        <div className="flex items-center gap-3 mb-3">
+          <Avatar name={displayName} imageUrl={profile?.avatar_url ?? null} size="sm" />
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-black text-black truncate" style={SYNE}>{displayName}</p>
+            {profile?.region && (
+              <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5">
+                <MapPin className="w-3 h-3" />{profile.region}
+              </p>
+            )}
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-1 text-center">
+          {[
+            { label: 'Buddies', value: buddyCount },
+            { label: 'Posts', value: '0' },
+            { label: 'Week', value: '0' },
+          ].map(s => (
+            <div key={s.label} className="bg-[#F5F0E8] rounded-xl py-2">
+              <p className="text-sm font-black text-[#E87722]" style={SYNE}>{s.value}</p>
+              <p className="text-[10px] text-gray-500 font-semibold">{s.label}</p>
+            </div>
+          ))}
+        </div>
+        <Link
+          href="/dashboard/profile/me"
+          className="mt-3 w-full block text-center py-2 rounded-xl text-xs font-bold border border-black/8 hover:bg-[#F5F0E8] transition-colors"
+        >
+          Bekijk profiel
+        </Link>
+      </div>
+
+      {/* Blok 2 — Actieve buddies */}
+      <div className="bg-white rounded-2xl border border-black/8 p-4">
+        <p className="text-sm font-black text-black mb-3" style={SYNE}>Actieve buddies</p>
+        <div className="space-y-2.5">
+          {ACTIVE_BUDDIES.map(b => (
+            <div key={b.name} className="flex items-center gap-2.5">
+              <div className="relative">
+                <Avatar name={b.name} imageUrl={null} size="sm" />
+                <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-400 rounded-full ring-2 ring-white" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-bold text-black truncate">{b.name}</p>
+                <p className="text-[10px] text-gray-400">{b.sport}</p>
+              </div>
+              <button className="text-[10px] font-bold text-[#E87722] hover:underline whitespace-nowrap">
+                Bericht
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Blok 3 — Uitnodiging van de week */}
+      <div className="bg-white rounded-2xl border border-black/8 p-4">
+        <div className="flex items-center gap-2 mb-2">
+          <Star className="w-4 h-4 text-[#E87722]" />
+          <p className="text-sm font-black text-black" style={SYNE}>Uitnodiging</p>
+        </div>
+        <div className="bg-[#F5F0E8] rounded-xl p-3">
+          <p className="text-xs font-black text-black" style={SYNE}>Vondelpark Morning Run</p>
+          <p className="text-[10px] text-gray-500 mt-1">Hardlopen · Amsterdam · za 19 apr</p>
+          <p className="text-[10px] text-gray-400 mt-0.5">12 deelnemers</p>
+        </div>
+        <Link
+          href="/dashboard/meetup"
+          className="mt-3 w-full block text-center py-2 rounded-xl text-xs font-bold transition-colors"
+          style={{ background: '#E87722', color: 'white', ...SYNE }}
+        >
+          Doe mee
+        </Link>
+      </div>
+
+      {/* Blok 4 — Trending sporten */}
+      <div className="bg-white rounded-2xl border border-black/8 p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <TrendingUp className="w-4 h-4 text-[#E87722]" />
+          <p className="text-sm font-black text-black" style={SYNE}>Trending in jouw regio</p>
+        </div>
+        <div className="space-y-1.5">
+          {TRENDING_SPORTS.map((sport, i) => (
+            <button
+              key={sport}
+              className="w-full flex items-center gap-2.5 px-2 py-2 rounded-xl hover:bg-[#F5F0E8] transition-colors text-left"
+            >
+              <span className="text-xs font-black text-gray-300 w-4">{i + 1}</span>
+              <span className="text-xs font-bold text-gray-700">{sport}</span>
+              <Activity className="w-3 h-3 text-[#E87722] ml-auto" />
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function EmptyState() {
+  return (
+    <div className="bg-white rounded-2xl border border-black/8 p-10 text-center">
+      <div className="w-16 h-16 bg-[#E87722]/10 rounded-2xl flex items-center justify-center mx-auto mb-4">
+        <Users className="w-8 h-8 text-[#E87722]" />
+      </div>
+      <h2 className="text-lg font-black text-black mb-2" style={SYNE}>Je feed is nog leeg</h2>
+      <p className="text-sm text-gray-400 mb-6 max-w-xs mx-auto">
+        Vind je eerste buddy en begin je sportnetwerk op te bouwen!
+      </p>
+      <Link
+        href="/dashboard/find"
+        className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-black text-white transition-colors"
+        style={{ ...SYNE, background: '#E87722' }}
+      >
+        <UserPlus className="w-4 h-4" /> Buddy zoeken
+      </Link>
+
+      {/* Suggestie kaartjes */}
+      <div className="mt-8 grid grid-cols-1 sm:grid-cols-3 gap-3">
+        {DEMO_SUGGESTIONS.slice(0, 3).map(b => (
+          <div key={b.id} className="bg-[#F5F0E8] rounded-xl p-4 flex flex-col items-center gap-2 text-center">
+            <Avatar name={b.name} imageUrl={null} size="sm" />
+            <div>
+              <p className="text-xs font-bold text-black">{b.name}</p>
+              <p className="text-[10px] text-gray-400">{b.region}</p>
+              <span className="inline-block mt-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-[#E87722]/10 text-[#E87722]">
+                {b.sport}
+              </span>
+            </div>
+            <Link href={`/dashboard/profile/${b.id}`} className="text-[10px] font-bold text-[#E87722] hover:underline">
+              Bekijk profiel →
+            </Link>
+          </div>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function PostComposerModal({ isOpen, onClose, userName, avatarUrl, onPost }: {
+  isOpen: boolean
+  onClose: () => void
+  userName: string
+  avatarUrl?: string | null
+  onPost: (content: string, sport: string) => void
+}) {
+  const [content, setContent] = useState('')
+  const [sport, setSport] = useState('')
+  const SPORTS = ['Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal', 'Tennis', 'Padel', 'Yoga', 'Boksen', 'Klimmen']
+
+  function handlePost() {
+    if (!content.trim()) return
+    onPost(content, sport)
+    setContent('')
+    setSport('')
+    onClose()
+  }
+
+  if (!isOpen) return null
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center">
+      <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={onClose} />
+      <div className="relative bg-white rounded-t-3xl sm:rounded-2xl w-full sm:max-w-lg mx-4 p-5 space-y-4 shadow-2xl">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <p className="font-black text-black" style={SYNE}>Nieuw bericht</p>
+          <button onClick={onClose} className="w-8 h-8 rounded-xl flex items-center justify-center hover:bg-black/5 transition-colors">
+            <X className="w-4 h-4 text-gray-400" />
+          </button>
+        </div>
+
+        {/* User */}
+        <div className="flex items-center gap-3">
+          <Avatar name={userName} imageUrl={avatarUrl ?? null} size="sm" />
+          <p className="text-sm font-bold text-black">{userName}</p>
+        </div>
+
+        {/* Text input */}
+        <textarea
+          rows={4}
+          value={content}
+          onChange={e => setContent(e.target.value)}
+          placeholder="Deel je training, vraag een buddy, of schrijf iets..."
+          className="w-full text-sm text-gray-700 placeholder-gray-300 bg-[#F5F0E8] rounded-xl p-3 resize-none focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 transition"
+          autoFocus
+        />
+
+        {/* Sport tag */}
+        <div>
+          <p className="text-xs font-bold text-gray-400 mb-2">Sport-tag</p>
+          <div className="flex flex-wrap gap-1.5">
+            {SPORTS.map(s => (
+              <button
+                key={s}
+                onClick={() => setSport(sport === s ? '' : s)}
+                className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                style={{
+                  background: sport === s ? '#E87722' : '#F3F4F6',
+                  color: sport === s ? 'white' : '#6B7280',
+                }}
+              >
+                {s}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Media + share */}
+        <div className="flex items-center gap-2">
+          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F5F0E8] text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors">
+            <ImageIcon className="w-3.5 h-3.5" /> Foto
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F5F0E8] text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors">
+            <Camera className="w-3.5 h-3.5" /> Video
+          </button>
+          <button className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-[#F5F0E8] text-xs font-bold text-gray-500 hover:bg-gray-100 transition-colors">
+            <Zap className="w-3.5 h-3.5 text-[#E87722]" /> Activiteit
+          </button>
+          <button
+            onClick={handlePost}
+            disabled={!content.trim()}
+            className="ml-auto flex items-center gap-2 px-5 py-2 rounded-xl text-sm font-black text-white transition-all disabled:opacity-40"
+            style={{ ...SYNE, background: '#E87722' }}
+          >
+            <Send className="w-3.5 h-3.5" /> Delen
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function NewPostsBanner({ count, onRefresh }: { count: number; onRefresh: () => void }) {
+  if (count === 0) return null
+  return (
+    <div className="fixed top-20 left-1/2 -translate-x-1/2 z-40">
+      <button
+        onClick={onRefresh}
+        className="flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-bold text-white shadow-xl transition-all hover:scale-105"
+        style={{ background: '#111111' }}
+      >
+        <TrendingUp className="w-4 h-4 text-[#E87722]" />
+        {count} nieuwe post{count !== 1 ? 's'  : ''} — Klik om te vernieuwen
+      </button>
+    </div>
+  )
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+
+export default function FeedPage() {
+  const supabase = createClient()
+
+  const [profile,       setProfile]       = useState<UserProfile | null>(null)
+  const [posts,         setPosts]         = useState<Post[]>([])
+  const [tab,           setTab]           = useState<FeedTab>('buddies')
+  const [loading,       setLoading]       = useState(true)
+  const [loadingMore,   setLoadingMore]   = useState(false)
+  const [hasMore,       setHasMore]       = useState(true)
+  const [allSeen,       setAllSeen]       = useState(false)
+  const [composerOpen,  setComposerOpen]  = useState(false)
+  const [newPostsCount, setNewPostsCount] = useState(0)
+  const [hiddenSuggestions, setHiddenSuggestions] = useState(false)
+  const [buddyCount,    setBuddyCount]    = useState(0)
+  const [requestedIds,  setRequestedIds]  = useState<Set<string>>(new Set())
+
+  const sentinelRef = useRef<HTMLDivElement>(null)
+  const pageRef     = useRef(0)
+  const PAGE_SIZE   = 8
+
+  // Load profile + initial posts
+  useEffect(() => {
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+
+      const [{ data: prof }, { count: bc }] = await Promise.all([
+        supabase.from('profiles')
+          .select('id, full_name, username, avatar_url, region')
+          .eq('id', user.id)
+          .single(),
+        supabase.from('follow_requests')
+          .select('*', { count: 'exact', head: true })
+          .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+          .eq('status', 'accepted'),
+      ])
+
+      if (prof) setProfile({ ...prof, sport: null })
+      setBuddyCount(bc ?? 0)
+
+      // Try loading real posts, fallback to demo
+      const { data: realPosts } = await supabase
+        .from('posts')
+        .select('id, user_id, content, sport_tag, activity_type, distance_km, duration_minutes, image_url, likes_count, created_at')
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
+
+      if (realPosts && realPosts.length > 0) {
+        const mapped: Post[] = realPosts.map((p: any) => ({
+          id: p.id,
+          userId: p.user_id,
+          userName: 'Gebruiker',
+          userRegion: '',
+          content: p.content ?? '',
+          sport_tag: p.sport_tag,
+          activity_type: p.activity_type,
+          distance_km: p.distance_km,
+          duration_minutes: p.duration_minutes,
+          image_url: p.image_url,
+          likes_count: p.likes_count ?? 0,
+          comments_count: 0,
+          liked: false,
+          saved: false,
+          created_at: new Date(p.created_at).toLocaleDateString('nl-NL'),
+        }))
+        setPosts(mapped)
+        setHasMore(realPosts.length === PAGE_SIZE)
+      } else {
+        // Demo fallback
+        setPosts(DEMO_POSTS.slice(0, PAGE_SIZE))
+        setHasMore(DEMO_POSTS.length > PAGE_SIZE)
+      }
+
+      setLoading(false)
+    }
+    init()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  // Simulate new posts banner after 30s
+  useEffect(() => {
+    const t = setTimeout(() => setNewPostsCount(3), 30000)
+    return () => clearTimeout(t)
+  }, [])
+
+  // Infinite scroll
+  const loadMore = useCallback(async () => {
+    if (loadingMore || !hasMore || allSeen) return
+    setLoadingMore(true)
+    pageRef.current += 1
+
+    await new Promise(r => setTimeout(r, 800)) // simulate network
+
+    const start = pageRef.current * PAGE_SIZE
+    const next  = DEMO_POSTS.slice(start, start + PAGE_SIZE)
+
+    if (next.length === 0) {
+      setAllSeen(true)
+      setHasMore(false)
+    } else {
+      setPosts(prev => [...prev, ...next.map(p => ({ ...p, id: p.id + '_' + pageRef.current }))])
+      if (start + PAGE_SIZE >= DEMO_POSTS.length) {
+        setAllSeen(true)
+        setHasMore(false)
+      }
+    }
+    setLoadingMore(false)
+  }, [loadingMore, hasMore, allSeen])
+
+  useEffect(() => {
+    const el = sentinelRef.current
+    if (!el) return
+    const observer = new IntersectionObserver(entries => {
+      if (entries[0].isIntersecting) loadMore()
+    }, { rootMargin: '200px' })
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [loadMore])
+
+  // Tab change resets feed (demo: just shuffle order)
+  function handleTabChange(t: FeedTab) {
+    setTab(t)
+    setAllSeen(false)
+    setHasMore(true)
+    pageRef.current = 0
+    if (t === 'trending') {
+      setPosts([...DEMO_POSTS].sort((a, b) => b.likes_count - a.likes_count))
+    } else {
+      setPosts([...DEMO_POSTS])
+    }
+  }
+
+  function handleLike(id: string) {
+    setPosts(prev => prev.map(p =>
+      p.id === id
+        ? { ...p, liked: !p.liked, likes_count: p.liked ? p.likes_count - 1 : p.likes_count + 1 }
+        : p
+    ))
+  }
+
+  function handleSave(id: string) {
+    setPosts(prev => prev.map(p =>
+      p.id === id ? { ...p, saved: !p.saved } : p
+    ))
+  }
+
+  function handleNewPost(content: string, sport: string) {
+    const newPost: Post = {
+      id: 'new_' + Date.now(),
+      userId: profile?.id ?? 'me',
+      userName: profile?.full_name ?? profile?.username ?? 'Jij',
+      userRegion: profile?.region ?? '',
+      content,
+      sport_tag: sport || undefined,
+      likes_count: 0,
+      comments_count: 0,
+      liked: false,
+      saved: false,
+      created_at: 'Nu',
+    }
+    setPosts(prev => [newPost, ...prev])
+  }
+
+  function handleRefreshFeed() {
+    setNewPostsCount(0)
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+
+  function handleBuddyRequest(id: string) {
+    setRequestedIds(prev => new Set(prev).add(id))
+  }
+
+  const displayName = profile?.full_name ?? profile?.username ?? 'Sporter'
+
+  // Build feed items: inject buddy suggestions every 6 posts
+  const feedItems: Array<{ type: 'post'; post: Post } | { type: 'suggestions' }> = []
+  posts.forEach((post, i) => {
+    feedItems.push({ type: 'post', post })
+    if ((i + 1) % 6 === 0 && !hiddenSuggestions) {
+      feedItems.push({ type: 'suggestions' })
+    }
+  })
+
+  if (loading) {
+    return (
+      <div className="max-w-7xl mx-auto flex gap-6">
+        <div className="flex-1 max-w-[680px] mx-auto lg:mx-0 space-y-4">
+          {[1, 2, 3].map(i => (
+            <div key={i} className="bg-white rounded-2xl border border-black/8 p-4 space-y-3 animate-pulse">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gray-100" />
+                <div className="flex-1 space-y-1.5">
+                  <div className="h-3.5 bg-gray-100 rounded w-32" />
+                  <div className="h-3 bg-gray-100 rounded w-24" />
+                </div>
+              </div>
+              <div className="space-y-1.5">
+                <div className="h-3 bg-gray-100 rounded w-full" />
+                <div className="h-3 bg-gray-100 rounded w-4/5" />
+              </div>
+              <div className="h-48 bg-gray-100 rounded-xl" />
+            </div>
+          ))}
+        </div>
       </div>
     )
   }
 
-  const options = [
-    { key: 'idea', label: 'Idee delen', icon: Lightbulb, color: 'text-yellow-500 bg-yellow-50' },
-    { key: 'good', label: 'Werkt goed', icon: ThumbsUp, color: 'text-green-600 bg-green-50' },
-    { key: 'bug', label: 'Bug melden', icon: Bug, color: 'text-red-500 bg-red-50' },
-  ]
-
   return (
-    <div className="space-y-3">
-      <div className="grid grid-cols-3 gap-2">
-        {options.map(({ key, label, icon: Icon, color }) => (
-          <button
-            key={key}
-            onClick={() => setSelected(selected === key ? null : key)}
-            className={`flex flex-col items-center gap-1.5 py-2.5 px-1 rounded-xl border transition-all text-center ${
-              selected === key ? 'border-[#111] bg-black/5' : 'border-gray-100 hover:border-gray-200'
-            }`}
-          >
-            <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${color}`}>
-              <Icon className="w-3.5 h-3.5" />
-            </div>
-            <span className="text-[10px] font-bold text-gray-600 leading-tight">{label}</span>
-          </button>
-        ))}
-      </div>
-      {selected && (
-        <div className="space-y-2">
-          <textarea
-            rows={3}
-            placeholder="Schrijf hier je feedback..."
-            className="w-full text-xs text-gray-700 placeholder-gray-300 border border-gray-100 rounded-xl p-3 resize-none focus:outline-none focus:border-[#111] transition-colors"
-          />
-          <button
-            onClick={() => setSent(true)}
-            className="w-full py-2 bg-[#111111] text-white text-xs font-bold rounded-xl hover:bg-[#333] transition-colors"
-          >
-            Versturen
-          </button>
-        </div>
-      )}
-    </div>
-  )
-}
-import { StoryAvatar, type StoryPost } from '@/components/StoryAvatar'
-import { ProfileHeader } from '@/components/ProfileHeader'
-import { createClient } from '@/lib/supabase'
+    <>
+      <NewPostsBanner count={newPostsCount} onRefresh={handleRefreshFeed} />
+      <PostComposerModal
+        isOpen={composerOpen}
+        onClose={() => setComposerOpen(false)}
+        userName={displayName}
+        avatarUrl={profile?.avatar_url}
+        onPost={handleNewPost}
+      />
 
-const following = [
-  { id: '1', name: 'Tim van Berg', sport: 'Hardlopen', region: 'Amsterdam', level: 'Gevorderd',
-    post: { id: 'p1', user: { name: 'Tim van Berg', region: 'Amsterdam' }, content: 'Geweldige ochtendrun door het Vondelpark.', activity_type: 'run', activity_label: 'Hardlopen', distance_km: 10.4, duration_minutes: 52, image_url: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80', likes_count: 24, comments_count: 5, created_at: '2 min geleden' } as StoryPost },
-  { id: '2', name: 'Sarah Jansen', sport: 'Fietsen', region: 'Utrecht', level: 'Gemiddeld',
-    post: { id: 'p2', user: { name: 'Sarah Jansen', region: 'Utrecht' }, content: '45km gefietst langs de Vecht.', activity_type: 'cycle', activity_label: 'Fietsen', distance_km: 45, duration_minutes: 105, image_url: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&q=80', likes_count: 41, comments_count: 8, created_at: '1 uur geleden' } as StoryPost },
-  { id: '3', name: 'Marco de Wit', sport: 'Gym', region: 'Rotterdam', level: 'Gevorderd',
-    post: { id: 'p3', user: { name: 'Marco de Wit', region: 'Rotterdam' }, content: 'PR vandaag op deadlift: 160kg.', activity_type: 'gym', activity_label: 'Gym', likes_count: 67, comments_count: 12, created_at: '3 uur geleden' } as StoryPost },
-  { id: '4', name: 'Lisa Hoek', sport: 'Yoga', region: 'Amsterdam', level: 'Gevorderd',
-    post: { id: 'p4', user: { name: 'Lisa Hoek', region: 'Amsterdam' }, content: 'Yoga in het park. Wie wil volgende week ook komen?', activity_type: 'yoga', activity_label: 'Yoga', image_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80', likes_count: 89, comments_count: 21, created_at: 'Gisteren' } as StoryPost },
-  { id: '5', name: 'Kevin Smit', sport: 'Voetbal', region: 'Den Haag', level: 'Gemiddeld', post: null },
-  { id: '6', name: 'Anna de Boer', sport: 'Zwemmen', region: 'Amsterdam', level: 'Gevorderd', post: null },
-]
+      {/* Floating action button — mobile only */}
+      <button
+        onClick={() => setComposerOpen(true)}
+        className="md:hidden fixed bottom-24 right-4 z-40 w-14 h-14 rounded-full shadow-2xl flex items-center justify-center transition-transform hover:scale-105 active:scale-95"
+        style={{ background: '#E87722' }}
+        aria-label="Nieuw bericht"
+      >
+        <Plus className="w-6 h-6 text-white" strokeWidth={2.5} />
+      </button>
 
-type Profile = {
-  id: string
-  full_name: string | null
-  region: string | null
-  bio: string | null
-  avatar_url: string | null
-  banner_url: string | null
-}
+      <div className="max-w-7xl mx-auto flex gap-6 items-start">
+        {/* ── Main feed column ────────────────────────────────────────── */}
+        <div className="flex-1 min-w-0 max-w-[680px] mx-auto lg:mx-0 space-y-3">
 
-type UserSport = {
-  sport_id: number
-  level: string
-  sports: { name: string } | { name: string }[] | null
-}
-
-const levelLabel: Record<string, string> = {
-  beginner: 'Beginner',
-  intermediate: 'Gemiddeld',
-  advanced: 'Gevorderd',
-}
-
-export default function DashboardHomePage() {
-  const [profile, setProfile] = useState<Profile | null>(null)
-  const [sports, setSports] = useState<UserSport[]>([])
-  const [loading, setLoading] = useState(true)
-
-  useEffect(() => {
-    async function load() {
-      const supabase = createClient()
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
-
-      const [{ data: prof }, { data: sp }] = await Promise.all([
-        supabase.from('profiles').select('id, full_name, region, bio, avatar_url, banner_url').eq('id', user.id).single(),
-        supabase.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', user.id),
-      ])
-
-      if (prof) setProfile(prof)
-      if (sp) setSports(sp as UserSport[])
-      setLoading(false)
-    }
-    load()
-  }, [])
-
-  async function handleAvatarChange(file: File) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const ext = file.name.split('.').pop()
-    const path = `avatars/${user.id}.${ext}`
-    const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
-    if (!error) {
-      const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-      await supabase.from('profiles').update({ avatar_url: data.publicUrl }).eq('id', user.id)
-      setProfile(prev => prev ? { ...prev, avatar_url: data.publicUrl } : prev)
-    }
-  }
-
-  async function handleBannerChange(file: File) {
-    const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    const ext = file.name.split('.').pop()
-    const path = `banners/${user.id}.${ext}`
-    const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true })
-    if (!error) {
-      const { data } = supabase.storage.from('avatars').getPublicUrl(path)
-      await supabase.from('profiles').update({ banner_url: data.publicUrl }).eq('id', user.id)
-      setProfile(prev => prev ? { ...prev, banner_url: data.publicUrl } : prev)
-    }
-  }
-
-  const displayName = profile?.full_name || 'Jouw Naam'
-  const displayRegion = profile?.region || 'Nederland'
-  const displayBio = profile?.bio || 'Stel je profiel in via onboarding om je bio te zien.'
-
-  return (
-    <div className="grid lg:grid-cols-3 gap-8">
-
-      {/* Linker kolom: eigen profiel */}
-      <div className="space-y-5">
-        <div className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
-          <ProfileHeader
-            name={displayName}
+          <PostComposerBar
+            userName={displayName}
             avatarUrl={profile?.avatar_url}
-            bannerUrl={profile?.banner_url}
-            editable={true}
-            size="sm"
-            onBannerChange={handleBannerChange}
-            onAvatarChange={handleAvatarChange}
+            onOpen={() => setComposerOpen(true)}
           />
-          <div className="px-5 pb-5 -mt-2">
-            {loading ? (
-              <div className="space-y-2">
-                <div className="h-5 bg-gray-100 rounded w-32 animate-pulse" />
-                <div className="h-4 bg-gray-100 rounded w-24 animate-pulse" />
-              </div>
-            ) : (
-              <>
-                <h2 className="text-xl font-black text-black">{displayName}</h2>
-                <div className="flex items-center gap-1.5 text-sm text-gray-400 mt-1">
-                  <MapPin className="w-3.5 h-3.5" /> {displayRegion}
-                </div>
-                <p className="text-sm text-gray-500 mt-3 leading-relaxed">{displayBio}</p>
-              </>
-            )}
-            <div className="flex gap-4 mt-5 pt-5 border-t border-gray-50">
-              {[{ label: 'Volgers', value: '0' }, { label: 'Volgend', value: '0' }, { label: 'Groepen', value: '0' }].map(stat => (
-                <div key={stat.label} className="text-center flex-1">
-                  <p className="text-xl font-black text-black">{stat.value}</p>
-                  <p className="text-xs text-gray-400 font-medium">{stat.label}</p>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
 
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-black text-black">Mijn sporten</h3>
-            <Link href="/dashboard/profile/me/edit" className="text-xs text-[#E87722] font-semibold hover:underline">Bewerken</Link>
-          </div>
-          {loading ? (
-            <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="h-8 bg-gray-100 rounded-lg animate-pulse" />)}
-            </div>
-          ) : sports.length > 0 ? (
-            <div className="space-y-2.5">
-              {sports.map(s => {
-                const name = (Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name) ?? 'Sport'
-                const lbl = levelLabel[s.level] ?? s.level
+          <StoriesBar
+            stories={DEMO_STORIES}
+            userName={displayName}
+            avatarUrl={profile?.avatar_url}
+            onAddStory={() => setComposerOpen(true)}
+          />
+
+          <FeedTabs active={tab} onChange={handleTabChange} />
+
+          {/* Feed content */}
+          {posts.length === 0 ? (
+            <EmptyState />
+          ) : (
+            <>
+              {feedItems.map((item, i) => {
+                if (item.type === 'suggestions') {
+                  return (
+                    <BuddySuggestionsRow
+                      key={`suggestions-${i}`}
+                      buddies={DEMO_SUGGESTIONS.filter(b => !requestedIds.has(b.id))}
+                      onClose={() => setHiddenSuggestions(true)}
+                      onRequest={handleBuddyRequest}
+                    />
+                  )
+                }
+                const post = item.post
+                // Activity card for posts with activity data
+                if (post.activity_type && (post.distance_km || post.duration_minutes)) {
+                  return (
+                    <ActivityCard
+                      key={post.id}
+                      post={post}
+                      onLike={handleLike}
+                      onSave={handleSave}
+                    />
+                  )
+                }
                 return (
-                  <div key={s.sport_id} className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-gray-700">{name}</span>
-                    <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${lbl === 'Gevorderd' ? 'bg-black text-white' : lbl === 'Gemiddeld' ? 'bg-[#E87722] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                      {lbl}
-                    </span>
-                  </div>
+                  <PostCard
+                    key={post.id}
+                    post={post}
+                    onLike={handleLike}
+                    onSave={handleSave}
+                  />
                 )
               })}
-            </div>
-          ) : (
-            <p className="text-sm text-gray-400">Nog geen sporten toegevoegd. <Link href="/onboarding" className="text-[#E87722] font-semibold hover:underline">Voeg ze toe</Link></p>
+
+              {/* Infinite scroll sentinel */}
+              <div ref={sentinelRef} />
+
+              {/* Loading indicator */}
+              {loadingMore && (
+                <div className="flex justify-center py-6 gap-1.5">
+                  {[0, 1, 2].map(i => (
+                    <span
+                      key={i}
+                      className="w-2.5 h-2.5 rounded-full animate-pulse"
+                      style={{ background: '#E87722', animationDelay: `${i * 150}ms` }}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* All seen message */}
+              {allSeen && (
+                <div className="bg-white rounded-2xl border border-black/8 p-8 text-center">
+                  <p className="text-sm font-bold text-gray-400 mb-4">Je hebt alles gezien 🎉</p>
+                  <Link
+                    href="/dashboard/find"
+                    className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-black text-white transition-colors"
+                    style={{ ...SYNE, background: '#E87722' }}
+                  >
+                    <UserPlus className="w-4 h-4" /> Ontdek nieuwe sporters
+                  </Link>
+                </div>
+              )}
+            </>
           )}
         </div>
 
-        {/* Activiteit tellers */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5 order-first lg:order-none">
-          <h3 className="font-black text-black mb-4">Activiteit</h3>
-          <div className="space-y-1.5">
-            <Link href="/dashboard/messages" className="flex items-center justify-between hover:bg-gray-50 -mx-2 px-2 py-2.5 rounded-xl transition-colors">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-blue-50 rounded-lg flex items-center justify-center">
-                  <MessageCircle className="w-4 h-4 text-blue-500" />
-                </div>
-                <span className="text-sm font-semibold text-gray-700">Berichten</span>
-              </div>
-              <span className="text-xs font-black text-white bg-blue-500 px-2 py-0.5 rounded-full">2</span>
-            </Link>
-            <div className="flex items-center justify-between -mx-2 px-2 py-2.5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-pink-50 rounded-lg flex items-center justify-center">
-                  <Heart className="w-4 h-4 text-pink-500" />
-                </div>
-                <span className="text-sm font-semibold text-gray-700">Likes</span>
-              </div>
-              <span className="text-sm font-black text-gray-400">12</span>
-            </div>
-            <div className="flex items-center justify-between -mx-2 px-2 py-2.5 rounded-xl">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gray-50 rounded-lg flex items-center justify-center">
-                  <Bell className="w-4 h-4 text-gray-400" />
-                </div>
-                <span className="text-sm font-semibold text-gray-700">Notificaties</span>
-              </div>
-              <span className="text-xs font-black text-white bg-gray-800 px-2 py-0.5 rounded-full">5</span>
-            </div>
-          </div>
-        </div>
-
-        {/* Inkomende volgverzoeken */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-black text-black">Volgverzoeken</h3>
-            <span className="text-xs font-black text-white bg-[#E87722] px-2 py-0.5 rounded-full">3</span>
-          </div>
-          <div className="space-y-3">
-            {[
-              { name: 'Kevin Smit', region: 'Den Haag', sport: 'Voetbal', msg: 'Hey! Ik zoek iemand voor weekendmatches.' },
-              { name: 'Anna de Boer', region: 'Amsterdam', sport: 'Zwemmen', msg: 'Zin om samen te trainen?' },
-              { name: 'Daan Bakker', region: 'Haarlem', sport: 'Tennis', msg: '' },
-            ].map((req) => (
-              <div key={req.name} className="border border-gray-100 rounded-xl p-3">
-                <div className="flex items-center gap-2.5 mb-2">
-                  <StoryAvatar name={req.name} size="sm" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-black leading-none">{req.name}</p>
-                    <p className="text-xs text-gray-400 mt-0.5">{req.region} · {req.sport}</p>
-                  </div>
-                </div>
-                {req.msg && (
-                  <p className="text-xs text-gray-500 italic mb-2.5 leading-relaxed px-1">&ldquo;{req.msg}&rdquo;</p>
-                )}
-                <div className="flex gap-2">
-                  <button className="flex-1 py-1.5 bg-[#111111] text-white text-xs font-bold rounded-lg hover:bg-[#333] transition-colors">
-                    Accepteren
-                  </button>
-                  <button className="flex-1 py-1.5 bg-gray-100 text-gray-600 text-xs font-bold rounded-lg hover:bg-gray-200 transition-colors">
-                    Weigeren
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <Link href="/dashboard/find" className="flex items-center justify-between bg-[#111111] text-white rounded-2xl p-5 hover:bg-[#333] transition-colors group">
-          <div>
-            <p className="font-black">Zoek een buddy</p>
-            <p className="text-sm text-white/70 mt-0.5">Vind sporters in jouw buurt</p>
-          </div>
-          <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-        </Link>
-
-        {/* Mijn groepen */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h3 className="font-black text-black">Mijn groepen</h3>
-            <Link href="/dashboard/groups" className="text-xs text-[#E87722] font-semibold hover:underline">Alle groepen</Link>
-          </div>
-          <div className="space-y-3">
-            {[
-              { name: 'Cycling Amsterdam', members: 24, sport: 'Fietsen' },
-              { name: 'Vondelpark Runners', members: 41, sport: 'Hardlopen' },
-            ].map(group => (
-              <div key={group.name} className="flex items-center gap-3">
-                <div className="w-9 h-9 bg-[#E87722]/10 rounded-xl flex items-center justify-center shrink-0">
-                  <Users className="w-4 h-4 text-[#E87722]" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-bold text-black truncate">{group.name}</p>
-                  <p className="text-xs text-gray-400">{group.members} leden · {group.sport}</p>
-                </div>
-              </div>
-            ))}
-            <Link href="/dashboard/groups" className="flex items-center justify-center gap-2 w-full py-2 mt-1 border border-dashed border-gray-200 rounded-xl text-xs font-bold text-gray-400 hover:border-[#E87722] hover:text-[#E87722] transition-colors">
-              <Users className="w-3.5 h-3.5" /> Groep zoeken
-            </Link>
-          </div>
-        </div>
-
-        {/* Feedback & ideeën */}
-        <div className="bg-white rounded-2xl border border-gray-100 p-5">
-          <div className="flex items-center gap-2 mb-1">
-            <h3 className="font-black text-black">Feedback & ideeën</h3>
-            <span className="text-[10px] font-bold bg-green-100 text-green-700 px-2 py-0.5 rounded-full">Nieuw</span>
-          </div>
-          <p className="text-xs text-gray-400 mb-4 leading-relaxed">Help ons Buddys beter te maken. Wat mist er? Wat kan beter?</p>
-          <FeedbackWidget />
-        </div>
-
-      </div>
-
-      {/* Rechter kolom */}
-      <div className="lg:col-span-2 space-y-5">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black text-black">Mensen die ik volg</h2>
-          <Link href="/dashboard/find" className="flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:underline">
-            <UserPlus className="w-4 h-4" /> Meer vinden
-          </Link>
-        </div>
-
-        <div className="grid sm:grid-cols-2 xl:grid-cols-3 gap-4">
-          {following.map(person => (
-            <Link key={person.name} href={`/dashboard/profile/${person.id}`} className="bg-white rounded-2xl border border-gray-100 p-5 hover:border-[#E87722] hover:shadow-sm transition-all group block">
-              <div className="flex items-start justify-between mb-4">
-                <StoryAvatar name={person.name} size="lg" posts={person.post ? [person.post] : []} />
-                <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${person.level === 'Gevorderd' ? 'bg-black text-white' : person.level === 'Gemiddeld' ? 'bg-[#E87722] text-white' : 'bg-gray-100 text-gray-500'}`}>
-                  {person.level}
-                </span>
-              </div>
-              <h3 className="font-black text-black text-sm group-hover:text-[#E87722] transition-colors">{person.name}</h3>
-              <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1"><MapPin className="w-3 h-3" />{person.region}</p>
-              <p className="text-xs font-semibold text-gray-500 mt-3 flex items-center gap-1.5">
-                <Award className="w-3.5 h-3.5 text-[#E87722]" />{person.sport}
-              </p>
-            </Link>
-          ))}
-        </div>
-
-        <div className="bg-white rounded-2xl border border-gray-100 p-6">
-          <div className="flex items-center justify-between mb-5">
-            <h3 className="font-black text-black">Recente activiteit</h3>
-            <Link href="/dashboard/feed" className="text-sm text-[#E87722] font-semibold hover:underline">Naar tijdlijn</Link>
-          </div>
-          <div className="space-y-4">
-            {[
-              { id: '1', name: 'Tim van Berg', action: 'heeft een 10km run gedeeld', sport: 'Hardlopen', time: '2 min geleden' },
-              { id: '2', name: 'Sarah Jansen', action: 'heeft zich aangesloten bij Cycling Amsterdam', sport: 'Fietsen', time: '1 uur geleden' },
-              { id: '3', name: 'Marco de Wit', action: 'heeft een nieuwe training gepost', sport: 'Gym', time: '3 uur geleden' },
-            ].map((item) => (
-              <div key={item.id} className="flex items-center gap-4 py-3 border-b border-gray-50 last:border-0">
-                <Link href={`/dashboard/profile/${item.id}`}>
-                  <StoryAvatar name={item.name} size="sm" />
-                </Link>
-                <div className="flex-1">
-                  <p className="text-sm text-gray-700">
-                    <Link href={`/dashboard/profile/${item.id}`} className="font-bold text-black hover:text-[#E87722] transition-colors">{item.name}</Link>
-                    {' '}{item.action}
-                  </p>
-                  <p className="text-xs text-gray-400 mt-0.5">{item.time}</p>
-                </div>
-                <span className="text-xs font-semibold text-gray-400 hidden sm:block">{item.sport}</span>
-              </div>
-            ))}
-          </div>
+        {/* ── Right sidebar — desktop only ────────────────────────────── */}
+        <div className="hidden lg:block w-[300px] xl:w-[320px] shrink-0">
+          <RightSidebar profile={profile} buddyCount={buddyCount} />
         </div>
       </div>
-    </div>
+
+      {/* Scrollbar hide style */}
+      <style>{`.scrollbar-hide::-webkit-scrollbar{display:none}.scrollbar-hide{-ms-overflow-style:none;scrollbar-width:none}`}</style>
+    </>
   )
 }

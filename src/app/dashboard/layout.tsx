@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
-  Home, Users, Rss, MessageCircle, Bell, User,
+  Home, Users, MessageCircle, Bell, User,
   LogOut, Search, MapPin, Settings,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
@@ -13,14 +13,13 @@ import { Avatar } from '@/components/Avatar'
 
 const NAV_ITEMS = [
   { href: '/dashboard',          label: 'Home',      icon: Home,          exact: true  },
-  { href: '/dashboard/feed',     label: 'Feed',      icon: Rss,           exact: false },
   { href: '/dashboard/meetup',   label: 'Meetup',    icon: MapPin,        exact: false },
   { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle, exact: false },
   { href: '/dashboard/groups',   label: 'Groepen',   icon: Users,         exact: false },
 ] as const
 
 const MOBILE_ITEMS = [
-  { href: '/dashboard/feed',          icon: Home,          label: 'Feed',         exact: false },
+  { href: '/dashboard',                icon: Home,          label: 'Home',         exact: true  },
   { href: '/dashboard/meetup',        icon: MapPin,        label: 'Meetup',       exact: false },
   { href: '/dashboard/find',          icon: Search,        label: 'Buddies',      exact: false },
   { href: '/dashboard/messages',      icon: MessageCircle, label: 'Berichten',    exact: false },
