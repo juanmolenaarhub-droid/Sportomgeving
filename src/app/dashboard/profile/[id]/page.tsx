@@ -108,7 +108,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     { count: groupsCount },
   ] = await Promise.all([
     supabase.from('profiles')
-      .select('id, full_name, username, bio, avatar_url, banner_url, region, beschikbaarheid, created_at')
+      .select('*')
       .eq('id', profileId)
       .maybeSingle(),
     supabase.from('user_sports')

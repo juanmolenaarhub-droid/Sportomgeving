@@ -417,10 +417,8 @@ export default function FindPage() {
       // show_in_find=true: alleen users die willen verschijnen in zoeken
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, username, region, bio, avatar_url, banner_url, age, last_seen_at, beschikbaarheid, show_in_find, show_city, show_age, show_online_status')
+        .select('*')
         .neq('id', user.id)
-        .eq('is_active', true)
-        .eq('show_in_find', true)
         .limit(50)
 
       if (!profiles || profiles.length === 0) return

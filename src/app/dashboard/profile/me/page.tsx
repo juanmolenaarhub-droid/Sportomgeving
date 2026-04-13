@@ -19,7 +19,7 @@ export default async function MyProfilePage() {
     { count: groupsCount },
   ] = await Promise.all([
     supabase.from('profiles')
-      .select('id, full_name, username, bio, avatar_url, banner_url, region, beschikbaarheid, created_at')
+      .select('*')
       .eq('id', userId)
       .single(),
     supabase.from('user_sports')
