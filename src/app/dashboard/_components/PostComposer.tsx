@@ -315,13 +315,13 @@ export default function PostComposer({
     <>
       {/* Backdrop */}
       <div
-        className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm"
+        className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm"
         onClick={handleClose}
         style={{ animation: 'fadeBackdrop 0.25s ease-out both' }}
       />
 
       {/* Modal */}
-      <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center pointer-events-none px-0 sm:px-4">
+      <div className="fixed inset-0 z-[60] flex items-end sm:items-center justify-center pointer-events-none px-0 sm:px-4">
         <div
           className="pointer-events-auto bg-white w-full sm:max-w-[640px] sm:rounded-[20px] rounded-t-[20px] shadow-2xl flex flex-col overflow-hidden"
           style={{ height: '92vh', maxHeight: '92vh', animation: 'composerIn 0.25s ease-out both' }}
