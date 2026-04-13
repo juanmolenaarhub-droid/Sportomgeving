@@ -38,12 +38,38 @@ const DEMO_PROFILES: Record<string, ProfileData> = {
   },
 }
 
+// UUID v4 validation
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+
 export default async function PublicProfilePage({ params }: { params: { id: string } }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
   const profileId = params.id
+
+  // Demo IDs zijn geen geldige UUIDs — sla alle DB-queries over
+  if (!UUID_RE.test(profileId)) {
+    const demoProfile = DEMO_PROFILES[profileId] ?? null
+    if (!demoProfile) {
+      return (
+        <div className="max-w-2xl mx-auto py-20 text-center">
+          <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
+          <Link href="/dashboard/find" className="mt-4 inline-block text-[#E87722] font-bold hover:underline">
+            Terug naar zoeken
+          </Link>
+        </div>
+      )
+    }
+    return (
+      <ProfileContent
+        profile={demoProfile}
+        followStatus="none"
+        currentUserId={user.id}
+        isOwnProfile={false}
+      />
+    )
+  }
 
   // Haal echte follow_request status op (beide richtingen)
   const [{ data: myRequest }, { data: theirRequest }] = await Promise.all([
@@ -134,8 +160,6 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
         groepen:  groupsCount ?? 0,
       },
     }
-  } else if (DEMO_PROFILES[profileId]) {
-    profile = DEMO_PROFILES[profileId]
   }
 
   if (!profile) {
