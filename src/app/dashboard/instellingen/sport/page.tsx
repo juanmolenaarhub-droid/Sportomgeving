@@ -136,60 +136,70 @@ export default function SportInstellingenPage() {
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
       )}
 
-      {/* Sport tegels */}
+      {/* Stap 1 — Sport selecteren */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <div>
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Jouw sporten & niveaus</p>
-          <p className="text-xs text-gray-400 mt-0.5">Selecteer alle sporten die je doet en geef per sport je niveau aan.</p>
+          <p className="text-xs text-gray-400 mt-0.5">Selecteer alle sporten die je doet.</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
           {SPORTS.map(sport => {
-            const entry = selectedSports.find(e => e.sport === sport)
-            const isSelected = !!entry
-
+            const isSelected = selectedSports.some(e => e.sport === sport)
             return (
               <button
                 key={sport}
                 onClick={() => toggleSport(sport)}
-                className="relative flex flex-col items-start p-3 rounded-xl border-2 transition-all text-left"
+                className="relative flex items-center justify-center py-3 px-2 rounded-xl border-2 transition-all text-center"
                 style={{
                   borderColor: isSelected ? '#E87722' : 'rgba(0,0,0,0.08)',
-                  background: isSelected ? '#FFF8F4' : 'white',
+                  background: isSelected ? '#FFF5EE' : 'white',
                 }}
               >
-                {/* Overlay als niet geselecteerd */}
-                {!isSelected && (
-                  <div className="absolute inset-0 rounded-xl bg-white/60 z-10 pointer-events-none" />
+                {isSelected && (
+                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#E87722] rounded-full flex items-center justify-center">
+                    <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
+                  </span>
                 )}
-
-                {/* Sportnaam */}
-                <span
-                  style={{
-                    ...SYNE,
-                    fontWeight: 700,
-                    fontSize: 13,
-                    color: isSelected ? '#111' : '#6B7280',
-                    marginBottom: 10,
-                  }}
-                >
+                <span style={{
+                  ...SYNE,
+                  fontWeight: isSelected ? 700 : 500,
+                  fontSize: 13,
+                  color: isSelected ? '#111' : '#6B7280',
+                }}>
                   {sport}
                 </span>
+              </button>
+            )
+          })}
+        </div>
 
-                {/* Niveau pills */}
-                <div className="flex gap-1 w-full" onClick={e => e.stopPropagation()}>
+        <p className="text-xs text-gray-400">
+          {selectedSports.length} sport{selectedSports.length !== 1 ? 'en' : ''} geselecteerd
+        </p>
+      </div>
+
+      {/* Stap 2 — Niveau per geselecteerde sport */}
+      {selectedSports.length > 0 && (
+        <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Niveau per sport</p>
+          <div className="space-y-3">
+            {selectedSports.map(entry => (
+              <div key={entry.sport} className="flex items-center justify-between gap-4">
+                <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111', minWidth: 80 }}>
+                  {entry.sport}
+                </span>
+                <div className="flex gap-1.5">
                   {NIVEAUS.map(n => {
-                    const active = isSelected && entry?.niveau === n.value
+                    const active = entry.niveau === n.value
                     return (
                       <button
                         key={n.value}
-                        disabled={!isSelected}
-                        onClick={() => setNiveau(sport, n.value)}
-                        className="flex-1 py-1 rounded-lg text-[10px] font-bold transition-all"
+                        onClick={() => setNiveau(entry.sport, n.value)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         style={{
                           background: active ? '#E87722' : '#F3F4F6',
-                          color: active ? 'white' : '#9CA3AF',
-                          cursor: isSelected ? 'pointer' : 'default',
+                          color: active ? 'white' : '#6B7280',
                         }}
                       >
                         {n.label}
@@ -197,17 +207,11 @@ export default function SportInstellingenPage() {
                     )
                   })}
                 </div>
-              </button>
-            )
-          })}
+              </div>
+            ))}
+          </div>
         </div>
-
-        {selectedSports.length > 0 && (
-          <p className="text-xs text-gray-400">
-            {selectedSports.length} sport{selectedSports.length !== 1 ? 'en' : ''} geselecteerd
-          </p>
-        )}
-      </div>
+      )}
 
       {/* Weekrooster */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
