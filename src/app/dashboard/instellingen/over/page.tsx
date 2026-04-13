@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowLeft, ExternalLink, Instagram, Twitter, Heart } from 'lucide-react'
+import { ArrowLeft, ExternalLink, Heart } from 'lucide-react'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -58,26 +58,16 @@ export default function OverPage() {
       {/* Social */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Volg ons</p>
-        <div className="flex gap-3">
-          {[
-            { label: 'Instagram', icon: Instagram, href: '#' },
-            { label: 'X / Twitter', icon: Twitter, href: '#' },
-          ].map(({ label, icon: Icon, href }) => (
+        <div className="flex flex-wrap gap-3">
+          {['Instagram', 'X / Twitter', 'TikTok'].map(label => (
             <Link
               key={label}
-              href={href}
+              href="#"
               className="flex items-center gap-2 px-4 py-2.5 border border-black/10 rounded-xl text-sm font-semibold text-gray-600 hover:border-[#E87722] hover:text-[#111] transition-colors"
             >
-              <Icon className="w-4 h-4" />
               {label}
             </Link>
           ))}
-          <Link
-            href="#"
-            className="flex items-center gap-2 px-4 py-2.5 border border-black/10 rounded-xl text-sm font-semibold text-gray-600 hover:border-[#E87722] hover:text-[#111] transition-colors"
-          >
-            <span className="text-sm">TikTok</span>
-          </Link>
         </div>
       </div>
 
