@@ -327,10 +327,7 @@ function CurvedBlock({ post, gradient }: { post: Post; gradient: SportGradient }
   const sportLabel = post.sport_tag ?? 'Activiteit'
 
   return (
-    <div
-      className="mx-3 rounded-[18px] overflow-hidden relative"
-      style={{ aspectRatio: '1/1', position: 'relative' }}
-    >
+    <div className="mx-3 rounded-[18px] overflow-hidden relative curved-block">
       {/* SVG Pragmatike curve background */}
       <svg
         className="absolute inset-0 w-full h-full"
@@ -388,9 +385,9 @@ function CurvedBlock({ post, gradient }: { post: Post; gradient: SportGradient }
         {/* Middle content */}
         {isActivity && post.distance_km ? (
           <div>
-            <div className="text-white font-black leading-none" style={{ fontSize: 60, letterSpacing: '-3px' }}>
+            <div className="text-white font-black leading-none curved-stat-main">
               {post.distance_km}
-              <span className="text-white/70 font-bold" style={{ fontSize: 20, letterSpacing: 0 }}> km</span>
+              <span className="text-white/70 font-bold curved-stat-unit"> km</span>
             </div>
             <div className="text-white/60 text-xs font-semibold uppercase tracking-widest mt-1">
               {sportLabel}
@@ -398,14 +395,14 @@ function CurvedBlock({ post, gradient }: { post: Post; gradient: SportGradient }
           </div>
         ) : isActivity ? (
           <div>
-            <div className="text-white font-black leading-none" style={{ fontSize: 52, letterSpacing: '-2px' }}>
+            <div className="text-white font-black leading-none curved-stat-main">
               {Math.floor((post.duration_minutes ?? 0) / 60)}
-              <span className="text-white/70 font-bold" style={{ fontSize: 20, letterSpacing: 0 }}>:{String((post.duration_minutes ?? 0) % 60).padStart(2, '0')}</span>
+              <span className="text-white/70 font-bold curved-stat-unit">:{String((post.duration_minutes ?? 0) % 60).padStart(2, '0')}</span>
             </div>
             <div className="text-white/60 text-xs font-semibold uppercase tracking-widest mt-1">{sportLabel}</div>
           </div>
         ) : (
-          <div className="text-white font-extrabold text-2xl leading-snug">
+          <div className="text-white font-extrabold curved-text-content leading-snug">
             {(post.content ?? '').substring(0, 80)}{(post.content ?? '').length > 80 ? '…' : ''}
           </div>
         )}
