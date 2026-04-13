@@ -2,7 +2,8 @@
 
 import { useEffect, useState, useRef } from 'react'
 import Link from 'next/link'
-import { MapPin, Award, Settings, UserPlus, MessageCircle, Bell, Camera, X, Check, Lightbulb, ThumbsUp, Bug, Zap, Calendar } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { MapPin, Award, Settings, UserPlus, MessageCircle, Bell, Camera, X, Check, Lightbulb, ThumbsUp, Bug, Zap, Calendar, MoreVertical, LogOut, Shield } from 'lucide-react'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
@@ -478,11 +479,30 @@ function EditModal({ profile, sports, onClose, onSaved }: {
 
 // ── Hoofdpagina ───────────────────────────────────────────────────────────────
 export default function MyProfilePage() {
+  const router = useRouter()
   const [profile, setProfile] = useState<Profile | null>(null)
   const [sports, setSports] = useState<UserSport[]>([])
   const [stats, setStats] = useState({ volgers: 0, volgend: 0, posts: 0, groepen: 0 })
   const [loading, setLoading] = useState(true)
   const [showEdit, setShowEdit] = useState(false)
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false)
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [menuOpen])
+
+  async function handleLogout() {
+    const supabase = createClient()
+    await supabase.auth.signOut()
+    router.push('/')
+  }
 
   useEffect(() => {
     async function load() {
@@ -554,12 +574,56 @@ export default function MyProfilePage() {
                 </>
               )}
             </div>
-            <button
-              onClick={() => setShowEdit(true)}
-              className="flex items-center gap-2 border border-gray-200 text-gray-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors shrink-0"
-            >
-              <Settings className="w-4 h-4" /> Bewerken
-            </button>
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                onClick={() => setShowEdit(true)}
+                className="flex items-center gap-2 border border-gray-200 text-gray-700 font-semibold text-sm px-4 py-2 rounded-xl hover:bg-gray-50 transition-colors"
+              >
+                <Settings className="w-4 h-4" /> Bewerken
+              </button>
+              {/* 3-puntjes menu */}
+              <div className="relative" ref={menuRef}>
+                <button
+                  onClick={() => setMenuOpen(v => !v)}
+                  className="w-9 h-9 rounded-xl border border-gray-200 flex items-center justify-center hover:bg-gray-50 transition-colors"
+                >
+                  <MoreVertical className="w-4 h-4 text-gray-500" />
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-full mt-2 w-52 bg-white border border-black/8 rounded-2xl shadow-xl z-30 overflow-hidden py-1">
+                    <p className="px-4 pt-2 pb-1 text-xs text-gray-400 font-semibold">Menu</p>
+                    <Link
+                      href="/dashboard/instellingen/profiel"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-gray-400" /> Profiel bewerken
+                    </Link>
+                    <Link
+                      href="/dashboard/instellingen"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors"
+                    >
+                      <Settings className="w-4 h-4 text-gray-400" /> Instellingen
+                    </Link>
+                    <Link
+                      href="/dashboard/instellingen/privacy"
+                      onClick={() => setMenuOpen(false)}
+                      className="flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors"
+                    >
+                      <Shield className="w-4 h-4 text-gray-400" /> Privacy
+                    </Link>
+                    <div className="border-t border-black/5 my-1" />
+                    <button
+                      onClick={() => { setMenuOpen(false); handleLogout() }}
+                      className="w-full flex items-center gap-3 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors"
+                    >
+                      <LogOut className="w-4 h-4" /> Uitloggen
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Stats */}

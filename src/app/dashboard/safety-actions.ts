@@ -80,6 +80,12 @@ export async function blockUser(blockedUserId: string) {
 
   if (error) return { error: 'Blokkeer actie mislukt' }
 
+  await supabase.from('activity_log').insert({
+    user_id: user.id,
+    event_type: 'user_blocked',
+    metadata: { blocked_user_id: blockedUserId },
+  }).then(() => {}) // fire-and-forget
+
   revalidatePath('/dashboard/find')
   return { success: true }
 }

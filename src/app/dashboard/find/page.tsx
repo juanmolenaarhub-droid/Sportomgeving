@@ -403,19 +403,24 @@ export default function FindPage() {
       if (!user) return
 
       // Haal geblokkeerde gebruikers op (beide richtingen)
-      const { data: blockedRows } = await supabase
-        .from('blocked_users')
-        .select('blocked_id')
-        .eq('blocker_id', user.id)
+      const [{ data: blockedRows }, { data: blockedByRows }] = await Promise.all([
+        supabase.from('blocked_users').select('blocked_id').eq('blocker_id', user.id),
+        supabase.from('blocked_users').select('blocker_id').eq('blocked_id', user.id),
+      ])
 
-      const blockedIds = new Set((blockedRows ?? []).map(r => r.blocked_id))
+      const blockedIds = new Set([
+        ...(blockedRows ?? []).map(r => r.blocked_id),
+        ...(blockedByRows ?? []).map(r => r.blocker_id),
+      ])
 
       // Haal alle profielen op behalve de eigen gebruiker en geblokkeerden
+      // show_in_find=true: alleen users die willen verschijnen in zoeken
       const { data: profiles } = await supabase
         .from('profiles')
-        .select('id, full_name, username, region, bio, avatar_url, banner_url, age, last_seen_at, beschikbaarheid')
+        .select('id, full_name, username, region, bio, avatar_url, banner_url, age, last_seen_at, beschikbaarheid, show_in_find, show_city, show_age, show_online_status')
         .neq('id', user.id)
         .eq('is_active', true)
+        .eq('show_in_find', true)
         .limit(50)
 
       if (!profiles || profiles.length === 0) return
@@ -474,19 +479,23 @@ export default function FindPage() {
         score += Math.min(beschikbaarheid.filter(s => myBeschArr.includes(s)).length * 10, 30)
         if (myRegionStr && (p as any).region && (p as any).region.toLowerCase() === myRegionStr.toLowerCase()) score += 10
 
+        const showCity   = (p as Record<string, unknown>).show_city          !== false
+        const showAge    = (p as Record<string, unknown>).show_age            !== false
+        const showOnline = (p as Record<string, unknown>).show_online_status  !== false
+
         return {
           id: p.id,
           name: p.full_name ?? p.username ?? 'Onbekend',
-          region: (p as any).region ?? '',
-          age: (p as any).age ?? 0,
-          bio: (p as any).bio ?? '',
+          region: showCity   ? ((p as Record<string, unknown>).region as string ?? '') : '',
+          age:    showAge    ? ((p as Record<string, unknown>).age    as number ?? 0)  : 0,
+          bio: (p as Record<string, unknown>).bio as string ?? '',
           sports,
           avatarUrl: p.avatar_url ?? undefined,
-          bannerUrl: (p as any).banner_url ?? undefined,
+          bannerUrl: (p as Record<string, unknown>).banner_url as string ?? undefined,
           following: requestMap[p.id] === 'accepted',
           requested: requestMap[p.id] === 'pending',
           beschikbaarheid,
-          lastSeenAt,
+          lastSeenAt: showOnline ? lastSeenAt : null,
           compatibilityScore: score,
         }
       })
