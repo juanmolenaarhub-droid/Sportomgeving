@@ -36,6 +36,21 @@ const DEMO_PROFILES: Record<string, ProfileData> = {
     bio: 'Triatleet in opleiding. Zwem, fiets en ren. Op zoek naar trainingspartner voor alle drie.',
     sports: [{ label: 'Zwemmen', level: 'Gevorderd' }, { label: 'Hardlopen', level: 'Gemiddeld' }, { label: 'Fietsen', level: 'Gemiddeld' }],
   },
+  '7': {
+    id: '7', name: 'Daan Bakker', region: 'Haarlem',
+    bio: 'Tennis op dinsdagavond en padelcompetitie. Op zoek naar een dubbelpartner.',
+    sports: [{ label: 'Tennis', level: 'Gevorderd' }, { label: 'Padel', level: 'Gemiddeld' }],
+  },
+  '8': {
+    id: '8', name: 'Emma Visser', region: 'Amstelveen',
+    bio: 'Golfer en wandelaar. Gezelligheid staat voorop.',
+    sports: [{ label: 'Golf', level: 'Gemiddeld' }, { label: 'Wandelen', level: 'Beginner' }],
+  },
+  '9': {
+    id: '9', name: 'Jelle Peters', region: 'Utrecht',
+    bio: 'Basketbal en gym. Op zoek naar iemand voor 1-op-1 in het weekend.',
+    sports: [{ label: 'Basketbal', level: 'Gemiddeld' }, { label: 'Gym', level: 'Beginner' }],
+  },
 }
 
 // UUID v4 validation
