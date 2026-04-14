@@ -1,4 +1,5 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
+import { createClient } from '@supabase/supabase-js'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import ProfileContent, { type ProfileData } from './_components/ProfileContent'
@@ -54,29 +55,30 @@ const DEMO_PROFILES: Record<string, ProfileData> = {
   },
 }
 
-// UUID v4 validatie
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
-export default async function PublicProfilePage({ params }: { params: { id: string } }) {
+function NotFound() {
+  return (
+    <div className="max-w-2xl mx-auto py-20 text-center">
+      <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
+      <Link href="/dashboard/find" className="mt-4 inline-block text-[#E87722] font-bold hover:underline">
+        Terug naar zoeken
+      </Link>
+    </div>
+  )
+}
+
+export default async function PublicProfilePage({ params }: { params: Promise<{ id: string }> }) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const profileId = params.id
+  const { id: profileId } = await params
 
-  // Demo IDs (geen UUID) — direct renderen zonder DB-queries
+  // Demo IDs — direct renderen zonder DB-queries
   if (!UUID_RE.test(profileId)) {
     const demoProfile = DEMO_PROFILES[profileId] ?? null
-    if (!demoProfile) {
-      return (
-        <div className="max-w-2xl mx-auto py-20 text-center">
-          <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
-          <Link href="/dashboard/find" className="mt-4 inline-block text-[#E87722] font-bold hover:underline">
-            Terug naar zoeken
-          </Link>
-        </div>
-      )
-    }
+    if (!demoProfile) return <NotFound />
     return (
       <ProfileContent
         profile={demoProfile}
@@ -87,12 +89,95 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     )
   }
 
-  // Echte UUID — data client-side laden (zelfde client als find-pagina, werkt altijd)
+  // Eigen profiel — gebruik ProfileLoader (laadt ook stats, sports etc.)
+  if (user.id === profileId) {
+    return (
+      <ProfileLoader
+        profileId={profileId}
+        currentUserId={user.id}
+        isOwnProfile={true}
+      />
+    )
+  }
+
+  // Ander profiel — haal data op server-side met service role key (bypast RLS)
+  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
+  const adminClient = serviceKey
+    ? createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, serviceKey, {
+        auth: { autoRefreshToken: false, persistSession: false },
+      })
+    : supabase
+
+  const { data: dbProfile } = await adminClient
+    .from('profiles')
+    .select('*')
+    .eq('id', profileId)
+    .maybeSingle()
+
+  if (!dbProfile) return <NotFound />
+
+  const levelLabel: Record<string, string> = {
+    beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd',
+  }
+
+  const [
+    { data: userSports },
+    { count: followersCount },
+    { count: followingCount },
+    { count: postsCount },
+  ] = await Promise.all([
+    adminClient.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', profileId),
+    adminClient.from('follow_requests').select('*', { count: 'exact', head: true })
+      .eq('to_user_id', profileId).eq('status', 'accepted'),
+    adminClient.from('follow_requests').select('*', { count: 'exact', head: true })
+      .eq('from_user_id', profileId).eq('status', 'accepted'),
+    adminClient.from('posts').select('*', { count: 'exact', head: true }).eq('user_id', profileId),
+  ])
+
+  // Follow status ophalen voor de huidige gebruiker
+  const { data: myRequest } = await supabase
+    .from('follow_requests')
+    .select('status')
+    .eq('from_user_id', user.id)
+    .eq('to_user_id', profileId)
+    .neq('status', 'declined')
+    .maybeSingle()
+
+  let followStatus: 'none' | 'pending' | 'pending_received' | 'accepted' = 'none'
+  if (myRequest?.status === 'accepted') followStatus = 'accepted'
+  else if (myRequest?.status === 'pending') followStatus = 'pending'
+
+  const db = dbProfile as any
+  const mappedSports = (userSports ?? []).map((s: any) => ({
+    label: (Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name) ?? 'Sport',
+    level: levelLabel[s.level] ?? s.level,
+  }))
+
+  const profile: ProfileData = {
+    id:              db.id,
+    name:            db.full_name ?? db.username ?? 'Onbekend',
+    username:        db.username ?? undefined,
+    region:          db.region ?? '',
+    bio:             db.bio ?? '',
+    sports:          mappedSports,
+    avatarUrl:       db.avatar_url ?? undefined,
+    bannerUrl:       db.banner_url ?? undefined,
+    beschikbaarheid: db.beschikbaarheid ?? [],
+    createdAt:       db.created_at ?? undefined,
+    stats: {
+      volgers: followersCount ?? 0,
+      volgend: followingCount ?? 0,
+      posts:   postsCount    ?? 0,
+      groepen: 0,
+    },
+  }
+
   return (
-    <ProfileLoader
-      profileId={profileId}
+    <ProfileContent
+      profile={profile}
+      followStatus={followStatus}
       currentUserId={user.id}
-      isOwnProfile={user.id === profileId}
+      isOwnProfile={false}
     />
   )
 }
