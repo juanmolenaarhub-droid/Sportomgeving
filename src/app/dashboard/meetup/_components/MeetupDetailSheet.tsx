@@ -551,13 +551,15 @@ function AanwezigTab({ data, actionPending, onMarkAttended, onRemove }: {
     <div>
       {data.acceptedParticipants.map((p: ModalParticipant) => (
         <div key={p.userId} style={{ ...ROW, alignItems: 'center' }}>
-          <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-            <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
-          </div>
+          <Link href={`/dashboard/profile/${p.userId}`} style={{ flexShrink: 0 }}>
+            <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden' }}>
+              <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
+            </div>
+          </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            <Link href={`/dashboard/profile/${p.userId}`} style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
               {p.name}
-            </p>
+            </Link>
             {p.attended
               ? <span style={{ fontSize: 12, color: '#22C55E', fontWeight: 700 }}>✓ Aanwezig</span>
               : <span style={{ fontSize: 12, color: '#9CA3AF' }}>Geaccepteerd</span>
@@ -627,13 +629,15 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
         data.interestedParticipants.map((p: ModalParticipant) => (
           <div key={p.userId} style={{ padding: '12px 16px', borderBottom: '1px solid #F9FAFB' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: p.message ? 8 : 6 }}>
-              <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-                <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
-              </div>
+              <Link href={`/dashboard/profile/${p.userId}`} style={{ flexShrink: 0 }}>
+                <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden' }}>
+                  <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
+                </div>
+              </Link>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                <Link href={`/dashboard/profile/${p.userId}`} style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
                   {p.name}
-                </p>
+                </Link>
                 {p.joinedAt && (
                   <p style={{ fontSize: 12, color: '#9CA3AF', margin: '1px 0 0' }}>{timeAgo(p.joinedAt)}</p>
                 )}

@@ -557,9 +557,11 @@ function BuddySuggestionsRow({ buddies, onClose, onRequest }: {
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
         {buddies.map(buddy => (
           <div key={buddy.id} className="shrink-0 w-36 bg-[#F5F0E8] rounded-xl p-3 flex flex-col items-center gap-2 text-center">
-            <Avatar name={buddy.name} imageUrl={buddy.avatarUrl ?? null} size="sm" />
+            <Link href={`/dashboard/profile/${buddy.id}`}>
+              <Avatar name={buddy.name} imageUrl={buddy.avatarUrl ?? null} size="sm" />
+            </Link>
             <div>
-              <p className="text-xs font-bold text-black leading-tight">{buddy.name}</p>
+              <Link href={`/dashboard/profile/${buddy.id}`} className="text-xs font-bold text-black leading-tight hover:text-[#E87722] transition-colors">{buddy.name}</Link>
               <p className="text-[10px] text-gray-400 mt-0.5 flex items-center justify-center gap-0.5">
                 <MapPin className="w-2.5 h-2.5" />{buddy.region}
               </p>

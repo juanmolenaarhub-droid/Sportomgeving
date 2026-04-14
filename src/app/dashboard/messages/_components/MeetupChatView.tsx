@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ArrowLeft, X, Send, Users, Crown } from 'lucide-react'
+import { ArrowLeft, Send, Users, Crown } from 'lucide-react'
+import Link from 'next/link'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { sendMeetupMessage, getMeetupMessages, type MeetupMessageItem } from '@/app/actions/meetups'
@@ -101,12 +102,23 @@ function ParticipantsOverlay({
       <div className="max-h-64 overflow-y-auto">
         {participants.map(p => {
           const color = getUserColor(p.userId, participantIds, hostId)
+          const isMe = p.userId === currentUserId
           return (
             <div key={p.userId} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
               <div className="relative shrink-0">
-                <Avatar name={p.name} imageUrl={p.avatarUrl} size="xs" />
+                {isMe ? (
+                  <Avatar name={p.name} imageUrl={p.avatarUrl} size="xs" />
+                ) : (
+                  <Link href={`/dashboard/profile/${p.userId}`}>
+                    <Avatar name={p.name} imageUrl={p.avatarUrl} size="xs" />
+                  </Link>
+                )}
               </div>
-              <p className="flex-1 text-sm font-semibold text-black truncate">{p.name}</p>
+              {isMe ? (
+                <p className="flex-1 text-sm font-semibold text-black truncate">{p.name}</p>
+              ) : (
+                <Link href={`/dashboard/profile/${p.userId}`} className="flex-1 text-sm font-semibold text-black truncate hover:text-[#E87722] transition-colors">{p.name}</Link>
+              )}
               <div className="flex items-center gap-1 shrink-0">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                 {p.isHost && (

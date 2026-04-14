@@ -2,18 +2,20 @@
 
 import { useState, useTransition } from 'react'
 import { Check, X } from 'lucide-react'
+import Link from 'next/link'
 import { StoryAvatar } from '@/components/StoryAvatar'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
 
 type Props = {
   requestId: string
+  fromUserId: string
   name: string
   sport: string | null
   message: string | null
   timeAgo: string
 }
 
-export function BuddyRequestCard({ requestId, name, sport, message, timeAgo }: Props) {
+export function BuddyRequestCard({ requestId, fromUserId, name, sport, message, timeAgo }: Props) {
   const [isPending, startTransition] = useTransition()
   const [done, setDone] = useState<'accepted' | 'declined' | null>(null)
 
@@ -52,12 +54,12 @@ export function BuddyRequestCard({ requestId, name, sport, message, timeAgo }: P
 
   return (
     <div className="flex items-start gap-4 px-5 py-4 bg-orange-50/30 hover:bg-orange-50/50 transition-colors">
-      <div className="relative shrink-0">
+      <Link href={`/dashboard/profile/${fromUserId}`} className="relative shrink-0">
         <StoryAvatar name={name} size="sm" />
-      </div>
+      </Link>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-700">
-          <span className="font-bold text-black">{name}</span>
+          <Link href={`/dashboard/profile/${fromUserId}`} className="font-bold text-black hover:text-[#E87722] transition-colors">{name}</Link>
           {' '}wil jouw sportbuddy worden
           {sport && <span className="text-[#E87722] font-semibold"> · {sport}</span>}
         </p>

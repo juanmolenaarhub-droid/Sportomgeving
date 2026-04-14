@@ -628,15 +628,15 @@ function SavedTab({ currentUserId }: { currentUserId: string }) {
               </div>
             )}
             {/* Author overlay */}
-            {author && (
-              <div className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1">
+            {author && post?.user_id && (
+              <Link href={`/dashboard/profile/${post.user_id}`} className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1 hover:bg-black/80 transition-colors">
                 <div className="w-4 h-4 rounded-full bg-[#E87722] overflow-hidden shrink-0">
                   {author.avatar_url && <img src={author.avatar_url} className="w-full h-full object-cover" alt="" />}
                 </div>
                 <span className="text-[10px] text-white font-semibold truncate max-w-[80px]">
                   {author.full_name ?? author.username}
                 </span>
-              </div>
+              </Link>
             )}
             <div className="absolute inset-0 bg-black/0 group-hover:bg-black/15 transition-colors" />
           </div>

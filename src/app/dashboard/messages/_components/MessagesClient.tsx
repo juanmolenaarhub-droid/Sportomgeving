@@ -2,6 +2,7 @@
 
 import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import Link from 'next/link'
 import {
   Search, Check, X, MessageCircle, Clock, Send,
   MoreVertical, MoreHorizontal, EyeOff, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
@@ -772,14 +773,14 @@ export default function MessagesClient({
             {/* Header */}
             <div className="flex items-center gap-3 p-4 border-b border-gray-100">
               <button onClick={() => setSelected(null)} className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 font-bold">←</button>
-              <div className="relative">
+              <Link href={`/dashboard/profile/${selected.otherUserId}`} className="relative shrink-0">
                 <Avatar name={selected.otherUserName} size="sm" />
                 {onlineUsers.has(selected.otherUserId) && (
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
                 )}
-              </div>
+              </Link>
               <div className="flex-1">
-                <p className="font-black text-black text-sm">{selected.otherUserName}</p>
+                <Link href={`/dashboard/profile/${selected.otherUserId}`} className="font-black text-black text-sm hover:text-[#E87722] transition-colors">{selected.otherUserName}</Link>
                 <p className="text-xs font-medium" style={{ color: onlineUsers.has(selected.otherUserId) ? '#22c55e' : '#9ca3af' }}>
                   {lastSeenLabel(selected.otherUserLastSeen, onlineUsers.has(selected.otherUserId))}
                 </p>

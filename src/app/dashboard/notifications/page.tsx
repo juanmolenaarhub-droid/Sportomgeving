@@ -103,6 +103,7 @@ export default async function NotificationsPage() {
               <BuddyRequestCard
                 key={req.id}
                 requestId={req.id}
+                fromUserId={req.from_user_id}
                 name={req.from_profile?.full_name ?? req.from_profile?.username ?? 'Onbekend'}
                 sport={req.sport}
                 message={req.message}
