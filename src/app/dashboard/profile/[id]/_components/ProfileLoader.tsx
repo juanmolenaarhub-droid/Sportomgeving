@@ -15,17 +15,37 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
   const [profile, setProfile]           = useState<ProfileData | null>(null)
   const [followStatus, setFollowStatus] = useState<FollowStatus>('none')
   const [loading, setLoading]           = useState(true)
+  const [errorMsg, setErrorMsg]         = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
       const supabase = createClient()
 
+      // Eerst alleen het profiel ophalen om te zien of dat lukt
+      const { data: dbProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('*')
+        .eq('id', profileId)
+        .maybeSingle()
+
+      if (profileError) {
+        setErrorMsg(`DB fout: ${profileError.message} (code: ${profileError.code})`)
+        setLoading(false)
+        return
+      }
+
+      if (!dbProfile) {
+        setErrorMsg(`Geen rij gevonden voor ID: ${profileId}`)
+        setLoading(false)
+        return
+      }
+
+      // Rest van de data ophalen
       const levelLabel: Record<string, string> = {
         beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd',
       }
 
       const [
-        { data: dbProfile },
         { data: userSports },
         { data: myRequest },
         { data: theirRequest },
@@ -34,7 +54,6 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
         { count: postsCount },
         { count: groupsCount },
       ] = await Promise.all([
-        supabase.from('profiles').select('*').eq('id', profileId).maybeSingle(),
         supabase.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', profileId),
         supabase.from('follow_requests').select('status')
           .eq('from_user_id', currentUserId).eq('to_user_id', profileId)
@@ -52,40 +71,35 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
 
       // Follow status
       let status: FollowStatus = 'none'
-      if (myRequest?.status === 'accepted' || theirRequest?.status === 'accepted') {
-        status = 'accepted'
-      } else if (myRequest?.status === 'pending') {
-        status = 'pending'
-      } else if (theirRequest?.status === 'pending') {
-        status = 'pending_received'
-      }
+      if (myRequest?.status === 'accepted' || theirRequest?.status === 'accepted') status = 'accepted'
+      else if (myRequest?.status === 'pending') status = 'pending'
+      else if (theirRequest?.status === 'pending') status = 'pending_received'
       setFollowStatus(status)
 
-      if (dbProfile) {
-        const db = dbProfile as any
-        const mappedSports = (userSports ?? []).map((s: any) => ({
-          label: (Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name) ?? 'Sport',
-          level: levelLabel[s.level] ?? s.level,
-        }))
-        setProfile({
-          id:              db.id,
-          name:            db.full_name ?? db.username ?? 'Onbekend',
-          username:        db.username ?? undefined,
-          region:          db.region ?? '',
-          bio:             db.bio ?? '',
-          sports:          mappedSports,
-          avatarUrl:       db.avatar_url ?? undefined,
-          bannerUrl:       db.banner_url ?? undefined,
-          beschikbaarheid: db.beschikbaarheid ?? [],
-          createdAt:       db.created_at ?? undefined,
-          stats: {
-            volgers: followersCount ?? 0,
-            volgend: followingCount ?? 0,
-            posts:   postsCount    ?? 0,
-            groepen: groupsCount   ?? 0,
-          },
-        })
-      }
+      const db = dbProfile as any
+      const mappedSports = (userSports ?? []).map((s: any) => ({
+        label: (Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name) ?? 'Sport',
+        level: levelLabel[s.level] ?? s.level,
+      }))
+
+      setProfile({
+        id:              db.id,
+        name:            db.full_name ?? db.username ?? 'Onbekend',
+        username:        db.username ?? undefined,
+        region:          db.region ?? '',
+        bio:             db.bio ?? '',
+        sports:          mappedSports,
+        avatarUrl:       db.avatar_url ?? undefined,
+        bannerUrl:       db.banner_url ?? undefined,
+        beschikbaarheid: db.beschikbaarheid ?? [],
+        createdAt:       db.created_at ?? undefined,
+        stats: {
+          volgers: followersCount ?? 0,
+          volgend: followingCount ?? 0,
+          posts:   postsCount    ?? 0,
+          groepen: groupsCount   ?? 0,
+        },
+      })
 
       setLoading(false)
     }
@@ -110,9 +124,14 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
 
   if (!profile) {
     return (
-      <div className="max-w-2xl mx-auto py-20 text-center">
+      <div className="max-w-2xl mx-auto py-20 text-center space-y-3">
         <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
-        <Link href="/dashboard/find" className="mt-4 inline-block text-[#E87722] font-bold hover:underline">
+        {errorMsg && (
+          <p className="text-xs text-red-400 font-mono bg-red-50 rounded-lg px-4 py-2 max-w-sm mx-auto break-all">
+            {errorMsg}
+          </p>
+        )}
+        <Link href="/dashboard/find" className="inline-block text-[#E87722] font-bold hover:underline">
           Terug naar zoeken
         </Link>
       </div>
