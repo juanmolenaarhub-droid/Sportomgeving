@@ -5,8 +5,9 @@ import { NextResponse } from 'next/server'
 
 export async function GET(
   _req: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
+  const { id } = await params
   const cookieStore = await cookies()
 
   // Check auth via normal client
@@ -26,11 +27,10 @@ export async function GET(
   // Use service role key to bypass RLS
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
-    // Fallback: try with normal auth client
     const { data: profile } = await authClient
       .from('profiles')
       .select('*')
-      .eq('id', params.id)
+      .eq('id', id)
       .maybeSingle()
     return NextResponse.json({ profile })
   }
@@ -44,7 +44,7 @@ export async function GET(
   const { data: profile, error } = await admin
     .from('profiles')
     .select('*')
-    .eq('id', params.id)
+    .eq('id', id)
     .maybeSingle()
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 })
