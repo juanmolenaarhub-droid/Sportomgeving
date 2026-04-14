@@ -1,7 +1,8 @@
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import ProfileContent, { type FollowStatus, type ProfileData } from './_components/ProfileContent'
+import ProfileContent, { type ProfileData } from './_components/ProfileContent'
+import ProfileLoader from './_components/ProfileLoader'
 
 // Demo profielen voor IDs die nog niet in de DB staan
 const DEMO_PROFILES: Record<string, ProfileData> = {
@@ -53,7 +54,7 @@ const DEMO_PROFILES: Record<string, ProfileData> = {
   },
 }
 
-// UUID v4 validation
+// UUID v4 validatie
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 
 export default async function PublicProfilePage({ params }: { params: { id: string } }) {
@@ -63,7 +64,7 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
 
   const profileId = params.id
 
-  // Demo IDs zijn geen geldige UUIDs — sla alle DB-queries over
+  // Demo IDs (geen UUID) — direct renderen zonder DB-queries
   if (!UUID_RE.test(profileId)) {
     const demoProfile = DEMO_PROFILES[profileId] ?? null
     if (!demoProfile) {
@@ -86,112 +87,10 @@ export default async function PublicProfilePage({ params }: { params: { id: stri
     )
   }
 
-  // Haal echte follow_request status op (beide richtingen)
-  const [{ data: myRequest }, { data: theirRequest }] = await Promise.all([
-    supabase
-      .from('follow_requests')
-      .select('status')
-      .eq('from_user_id', user.id)
-      .eq('to_user_id', profileId)
-      .neq('status', 'declined')
-      .maybeSingle(),
-    supabase
-      .from('follow_requests')
-      .select('status')
-      .eq('from_user_id', profileId)
-      .eq('to_user_id', user.id)
-      .neq('status', 'declined')
-      .maybeSingle(),
-  ])
-
-  let followStatus: FollowStatus = 'none'
-  if (myRequest?.status === 'accepted' || theirRequest?.status === 'accepted') {
-    followStatus = 'accepted'
-  } else if (myRequest?.status === 'pending') {
-    followStatus = 'pending'
-  } else if (theirRequest?.status === 'pending') {
-    followStatus = 'pending_received'
-  }
-
-  // Profiel + sporten + stats parallel laden
-  const [
-    { data: dbProfile },
-    { data: userSports },
-    { count: followersCount },
-    { count: followingCount },
-    { count: postsCount },
-    { count: groupsCount },
-  ] = await Promise.all([
-    supabase.from('profiles')
-      .select('*')
-      .eq('id', profileId)
-      .maybeSingle(),
-    supabase.from('user_sports')
-      .select('sport_id, level, sports(name)')
-      .eq('user_id', profileId),
-    // volgers = mensen die een geaccepteerd verzoek naar dit profiel hebben gestuurd
-    supabase.from('follow_requests')
-      .select('*', { count: 'exact', head: true })
-      .eq('to_user_id', profileId)
-      .eq('status', 'accepted'),
-    // volgend = geaccepteerde verzoeken vanuit dit profiel
-    supabase.from('follow_requests')
-      .select('*', { count: 'exact', head: true })
-      .eq('from_user_id', profileId)
-      .eq('status', 'accepted'),
-    supabase.from('posts')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', profileId),
-    supabase.from('group_members')
-      .select('*', { count: 'exact', head: true })
-      .eq('user_id', profileId),
-  ])
-
-  const levelLabel: Record<string, string> = { beginner: 'Beginner', intermediate: 'Gemiddeld', advanced: 'Gevorderd' }
-  const mappedSports = (userSports ?? []).map(s => ({
-    label: (Array.isArray(s.sports) ? (s.sports[0] as any)?.name : (s.sports as any)?.name) ?? 'Sport',
-    level: levelLabel[s.level] ?? s.level,
-  }))
-
-  let profile: ProfileData | null = null
-
-  if (dbProfile) {
-    const db = dbProfile as any
-    profile = {
-      id: dbProfile.id,
-      name: dbProfile.full_name ?? dbProfile.username ?? 'Onbekend',
-      username:        dbProfile.username ?? undefined,
-      region: db.region ?? '',
-      bio: dbProfile.bio ?? '',
-      sports:          mappedSports,
-      avatarUrl:       dbProfile.avatar_url ?? undefined,
-      bannerUrl:       dbProfile.banner_url ?? undefined,
-      beschikbaarheid: db.beschikbaarheid ?? [],
-      createdAt:       dbProfile.created_at ?? undefined,
-      stats: {
-        volgers:  followersCount ?? 0,
-        volgend:  followingCount ?? 0,
-        posts:    postsCount ?? 0,
-        groepen:  groupsCount ?? 0,
-      },
-    }
-  }
-
-  if (!profile) {
-    return (
-      <div className="max-w-2xl mx-auto py-20 text-center">
-        <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
-        <Link href="/dashboard/find" className="mt-4 inline-block text-[#E87722] font-bold hover:underline">
-          Terug naar zoeken
-        </Link>
-      </div>
-    )
-  }
-
+  // Echte UUID — data client-side laden (zelfde client als find-pagina, werkt altijd)
   return (
-    <ProfileContent
-      profile={profile}
-      followStatus={followStatus}
+    <ProfileLoader
+      profileId={profileId}
       currentUserId={user.id}
       isOwnProfile={user.id === profileId}
     />
