@@ -128,10 +128,10 @@ const DEMO_POSTS: Post[] = [
 ]
 
 const DEMO_SUGGESTIONS: BuddySuggestion[] = [
-  { id: 'b1', name: 'Roos Vermeer', region: 'Amsterdam', sport: 'Hardlopen' },
-  { id: 'b2', name: 'Joris Bakker', region: 'Amsterdam', sport: 'Fietsen' },
-  { id: 'b3', name: 'Nadia El-Amin', region: 'Utrecht', sport: 'Yoga' },
-  { id: 'b4', name: 'Bram van Dijk', region: 'Rotterdam', sport: 'Gym' },
+  { id: '1', name: 'Roos Vermeer', region: 'Amsterdam', sport: 'Hardlopen' },
+  { id: '2', name: 'Joris Bakker', region: 'Amsterdam', sport: 'Fietsen' },
+  { id: '3', name: 'Nadia El-Amin', region: 'Utrecht', sport: 'Yoga' },
+  { id: '4', name: 'Bram van Dijk', region: 'Rotterdam', sport: 'Gym' },
 ]
 
 
