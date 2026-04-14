@@ -15,7 +15,6 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
   const [profile, setProfile]           = useState<ProfileData | null>(null)
   const [followStatus, setFollowStatus] = useState<FollowStatus>('none')
   const [loading, setLoading]           = useState(true)
-  const [errorMsg, setErrorMsg]         = useState<string | null>(null)
 
   useEffect(() => {
     async function load() {
@@ -28,14 +27,7 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
         .eq('id', profileId)
         .maybeSingle()
 
-      if (profileError) {
-        setErrorMsg(`DB fout: ${profileError.message} (code: ${profileError.code})`)
-        setLoading(false)
-        return
-      }
-
-      if (!dbProfile) {
-        setErrorMsg(`Geen rij gevonden voor ID: ${profileId}`)
+      if (profileError || !dbProfile) {
         setLoading(false)
         return
       }
@@ -126,11 +118,6 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
     return (
       <div className="max-w-2xl mx-auto py-20 text-center space-y-3">
         <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
-        {errorMsg && (
-          <p className="text-xs text-red-400 font-mono bg-red-50 rounded-lg px-4 py-2 max-w-sm mx-auto break-all">
-            {errorMsg}
-          </p>
-        )}
         <Link href="/dashboard/find" className="inline-block text-[#E87722] font-bold hover:underline">
           Terug naar zoeken
         </Link>
