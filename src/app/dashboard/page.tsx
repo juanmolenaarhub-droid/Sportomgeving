@@ -914,8 +914,9 @@ export default function FeedPage() {
   const lastCreatedAtRef  = useRef<string | null>(null)
   const PAGE_SIZE         = 8
 
-  const POST_SELECT = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, media_type, thumbnail_url, likes_count, created_at, location, music, tagged_users, calories, activity_name, activity_date, challenge_name, challenge_type, challenge_goal, challenge_start, challenge_end, question, answer_type, poll_options, profiles(full_name, username, avatar_url, region)'
-  const POST_SELECT_BASIC = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, likes_count, created_at, profiles(full_name, username, avatar_url, region)'
+  // No profiles join — fetched separately so a missing column never breaks the feed
+  const POST_SELECT = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, media_type, thumbnail_url, likes_count, created_at, location, music, tagged_users, calories, activity_name, activity_date, challenge_name, challenge_type, challenge_goal, challenge_start, challenge_end, question, answer_type, poll_options'
+  const POST_SELECT_MIN = 'id, user_id, content, likes_count, created_at'
 
   function timeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime()
@@ -928,15 +929,36 @@ export default function FeedPage() {
     return `${days} dag${days > 1 ? 'en' : ''} geleden`
   }
 
+  // mapPosts: fetches author profiles + tagged-user names separately so a missing
+  // column in profiles never causes the post query itself to fail.
   const mapPosts = useCallback(async (rawPosts: any[]): Promise<Post[]> => {
+    if (rawPosts.length === 0) return []
+
+    // Batch-load author profiles
+    const authorIds = [...new Set(rawPosts.map((p: any) => p.user_id as string))]
+    const { data: authorProfiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, region')
+      .in('id', authorIds)
+    const profileMap: Record<string, any> = Object.fromEntries(
+      (authorProfiles ?? []).map((p: any) => [p.id, p])
+    )
+
+    // Batch-load tagged-user names
     const allTaggedIds = [...new Set(rawPosts.flatMap((p: any) => (p.tagged_users ?? []) as string[]))]
     let taggedNamesMap: Record<string, string> = {}
     if (allTaggedIds.length > 0) {
-      const { data: taggedProfiles } = await supabase.from('profiles').select('id, full_name, username').in('id', allTaggedIds)
-      taggedNamesMap = Object.fromEntries((taggedProfiles ?? []).map((p: any) => [p.id, p.full_name ?? p.username ?? '?']))
+      const { data: taggedProfiles } = await supabase
+        .from('profiles')
+        .select('id, full_name, username')
+        .in('id', allTaggedIds)
+      taggedNamesMap = Object.fromEntries(
+        (taggedProfiles ?? []).map((p: any) => [p.id, p.full_name ?? p.username ?? '?'])
+      )
     }
+
     return rawPosts.map((p: any) => {
-      const prof = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
+      const prof = profileMap[p.user_id] ?? null
       return {
         id: p.id,
         userId: p.user_id,
@@ -979,7 +1001,7 @@ export default function FeedPage() {
   }, [])
 
   const loadPosts = useCallback(async (uid?: string) => {
-    // Try full column set; fall back to basic select if migration columns don't exist yet
+    // Level 1: full column set (no profiles join — profiles fetched separately in mapPosts)
     let { data: rawPosts, error: postsError } = await supabase
       .from('posts')
       .select(POST_SELECT)
@@ -987,13 +1009,14 @@ export default function FeedPage() {
       .limit(PAGE_SIZE)
 
     if (postsError) {
-      console.error('Full posts query failed, retrying basic:', postsError)
-      const { data: basic } = await supabase
+      console.error('Full posts query failed, retrying minimal:', postsError)
+      // Level 2: absolute minimum — works even on the original unpatched schema
+      const { data: minimal } = await supabase
         .from('posts')
-        .select(POST_SELECT_BASIC)
+        .select(POST_SELECT_MIN)
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE)
-      rawPosts = basic as any
+      rawPosts = minimal as any
     }
 
     if (!rawPosts || rawPosts.length === 0) {
@@ -1073,13 +1096,13 @@ export default function FeedPage() {
       .limit(PAGE_SIZE)
 
     if (error) {
-      const { data: basic } = await supabase
+      const { data: minimal } = await supabase
         .from('posts')
-        .select(POST_SELECT_BASIC)
+        .select(POST_SELECT_MIN)
         .order('created_at', { ascending: false })
         .lt('created_at', cursor)
         .limit(PAGE_SIZE)
-      rawPosts = basic as any
+      rawPosts = minimal as any
     }
 
     if (!rawPosts || rawPosts.length === 0) {
