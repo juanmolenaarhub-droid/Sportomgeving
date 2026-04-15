@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { Heart, MessageCircle, Share2, Volume2, VolumeX, Music2, Plus } from 'lucide-react'
+import { Heart, MessageCircle, Share2, Volume2, VolumeX, Music2, Plus, Play } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 
 // ─── Demo video data ──────────────────────────────────────────────────────────
@@ -139,21 +139,37 @@ function VideoCard({
   const [liked, setLiked] = useState(false)
   const [likes, setLikes] = useState(video.likes)
   const [bounce, setBounce] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+
+  // React's muted prop doesn't reliably set the HTML attribute — set it via ref on mount
+  useEffect(() => {
+    if (videoRef.current) videoRef.current.muted = true
+  }, [])
 
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
     if (isActive) {
+      v.muted = isMuted
       v.currentTime = 0
-      v.play().catch(() => {})
+      v.play()
+        .then(() => setIsPlaying(true))
+        .catch(() => setIsPlaying(false))
     } else {
       v.pause()
+      setIsPlaying(false)
     }
-  }, [isActive])
+  }, [isActive, isMuted])
 
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = isMuted
   }, [isMuted])
+
+  function handleTap() {
+    const v = videoRef.current
+    if (!v || isPlaying) return
+    v.play().then(() => setIsPlaying(true)).catch(() => {})
+  }
 
   function handleLike() {
     setLiked(p => !p)
@@ -163,7 +179,7 @@ function VideoCard({
   }
 
   return (
-    <div className="relative w-full h-full bg-black select-none">
+    <div className="relative w-full h-full bg-black select-none" onClick={handleTap}>
       {/* Video */}
       {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
       <video
@@ -171,10 +187,18 @@ function VideoCard({
         src={video.src}
         className="absolute inset-0 w-full h-full object-cover"
         loop
-        muted={isMuted}
         playsInline
         preload="metadata"
       />
+
+      {/* Tap-to-play overlay — shown when autoplay was blocked */}
+      {isActive && !isPlaying && (
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center">
+            <Play className="w-8 h-8 text-white ml-1" />
+          </div>
+        </div>
+      )}
 
       {/* Gradient */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/75 pointer-events-none" />
