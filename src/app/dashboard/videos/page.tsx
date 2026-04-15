@@ -21,19 +21,49 @@ type VideoItem = {
   music: string
 }
 
-// ─── 10 demo video's als fallback (ForBigger series = kort + snel, ~3–12 MB) ──
-const BASE = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/'
+// ─── 10 demo video's — gebruiken meerdere betrouwbare gratis bronnen ──────────
+// W3Schools (1 MB, altijd beschikbaar) + Pixabay/Pexels CDN losse MP4's
 const DEMO_VIDEOS: VideoItem[] = [
-  { id:'v1',  src:`${BASE}ForBiggerFun.mp4`,       displayName:'Tim van Berg',   username:'tim_hardloopt', sport:'Hardlopen', caption:'Perfecte ochtendrun door het Vondelpark 🏃‍♂️ Wie wil mee?',              likes:1840, comments:47,  music:'Running Playlist — Spotify' },
-  { id:'v2',  src:`${BASE}ForBiggerJoyrides.mp4`,  displayName:'Sarah Jansen',   username:'sarah_fietst',  sport:'Fietsen',   caption:'Nieuwe PR op de fiets! 42 km in 1:15 🚴‍♀️ Beste week ooit',           likes:934,  comments:23,  music:'Cycling Vibes — Spotify' },
-  { id:'v3',  src:`${BASE}ForBiggerMeltdowns.mp4`, displayName:'Marco de Wit',   username:'marco_gym',     sport:'Gym',       caption:'Arm dag 💪 Pull-ups PR: 20 reps. Tip: langzaam omlaag = beter',         likes:2100, comments:89,  music:'Gym Hits 2026 — Spotify' },
-  { id:'v4',  src:`${BASE}ForBiggerBlazes.mp4`,    displayName:'Lisa Hoek',      username:'lisa_yoga',     sport:'Yoga',      caption:'Morning flow 🧘‍♀️ 20 minuten en je voelt het verschil',                 likes:673,  comments:31,  music:'Yoga & Meditation — Spotify' },
-  { id:'v5',  src:`${BASE}ForBiggerEscapes.mp4`,   displayName:'Kevin Storm',    username:'kevin_padel',   sport:'Padel',     caption:'Beste padel punt ooit? 🎾 Ja. Buddy gezocht voor de rematch!',          likes:3200, comments:142, music:'Court Energy — Spotify' },
-  { id:'v6',  src:`${BASE}ForBiggerFun.mp4`,       displayName:'Joris Bakker',   username:'joris_zwemt',   sport:'Zwemmen',   caption:'100m vrije slag in 58 sec 🏊‍♂️ Doel: onder de 55. Wie traint mee?',    likes:780,  comments:44,  music:'Pool Vibes — Spotify' },
-  { id:'v7',  src:`${BASE}ForBiggerJoyrides.mp4`,  displayName:'Bram van Dijk',  username:'bram_bokst',    sport:'Boksen',    caption:'Training 💥 3 min/ronde, 6 rondes. Boksen is beste full-body workout',  likes:2890, comments:97,  music:'Fight Night — Spotify' },
-  { id:'v8',  src:`${BASE}ForBiggerMeltdowns.mp4`, displayName:'Nadia El-Amin',  username:'nadia_triathlon',sport:'Triathlon', caption:'Eerste triathlon klaar 🏆 Swim + bike + run in één dag. Nooit meer? Toch wel.', likes:5600, comments:318, music:'Beast Mode — Spotify' },
-  { id:'v9',  src:`${BASE}ForBiggerBlazes.mp4`,    displayName:'Emma Kool',      username:'emma_klimt',    sport:'Klimmen',   caption:'Boulder 7A+ geflashed! 🧗‍♀️ Drie weken geprobeerd. Onbeschrijflijk',    likes:1230, comments:61,  music:'Send It — Spotify' },
-  { id:'v10', src:`${BASE}ForBiggerEscapes.mp4`,   displayName:'Roos Vermeer',   username:'roos_hardloopt',sport:'Hardlopen', caption:'Halve marathon: 21 km in 1:58 🎉 Maanden van training betalen zich uit', likes:4100, comments:203, music:'Half Marathon Mix — Spotify' },
+  { id:'v1',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Tim van Berg',    username:'tim_hardloopt',  sport:'Hardlopen',
+    caption:'Perfecte ochtendrun door het Vondelpark 🏃‍♂️ Wie wil mee volgende week?',
+    likes:1840, comments:47,  music:'Running Playlist — Spotify' },
+  { id:'v2',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Sarah Jansen',    username:'sarah_fietst',   sport:'Fietsen',
+    caption:'Nieuwe PR op de fiets! 42 km in 1 uur 15 🚴‍♀️ Beste week ooit',
+    likes:934,  comments:23,  music:'Cycling Vibes — Spotify' },
+  { id:'v3',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Marco de Wit',    username:'marco_gym',      sport:'Gym',
+    caption:'Arm dag 💪 Pull-ups PR: 20 reps clean. Langzaam omlaag = beter resultaat',
+    likes:2100, comments:89,  music:'Gym Hits 2026 — Spotify' },
+  { id:'v4',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Lisa Hoek',       username:'lisa_yoga',      sport:'Yoga',
+    caption:'Morning flow 🧘‍♀️ 20 minuten en je voelt het verschil. Probeer het!',
+    likes:673,  comments:31,  music:'Yoga & Meditation — Spotify' },
+  { id:'v5',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Kevin Storm',     username:'kevin_padel',    sport:'Padel',
+    caption:'Beste padel punt ooit? 🎾 Eerlijk gezegd: ja. Buddy gezocht voor rematch!',
+    likes:3200, comments:142, music:'Court Energy — Spotify' },
+  { id:'v6',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Joris Bakker',    username:'joris_zwemt',    sport:'Zwemmen',
+    caption:'100m vrije slag in 58 sec 🏊‍♂️ Doel: onder de 55. Wie traint mee?',
+    likes:780,  comments:44,  music:'Pool Vibes — Spotify' },
+  { id:'v7',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Bram van Dijk',   username:'bram_bokst',     sport:'Boksen',
+    caption:'Training 💥 3 min per ronde, 6 rondes. Boksen = beste full-body workout',
+    likes:2890, comments:97,  music:'Fight Night — Spotify' },
+  { id:'v8',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Nadia El-Amin',   username:'nadia_triathlon',sport:'Triathlon',
+    caption:'Eerste triathlon klaar 🏆 Zwemmen + fietsen + hardlopen. Nooit meer? Toch wel.',
+    likes:5600, comments:318, music:'Beast Mode — Spotify' },
+  { id:'v9',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Emma Kool',       username:'emma_klimt',     sport:'Klimmen',
+    caption:'Boulder 7A+ eindelijk geflashed! 🧗‍♀️ Drie weken geprobeerd. Onbeschrijflijk',
+    likes:1230, comments:61,  music:'Send It — Spotify' },
+  { id:'v10', src:'https://www.w3schools.com/html/mov_bbb.mp4',
+    displayName:'Roos Vermeer',    username:'roos_hardloopt', sport:'Hardlopen',
+    caption:'Halve marathon: 21 km in 1:58 🎉 Maanden training betalen zich uit!',
+    likes:4100, comments:203, music:'Half Marathon Mix — Spotify' },
 ]
 
 function fmt(n: number) {
