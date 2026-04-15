@@ -81,7 +81,7 @@ export type PostFormData = {
 type PostComposerProps = {
   isOpen: boolean
   onClose: () => void
-  onPosted?: () => void
+  onPosted?: () => Promise<void>
   initialType?: PostType
   skipToStep2?: boolean
 }
@@ -317,7 +317,8 @@ export default function PostComposer({
       throw new Error(`Post opslaan mislukt: ${insertError.message}`)
     }
 
-    onPosted?.()
+    // Await feed refresh so the new post is visible when composer closes
+    await onPosted?.()
     handleClose()
   }
 
