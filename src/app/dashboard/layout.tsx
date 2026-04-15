@@ -161,7 +161,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className="min-h-screen bg-[#F5F0E8] flex flex-col">
+    <div className={`bg-[#F5F0E8] flex flex-col ${pathname === '/dashboard/videos' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
       {/* ── Topbar ─────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-black/8 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
@@ -272,11 +272,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* ── Page content ───────────────────────────────────────────────── */}
-      <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-28 md:pb-8">
-        <ProfileCardProvider currentUserId={currentUserId}>
+      {pathname === '/dashboard/videos' ? (
+        <div className="flex-1 flex flex-col overflow-hidden">
           {children}
-        </ProfileCardProvider>
-      </div>
+        </div>
+      ) : (
+        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-28 md:pb-8">
+          <ProfileCardProvider currentUserId={currentUserId}>
+            {children}
+          </ProfileCardProvider>
+        </div>
+      )}
 
       {/* ── Floating mobile pill ────────────────────────────────────────── */}
       <style>{`

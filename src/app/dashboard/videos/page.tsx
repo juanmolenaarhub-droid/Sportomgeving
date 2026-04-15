@@ -173,7 +173,7 @@ function VideoCard({
         loop
         muted={isMuted}
         playsInline
-        preload="auto"
+        preload="metadata"
       />
 
       {/* Gradient */}
@@ -276,40 +276,32 @@ export default function VideosPage() {
   }, [])
 
   return (
-    <>
-      {/* Full-screen overlay that sits above layout padding but below header + nav */}
-      <div
-        ref={containerRef}
-        className="fixed left-0 right-0 overflow-y-scroll"
-        style={{
-          top: 64,       // below sticky header
-          bottom: 0,
-          zIndex: 40,
-          scrollSnapType: 'y mandatory',
-          WebkitOverflowScrolling: 'touch',
-        }}
-      >
-        {DEMO_VIDEOS.map((video, i) => (
-          <div
-            key={video.id}
-            style={{
-              height: 'calc(100vh - 64px)',
-              scrollSnapAlign: 'start',
-              scrollSnapStop: 'always',
-            }}
-          >
-            <VideoCard
-              video={video}
-              isActive={i === activeIndex}
-              isMuted={isMuted}
-              onMuteToggle={() => setIsMuted(v => !v)}
-            />
-          </div>
-        ))}
-      </div>
-
-      {/* Empty spacer so layout doesn't collapse */}
-      <div style={{ height: 'calc(100vh - 64px)' }} />
-    </>
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-scroll"
+      style={{
+        scrollSnapType: 'y mandatory',
+        WebkitOverflowScrolling: 'touch',
+      }}
+    >
+      {DEMO_VIDEOS.map((video, i) => (
+        <div
+          key={video.id}
+          className="w-full shrink-0"
+          style={{
+            height: '100%',
+            scrollSnapAlign: 'start',
+            scrollSnapStop: 'always',
+          }}
+        >
+          <VideoCard
+            video={video}
+            isActive={i === activeIndex}
+            isMuted={isMuted}
+            onMuteToggle={() => setIsMuted(v => !v)}
+          />
+        </div>
+      ))}
+    </div>
   )
 }
