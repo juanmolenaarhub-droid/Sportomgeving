@@ -10,6 +10,7 @@ import {
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import PostComposer from './_components/PostComposer'
+import { useProfileCard } from '@/components/ProfileCardModal'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
@@ -440,16 +441,17 @@ function ActivityCard({ post, onLike, onSave }: {
   const [expanded, setExpanded] = useState(false)
   const gradient = getSportGradient(post.sport_tag ?? post.activity_type)
   const isLong   = (post.content?.length ?? 0) > 150
+  const { openProfile } = useProfileCard()
 
   return (
     <div className="animate-fade-in-up bg-white rounded-3xl overflow-hidden shadow-sm">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-[14px] pb-0">
-        <Link href={`/dashboard/profile/${post.userId}`}>
+        <button onClick={() => openProfile(post.userId)}>
           <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
-        </Link>
+        </button>
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-bold text-black leading-none">{post.userName}</p>
+          <button onClick={() => openProfile(post.userId)} className="text-[14px] font-bold text-black leading-none hover:text-[#E87722] transition-colors">{post.userName}</button>
           <p className="text-[12px] text-gray-400 mt-0.5">{post.created_at} · {post.userRegion}</p>
         </div>
         <button className="w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-lg transition-colors">
@@ -490,6 +492,7 @@ function PostCard({ post, onLike, onSave }: {
   const [expanded, setExpanded] = useState(false)
   const gradient = getSportGradient(post.sport_tag ?? post.activity_type)
   const isLong   = (post.content?.length ?? 0) > 150
+  const { openProfile } = useProfileCard()
 
   return (
     <div className="animate-fade-in-up bg-white rounded-3xl overflow-hidden shadow-sm">
@@ -504,11 +507,11 @@ function PostCard({ post, onLike, onSave }: {
 
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-[14px] pb-0">
-        <Link href={`/dashboard/profile/${post.userId}`}>
+        <button onClick={() => openProfile(post.userId)}>
           <Avatar name={post.userName} imageUrl={post.userAvatarUrl ?? null} size="sm" />
-        </Link>
+        </button>
         <div className="flex-1 min-w-0">
-          <p className="text-[14px] font-bold text-black leading-none">{post.userName}</p>
+          <button onClick={() => openProfile(post.userId)} className="text-[14px] font-bold text-black leading-none hover:text-[#E87722] transition-colors">{post.userName}</button>
           <p className="text-[12px] text-gray-400 mt-0.5">{post.created_at} · {post.userRegion}</p>
         </div>
         <button className="w-8 h-8 flex items-center justify-center hover:bg-black/5 rounded-lg transition-colors">
@@ -546,6 +549,7 @@ function BuddySuggestionsRow({ buddies, onClose, onRequest }: {
   onClose: () => void
   onRequest: (id: string) => void
 }) {
+  const { openProfile } = useProfileCard()
   return (
     <div className="bg-white rounded-2xl border border-black/8 p-4">
       <div className="flex items-center justify-between mb-3">
@@ -557,11 +561,11 @@ function BuddySuggestionsRow({ buddies, onClose, onRequest }: {
       <div className="flex gap-3 overflow-x-auto scrollbar-hide pb-1 -mx-1 px-1">
         {buddies.map(buddy => (
           <div key={buddy.id} className="shrink-0 w-36 bg-[#F5F0E8] rounded-xl p-3 flex flex-col items-center gap-2 text-center">
-            <Link href={`/dashboard/profile/${buddy.id}`}>
+            <button onClick={() => openProfile(buddy.id)}>
               <Avatar name={buddy.name} imageUrl={buddy.avatarUrl ?? null} size="sm" />
-            </Link>
+            </button>
             <div>
-              <Link href={`/dashboard/profile/${buddy.id}`} className="text-xs font-bold text-black leading-tight hover:text-[#E87722] transition-colors">{buddy.name}</Link>
+              <button onClick={() => openProfile(buddy.id)} className="text-xs font-bold text-black leading-tight hover:text-[#E87722] transition-colors">{buddy.name}</button>
               <p className="text-[10px] text-gray-400 mt-0.5 flex items-center justify-center gap-0.5">
                 <MapPin className="w-2.5 h-2.5" />{buddy.region}
               </p>

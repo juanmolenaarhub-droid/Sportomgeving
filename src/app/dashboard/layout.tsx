@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Avatar } from '@/components/Avatar'
+import { ProfileCardProvider } from '@/components/ProfileCardModal'
 
 const NAV_ITEMS = [
   { href: '/dashboard',          label: 'Home',      icon: Home,          exact: true  },
@@ -37,6 +38,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [hasMeetupDot,    setHasMeetupDot]    = useState(false)
   const [hasNotifDot,     setHasNotifDot]     = useState(false)
   const [showDropdown,    setShowDropdown]    = useState(false)
+  const [currentUserId,   setCurrentUserId]   = useState('')
 
   const dropdownRef = useRef<HTMLDivElement>(null)
   const userIdRef   = useRef<string>('')
@@ -90,6 +92,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       if (!user) return
 
       userIdRef.current = user.id
+      setCurrentUserId(user.id)
 
       const { data: profile } = await supabase
         .from('profiles')
@@ -269,7 +272,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ── Page content ───────────────────────────────────────────────── */}
       <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-28 md:pb-8">
-        {children}
+        <ProfileCardProvider currentUserId={currentUserId}>
+          {children}
+        </ProfileCardProvider>
       </div>
 
       {/* ── Floating mobile pill ────────────────────────────────────────── */}

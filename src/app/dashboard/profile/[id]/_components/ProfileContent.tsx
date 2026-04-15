@@ -1107,10 +1107,10 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
       )}
 
       {/* ── HEADER CARD ── */}
-      <div className="bg-white rounded-2xl overflow-hidden border border-black/8 mb-4">
+      <div className="bg-white rounded-2xl border border-black/8 mb-4">
 
         {/* Banner */}
-        <div className="relative h-[140px] sm:h-[200px] bg-gray-100 overflow-hidden">
+        <div className="relative h-[140px] sm:h-[200px] bg-gray-100 overflow-hidden rounded-t-2xl">
           {profile.bannerUrl
             ? <img src={profile.bannerUrl} className="w-full h-full object-cover" alt="" />
             : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #F5F0E8 0%, #e0d8cc 100%)' }} />
