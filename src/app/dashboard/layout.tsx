@@ -21,11 +21,11 @@ const NAV_ITEMS = [
 ] as const
 
 const MOBILE_ITEMS = [
-  { href: '/dashboard',                icon: Home,          label: 'Home',         exact: true  },
-  { href: '/dashboard/videos',        icon: Play,          label: 'Videos',       exact: false },
-  { href: '/dashboard/meetup',        icon: MapPin,        label: 'Meetup',       exact: false },
-  { href: '/dashboard/messages',      icon: MessageCircle, label: 'Berichten',    exact: false },
-  { href: '/dashboard/notifications', icon: Bell,          label: 'Notificaties', exact: false },
+  { href: '/dashboard',           icon: Home,          label: 'Home',      exact: true  },
+  { href: '/dashboard/videos',    icon: Play,          label: 'Play',      exact: false },
+  { href: '/dashboard/meetup',    icon: MapPin,        label: 'Meetups',   exact: false },
+  { href: '/dashboard/messages',  icon: MessageCircle, label: 'Chat',      exact: false },
+  { href: '/dashboard/find',      icon: Search,        label: 'Zoek buddy', exact: false },
 ] as const
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -343,10 +343,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                 )}
                 {/* Meetup dot */}
                 {href === '/dashboard/meetup' && hasMeetupDot && !active && (
-                  <span className="absolute -top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
-                )}
-                {/* Notificatie dot */}
-                {href === '/dashboard/notifications' && hasNotifDot && !active && (
                   <span className="absolute -top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
                 )}
               </Link>
