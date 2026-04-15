@@ -657,7 +657,8 @@ function RightSidebar({ profile, buddyCount }: {
         </div>
         <Link
           href="/dashboard/profile/me"
-          className="mt-3 w-full block text-center py-2 rounded-xl text-xs font-bold border border-black/8 hover:bg-[#F5F0E8] transition-colors"
+          className="mt-3 w-full block text-center py-2 rounded-xl text-xs font-bold transition-colors text-white hover:opacity-90"
+          style={{ background: '#E87722' }}
         >
           Bekijk profiel
         </Link>
