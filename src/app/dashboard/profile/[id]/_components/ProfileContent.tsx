@@ -1130,7 +1130,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
           <div className="flex items-start justify-between gap-3">
             <div>
               {/* Avatar */}
-              <div className="-mt-12 mb-3">
+              <div className="relative z-10 -mt-12 mb-3">
                 {isOwnProfile ? (
                   <Link href="/dashboard/instellingen/profiel" className="block relative group w-fit">
                     <div className="w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-[#F5F0E8] flex items-center justify-center">
