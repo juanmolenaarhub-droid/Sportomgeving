@@ -47,6 +47,23 @@ export async function acceptBuddyRequest(requestId: string) {
       metadata: { request_id: requestId, other_user_id: req.from_user_id, sport: req.sport ?? null },
     })
 
+  // Haal naam van accepterende gebruiker op voor de notificatie
+  const { data: accepterProfile } = await supabase
+    .from('profiles')
+    .select('full_name, username')
+    .eq('id', user.id)
+    .single()
+  const accepterName = accepterProfile?.full_name ?? accepterProfile?.username ?? 'Iemand'
+
+  // Stuur notificatie naar de aanvrager: verzoek geaccepteerd → link naar chat
+  await supabase.from('system_notifications').insert({
+    user_id: req.from_user_id,
+    type: 'match_accepted',
+    message: `${accepterName} heeft jouw buddy verzoek geaccepteerd${req.sport ? ` (${req.sport})` : ''}! Stuur een berichtje.`,
+    link: `/dashboard/messages`,
+    read: false,
+  })
+
   revalidatePath('/dashboard/notifications')
   revalidatePath('/dashboard/messages')
   return { success: true }

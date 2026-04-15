@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback } from 'react'
+import { useState, useEffect } from 'react'
 import { X, MessageSquare, Activity, CalendarDays, Star, HelpCircle, ImageIcon } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import Step2Post    from './composer/Step2Post'
@@ -198,29 +198,29 @@ export default function PostComposer({
   const [userId,       setUserId]       = useState<string | null>(null)
   const [loaded,       setLoaded]       = useState(false)
 
-  const loadUser = useCallback(async () => {
-    if (loaded) return
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return
-    setUserId(user.id)
-    const { data } = await supabase
-      .from('profiles')
-      .select('full_name, username, avatar_url')
-      .eq('id', user.id)
-      .single()
-    if (data) {
-      setUserName(data.full_name ?? data.username ?? 'Gebruiker')
-      setAvatarUrl(data.avatar_url ?? null)
+  // Load user data when composer opens (proper useEffect, not render-body call)
+  useEffect(() => {
+    if (!isOpen || loaded) return
+    async function loadUser() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      setUserId(user.id)
+      const { data } = await supabase
+        .from('profiles')
+        .select('full_name, username, avatar_url')
+        .eq('id', user.id)
+        .single()
+      if (data) {
+        setUserName(data.full_name ?? data.username ?? 'Gebruiker')
+        setAvatarUrl(data.avatar_url ?? null)
+      }
+      setLoaded(true)
     }
-    setLoaded(true)
-  }, [loaded, supabase])
-
-  if (isOpen && !loaded) {
     loadUser()
-  }
+  }, [isOpen, loaded, supabase])
 
   async function handleSubmit(form: StepTwoResult) {
-    if (!userId) return
+    if (!userId) throw new Error('Niet ingelogd — herlaad de pagina en probeer opnieuw.')
 
     // Upload media if present
     let mediaUrl: string | null = null
