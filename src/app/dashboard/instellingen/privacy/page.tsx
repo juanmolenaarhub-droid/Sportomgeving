@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Check, Shield } from 'lucide-react'
+import { ArrowLeft, Check, Shield, Globe, Lock } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { updatePrivacySettings, unblockUser } from '@/app/actions/settings'
@@ -53,6 +53,7 @@ export default function PrivacyInstellingenPage() {
     is_searchable: true,
     show_in_find: true,
     show_online_status: true,
+    account_type: 'open',
   })
 
   useEffect(() => {
@@ -62,17 +63,19 @@ export default function PrivacyInstellingenPage() {
 
       const { data: prof } = await supabase
         .from('profiles')
-        .select('show_city, show_age, is_searchable, show_in_find, show_online_status')
+        .select('show_city, show_age, is_searchable, show_in_find, show_online_status, account_type')
         .eq('id', user.id)
         .single()
 
       if (prof) {
+        const p = prof as Record<string, unknown>
         setSettings({
-          show_city:          (prof as Record<string, unknown>).show_city          as boolean ?? true,
-          show_age:           (prof as Record<string, unknown>).show_age           as boolean ?? true,
-          is_searchable:      (prof as Record<string, unknown>).is_searchable      as boolean ?? true,
-          show_in_find:       (prof as Record<string, unknown>).show_in_find       as boolean ?? true,
-          show_online_status: (prof as Record<string, unknown>).show_online_status as boolean ?? true,
+          show_city:          p.show_city          as boolean ?? true,
+          show_age:           p.show_age           as boolean ?? true,
+          is_searchable:      p.is_searchable      as boolean ?? true,
+          show_in_find:       p.show_in_find       as boolean ?? true,
+          show_online_status: p.show_online_status as boolean ?? true,
+          account_type:       (p.account_type as 'open' | 'private') ?? 'open',
         })
       }
 
@@ -171,6 +174,42 @@ export default function PrivacyInstellingenPage() {
               <Toggle checked={settings[key]} onChange={() => toggle(key)} />
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* Account type */}
+      <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
+        <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
+          <Globe className="w-4 h-4 text-[#E87722]" />
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>Accounttype</p>
+        </div>
+        <div className="p-5 space-y-3">
+          <p className="text-xs text-gray-400">
+            Kies of je posts zichtbaar zijn voor iedereen op het platform, of alleen voor je buddies.
+          </p>
+          <div className="grid grid-cols-2 gap-3">
+            {[
+              { value: 'open' as const, icon: Globe, label: 'Openbaar', desc: 'Posts zichtbaar in Ontdekken' },
+              { value: 'private' as const, icon: Lock, label: 'Privé', desc: 'Posts alleen voor buddies' },
+            ].map(({ value, icon: Icon, label, desc }) => {
+              const active = settings.account_type === value
+              return (
+                <button
+                  key={value}
+                  onClick={() => setSettings(prev => ({ ...prev, account_type: value }))}
+                  className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center"
+                  style={{ borderColor: active ? '#E87722' : '#E5E7EB', background: active ? '#FFF5EE' : 'white' }}
+                >
+                  <Icon className="w-5 h-5" style={{ color: active ? '#E87722' : '#9CA3AF' }} />
+                  <div>
+                    <p className="text-sm font-black" style={{ ...SYNE, color: active ? '#E87722' : '#111' }}>{label}</p>
+                    <p className="text-[10px] text-gray-400 mt-0.5">{desc}</p>
+                  </div>
+                  {active && <span className="w-2 h-2 rounded-full bg-[#E87722]" />}
+                </button>
+              )
+            })}
+          </div>
         </div>
       </div>
 

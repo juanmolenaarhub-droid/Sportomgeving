@@ -7,6 +7,7 @@ import {
   Camera, Image as ImageIcon, Zap, X, Plus, Play,
   Users, Activity, Star, TrendingUp, UserPlus,
   Music2, AtSign, Flame, Trophy, HelpCircle, BarChart2, Calendar,
+  Check, Compass,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
@@ -50,6 +51,7 @@ type Post = {
   created_at: string
   is_sponsored?: boolean
   sponsor_name?: string
+  is_discovery?: boolean   // komt uit de open-accounts discovery laag
   // Extra velden
   location?: string
   music?: string
@@ -146,6 +148,15 @@ function getActivityStats(post: Post): { value: string; label: string }[] {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
+
+function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
+  useEffect(() => { const t = setTimeout(onDone, 3000); return () => clearTimeout(t) }, [onDone])
+  return (
+    <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#111] text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-2xl flex items-center gap-2 animate-fade-in-up pointer-events-none">
+      <Check className="w-4 h-4 text-green-400 shrink-0" /> {msg}
+    </div>
+  )
+}
 
 function PostComposerBar({
   userName, avatarUrl, onOpen,
@@ -431,10 +442,11 @@ function CurvedBlock({ post, gradient }: { post: Post; gradient: SportGradient }
   )
 }
 
-function ActivityCard({ post, onLike, onSave }: {
+function ActivityCard({ post, onLike, onSave, isNew }: {
   post: Post
   onLike: (id: string) => void
   onSave: (id: string) => void
+  isNew?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const gradient = getSportGradient(post.sport_tag ?? post.activity_type)
@@ -442,7 +454,15 @@ function ActivityCard({ post, onLike, onSave }: {
   const { openProfile } = useProfileCard()
 
   return (
-    <div className="animate-fade-in-up bg-white rounded-3xl overflow-hidden shadow-sm">
+    <div className={`animate-fade-in-up bg-white rounded-3xl overflow-hidden shadow-sm transition-shadow duration-700 ${isNew ? 'ring-2 ring-[#E87722] ring-offset-2 shadow-orange-100' : ''}`}>
+      {/* Ontdekken badge */}
+      {post.is_discovery && (
+        <div className="px-4 pt-3 pb-0">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+            <Compass className="w-3 h-3" /> Ontdekken
+          </span>
+        </div>
+      )}
       {/* Header */}
       <div className="flex items-center gap-3 px-4 pt-[14px] pb-0">
         <button onClick={() => openProfile(post.userId)}>
@@ -483,10 +503,11 @@ function ActivityCard({ post, onLike, onSave }: {
   )
 }
 
-function PostCard({ post, onLike, onSave }: {
+function PostCard({ post, onLike, onSave, isNew }: {
   post: Post
   onLike: (id: string) => void
   onSave: (id: string) => void
+  isNew?: boolean
 }) {
   const [expanded, setExpanded] = useState(false)
   const gradient = getSportGradient(post.sport_tag ?? post.activity_type)
@@ -494,7 +515,15 @@ function PostCard({ post, onLike, onSave }: {
   const { openProfile } = useProfileCard()
 
   return (
-    <div className="animate-fade-in-up bg-white rounded-3xl overflow-hidden shadow-sm">
+    <div className={`animate-fade-in-up bg-white rounded-3xl overflow-hidden shadow-sm transition-shadow duration-700 ${isNew ? 'ring-2 ring-[#E87722] ring-offset-2 shadow-orange-100' : ''}`}>
+      {/* Ontdekken badge */}
+      {post.is_discovery && (
+        <div className="px-4 pt-3 pb-0">
+          <span className="inline-flex items-center gap-1 text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full">
+            <Compass className="w-3 h-3" /> Ontdekken
+          </span>
+        </div>
+      )}
       {/* Sponsored label */}
       {post.is_sponsored && (
         <div className="px-4 pt-3 pb-0">
@@ -897,18 +926,21 @@ function NewPostsBanner({ count, onRefresh }: { count: number; onRefresh: () => 
 export default function FeedPage() {
   const supabase = createClient()
 
-  const [profile,       setProfile]       = useState<UserProfile | null>(null)
-  const [posts,         setPosts]         = useState<Post[]>([])
-  const [userId,        setUserId]        = useState<string | null>(null)
-  const [loading,       setLoading]       = useState(true)
-  const [loadingMore,   setLoadingMore]   = useState(false)
-  const [hasMore,       setHasMore]       = useState(true)
-  const [allSeen,       setAllSeen]       = useState(false)
-  const [composerOpen,  setComposerOpen]  = useState(false)
-  const [newPostsCount, setNewPostsCount] = useState(0)
+  const [profile,          setProfile]          = useState<UserProfile | null>(null)
+  const [posts,            setPosts]            = useState<Post[]>([])
+  const [discoveryPosts,   setDiscoveryPosts]   = useState<Post[]>([])
+  const [userId,           setUserId]           = useState<string | null>(null)
+  const [loading,          setLoading]          = useState(true)
+  const [loadingMore,      setLoadingMore]      = useState(false)
+  const [hasMore,          setHasMore]          = useState(true)
+  const [allSeen,          setAllSeen]          = useState(false)
+  const [composerOpen,     setComposerOpen]     = useState(false)
+  const [newPostsCount,    setNewPostsCount]    = useState(0)
   const [hiddenSuggestions, setHiddenSuggestions] = useState(false)
-  const [buddyCount,    setBuddyCount]    = useState(0)
-  const [requestedIds,  setRequestedIds]  = useState<Set<string>>(new Set())
+  const [buddyCount,       setBuddyCount]       = useState(0)
+  const [requestedIds,     setRequestedIds]     = useState<Set<string>>(new Set())
+  const [toastMsg,         setToastMsg]         = useState<string | null>(null)
+  const [justPosted,       setJustPosted]       = useState(false)
 
   const sentinelRef       = useRef<HTMLDivElement>(null)
   const lastCreatedAtRef  = useRef<string | null>(null)
@@ -1001,56 +1033,103 @@ export default function FeedPage() {
   }, [])
 
   const loadPosts = useCallback(async (uid?: string) => {
-    // Level 1: full column set (no profiles join — profiles fetched separately in mapPosts)
-    let { data: rawPosts, error: postsError } = await supabase
-      .from('posts')
-      .select(POST_SELECT)
-      .order('created_at', { ascending: false })
-      .limit(PAGE_SIZE)
-
-    if (postsError) {
-      console.error('Full posts query failed, retrying minimal:', postsError)
-      // Level 2: absolute minimum — works even on the original unpatched schema
-      const { data: minimal } = await supabase
-        .from('posts')
-        .select(POST_SELECT_MIN)
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE)
-      rawPosts = minimal as any
-    }
-
-    if (!rawPosts || rawPosts.length === 0) {
-      setPosts([])
-      setHasMore(false)
-      return
-    }
-
-    // Buddy posts first, then everyone else
-    let sorted: typeof rawPosts = rawPosts
+    // ── Stap 1: buddy-ID's ophalen ────────────────────────────────────────────
+    const selfAndBuddyIds = new Set<string>()
     if (uid) {
+      selfAndBuddyIds.add(uid)
       const { data: buddyData } = await supabase
         .from('follow_requests')
         .select('from_user_id, to_user_id')
         .or(`from_user_id.eq.${uid},to_user_id.eq.${uid}`)
         .eq('status', 'accepted')
-
-      const buddyIds = new Set<string>([uid])
       ;(buddyData ?? []).forEach((b: { from_user_id: string; to_user_id: string }) => {
-        buddyIds.add(b.from_user_id === uid ? b.to_user_id : b.from_user_id)
+        selfAndBuddyIds.add(b.from_user_id === uid ? b.to_user_id : b.from_user_id)
       })
-
-      sorted = [
-        ...rawPosts.filter((p: { user_id: string }) => buddyIds.has(p.user_id)),
-        ...rawPosts.filter((p: { user_id: string }) => !buddyIds.has(p.user_id)),
-      ] as typeof rawPosts
     }
 
-    // Track cursor for pagination (use raw created_at before timeAgo formatting)
-    lastCreatedAtRef.current = sorted[sorted.length - 1].created_at
+    // ── Stap 2: Laag 1 — buddy-posts (eigen + geaccepteerde buddies) ──────────
+    const buddyIdsArr = [...selfAndBuddyIds]
+    let rawBuddyPosts: any[] = []
+    if (buddyIdsArr.length > 0) {
+      const { data, error } = await supabase
+        .from('posts')
+        .select(POST_SELECT)
+        .in('user_id', buddyIdsArr)
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
+      if (!error && data) {
+        rawBuddyPosts = data
+      } else {
+        const { data: minimal } = await supabase
+          .from('posts')
+          .select(POST_SELECT_MIN)
+          .in('user_id', buddyIdsArr)
+          .order('created_at', { ascending: false })
+          .limit(PAGE_SIZE)
+        rawBuddyPosts = minimal ?? []
+      }
+    } else {
+      // Geen buddies — laad recente posts van het platform als fallback
+      const { data } = await supabase
+        .from('posts')
+        .select(POST_SELECT)
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
+      rawBuddyPosts = data ?? []
+    }
 
-    const mapped = await mapPosts(sorted)
-    setPosts(mapped)
-    setHasMore(rawPosts.length >= PAGE_SIZE)
+    // ── Stap 3: Laag 2 — discovery-posts (open accounts, geen buddy) ─────────
+    let rawDiscoveryPosts: any[] = []
+    try {
+      // Haal recente posts op (meer dan nodig, dan client-side filteren)
+      const { data: allRecent } = await supabase
+        .from('posts')
+        .select(POST_SELECT)
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE * 3)
+
+      if (allRecent) {
+        const nonBuddy = allRecent.filter((p: any) => !selfAndBuddyIds.has(p.user_id))
+        if (nonBuddy.length > 0) {
+          const nonBuddyUserIds = [...new Set(nonBuddy.map((p: any) => p.user_id as string))]
+          const { data: userProfiles } = await supabase
+            .from('profiles')
+            .select('id, account_type')
+            .in('id', nonBuddyUserIds)
+          const openIds = new Set(
+            (userProfiles ?? [])
+              .filter((p: any) => !p.account_type || p.account_type === 'open')
+              .map((p: any) => p.id as string)
+          )
+          // Prioriteer video-content in discovery; max 1 per 5 buddy-posts
+          const discoveryMax = Math.max(Math.ceil(rawBuddyPosts.length / 5), 2)
+          const eligible = nonBuddy.filter((p: any) => openIds.has(p.user_id))
+          const videos  = eligible.filter((p: any) => p.media_type === 'video')
+          const others  = eligible.filter((p: any) => p.media_type !== 'video')
+          rawDiscoveryPosts = [...videos, ...others].slice(0, discoveryMax)
+        }
+      }
+    } catch { /* discovery is best-effort */ }
+
+    if (rawBuddyPosts.length === 0 && rawDiscoveryPosts.length === 0) {
+      setPosts([])
+      setDiscoveryPosts([])
+      setHasMore(false)
+      return
+    }
+
+    if (rawBuddyPosts.length > 0) {
+      lastCreatedAtRef.current = rawBuddyPosts[rawBuddyPosts.length - 1].created_at
+    }
+
+    const [mappedBuddy, mappedDiscovery] = await Promise.all([
+      mapPosts(rawBuddyPosts),
+      mapPosts(rawDiscoveryPosts),
+    ])
+
+    setPosts(mappedBuddy)
+    setDiscoveryPosts(mappedDiscovery.map(p => ({ ...p, is_discovery: true })))
+    setHasMore(rawBuddyPosts.length >= PAGE_SIZE)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapPosts])
 
@@ -1147,6 +1226,9 @@ export default function FeedPage() {
 
   async function handlePosted() {
     await loadPosts(userId ?? undefined)
+    setToastMsg('Je post is geplaatst!')
+    setJustPosted(true)
+    setTimeout(() => setJustPosted(false), 3000)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
@@ -1161,14 +1243,24 @@ export default function FeedPage() {
 
   const displayName = profile?.full_name ?? profile?.username ?? 'Sporter'
 
-  // Build feed items: inject buddy suggestions every 6 posts
+  // Build feed items: buddy posts first, discovery interleaved every 5, suggestions every 10
   const feedItems: Array<{ type: 'post'; post: Post } | { type: 'suggestions' }> = []
+  let discoveryIdx = 0
   posts.forEach((post, i) => {
     feedItems.push({ type: 'post', post })
-    if ((i + 1) % 6 === 0 && !hiddenSuggestions) {
+    // Every 5 buddy posts → insert 1 discovery post
+    if ((i + 1) % 5 === 0 && discoveryIdx < discoveryPosts.length) {
+      feedItems.push({ type: 'post', post: discoveryPosts[discoveryIdx++] })
+    }
+    // Every 10 posts → buddy suggestions widget
+    if ((i + 1) % 10 === 0 && !hiddenSuggestions) {
       feedItems.push({ type: 'suggestions' })
     }
   })
+  // Append any remaining discovery posts at the end
+  while (discoveryIdx < discoveryPosts.length) {
+    feedItems.push({ type: 'post', post: discoveryPosts[discoveryIdx++] })
+  }
 
   if (loading) {
     return (
@@ -1197,6 +1289,7 @@ export default function FeedPage() {
 
   return (
     <>
+      {toastMsg && <Toast msg={toastMsg} onDone={() => setToastMsg(null)} />}
       <NewPostsBanner count={newPostsCount} onRefresh={handleRefreshFeed} />
       <PostComposer
         isOpen={composerOpen}
@@ -1249,6 +1342,7 @@ export default function FeedPage() {
                   )
                 }
                 const post = item.post
+                const isNew = justPosted && i === 0
                 // Activity card for posts with activity data
                 if (post.activity_type && (post.distance_km || post.duration_minutes)) {
                   return (
@@ -1257,6 +1351,7 @@ export default function FeedPage() {
                       post={post}
                       onLike={handleLike}
                       onSave={handleSave}
+                      isNew={isNew}
                     />
                   )
                 }
@@ -1266,6 +1361,7 @@ export default function FeedPage() {
                     post={post}
                     onLike={handleLike}
                     onSave={handleSave}
+                    isNew={isNew}
                   />
                 )
               })}

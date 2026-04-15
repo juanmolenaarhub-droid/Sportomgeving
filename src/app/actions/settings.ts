@@ -23,6 +23,7 @@ export type PrivacySettingsInput = {
   is_searchable: boolean
   show_in_find: boolean
   show_online_status: boolean
+  account_type: 'open' | 'private'
 }
 
 export type NotificationSettingsInput = {
@@ -107,6 +108,7 @@ export async function updatePrivacySettings(input: PrivacySettingsInput): Promis
     is_searchable: input.is_searchable,
     show_in_find: input.show_in_find,
     show_online_status: input.show_online_status,
+    account_type: input.account_type,
   }).eq('id', user.id)
 
   if (error) return { success: false, error: error.message }

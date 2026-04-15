@@ -43,6 +43,8 @@ export default async function NotificationsPage() {
     type: string
     message: string
     link: string | null
+    target_type: string | null
+    target_id: string | null
     created_at: string
     read: boolean
   }
@@ -52,7 +54,7 @@ export default async function NotificationsPage() {
     try {
       const { data } = await supabase
         .from('system_notifications')
-        .select('id, type, message, link, created_at, read')
+        .select('id, type, message, link, target_type, target_id, created_at, read')
         .eq('user_id', user.id)
         .order('created_at', { ascending: false })
         .limit(50)
@@ -60,6 +62,8 @@ export default async function NotificationsPage() {
       notifications = ((data ?? []) as NotifRow[]).map(n => ({
         ...n,
         read: n.read ?? false,
+        target_type: n.target_type ?? null,
+        target_id: n.target_id ?? null,
       }))
     } catch {
       // Tabel of kolom bestaat nog niet — graceful degradation
