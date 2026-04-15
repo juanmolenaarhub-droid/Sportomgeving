@@ -94,60 +94,6 @@ const DEMO_STORIES: Story[] = [
   { id: 's6', userName: 'Emma Kool' },
 ]
 
-const DEMO_POSTS: Post[] = [
-  {
-    id: 'd1', userId: '1', userName: 'Tim van Berg', userRegion: 'Amsterdam',
-    content: 'Geweldige ochtendrun door het Vondelpark. De lucht was perfect en ik voelde me sterk vandaag. Wie wil er volgende week mee?',
-    sport_tag: 'Hardlopen', activity_type: 'run', distance_km: 10.4, duration_minutes: 52,
-    image_url: 'https://images.unsplash.com/photo-1476480862126-209bfaa8edc8?w=800&q=80',
-    likes_count: 24, comments_count: 5, liked: false, saved: false, created_at: '2 min geleden',
-  },
-  {
-    id: 'd2', userId: '2', userName: 'Sarah Jansen', userRegion: 'Utrecht',
-    content: 'Vandaag 45km gefietst langs de Vecht. Prachtig weer en geweldig uitzicht. De route is een aanrader!',
-    sport_tag: 'Fietsen', activity_type: 'cycle', distance_km: 45, duration_minutes: 105,
-    image_url: 'https://images.unsplash.com/photo-1541625602330-2277a4c46182?w=800&q=80',
-    likes_count: 41, comments_count: 8, liked: true, saved: false, created_at: '1 uur geleden',
-  },
-  {
-    id: 'd3', userId: '3', userName: 'Marco de Wit', userRegion: 'Rotterdam',
-    content: 'PR vandaag op deadlift: 160kg. Zes maanden hard werken heeft zijn vruchten afgeworpen. Op zoek naar een trainingsbuddy voor zware sessies!',
-    sport_tag: 'Gym', activity_type: 'gym',
-    likes_count: 67, comments_count: 12, liked: false, saved: true, created_at: '3 uur geleden',
-  },
-  {
-    id: 'd4', userId: '4', userName: 'Lisa Hoek', userRegion: 'Amsterdam',
-    content: 'Yoga in het park. Wie wil volgende week ook komen? Elke zondagochtend 9:00 bij het Vondelpark paviljoen.',
-    sport_tag: 'Yoga',
-    image_url: 'https://images.unsplash.com/photo-1506126613408-eca07ce68773?w=800&q=80',
-    likes_count: 89, comments_count: 21, liked: false, saved: false, created_at: 'Gisteren',
-  },
-  {
-    id: 'd5', userId: '5', userName: 'Kevin Storm', userRegion: 'Den Haag',
-    content: 'Triathlon training week 8. Zwemmen ging super, fiets ook goed. Nu focussen op de run. Nog 3 weken tot de race!',
-    sport_tag: 'Triathlon', activity_type: 'swim', distance_km: 2.4, duration_minutes: 48,
-    likes_count: 34, comments_count: 7, liked: false, saved: false, created_at: 'Gisteren',
-  },
-  {
-    id: 'd6', userId: '6', userName: 'Anna de Boer', userRegion: 'Amsterdam',
-    content: 'Nieuwe padel partner gezocht! Ik speel op niveau 4 en zoek iemand voor wekelijkse sessies in Amsterdam-West.',
-    sport_tag: 'Padel',
-    likes_count: 15, comments_count: 9, liked: false, saved: false, created_at: '2 dagen geleden',
-  },
-  {
-    id: 'd7', userId: '7', userName: 'Daan Bakker', userRegion: 'Haarlem',
-    content: 'Net terug van een fantastische klimsessie. Boulderprobleem V6 eindelijk geflashed na twee weken proberen!',
-    sport_tag: 'Klimmen',
-    image_url: 'https://images.unsplash.com/photo-1522163182402-834f871fd851?w=800&q=80',
-    likes_count: 52, comments_count: 14, liked: false, saved: false, created_at: '2 dagen geleden',
-  },
-  {
-    id: 'd8', userId: '2', userName: 'Sarah Jansen', userRegion: 'Utrecht',
-    content: 'Ochtendzwemmen vóór het werk is echt de beste start van de dag. 2km open water!',
-    sport_tag: 'Zwemmen', activity_type: 'swim', distance_km: 2, duration_minutes: 40,
-    likes_count: 28, comments_count: 4, liked: false, saved: false, created_at: '3 dagen geleden',
-  },
-]
 
 const DEMO_SUGGESTIONS: BuddySuggestion[] = [
   { id: '1', name: 'Roos Vermeer', region: 'Amsterdam', sport: 'Hardlopen' },
@@ -964,11 +910,12 @@ export default function FeedPage() {
   const [buddyCount,    setBuddyCount]    = useState(0)
   const [requestedIds,  setRequestedIds]  = useState<Set<string>>(new Set())
 
-  const sentinelRef = useRef<HTMLDivElement>(null)
-  const pageRef     = useRef(0)
-  const PAGE_SIZE   = 8
+  const sentinelRef       = useRef<HTMLDivElement>(null)
+  const lastCreatedAtRef  = useRef<string | null>(null)
+  const PAGE_SIZE         = 8
 
   const POST_SELECT = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, media_type, thumbnail_url, likes_count, created_at, location, music, tagged_users, calories, activity_name, activity_date, challenge_name, challenge_type, challenge_goal, challenge_start, challenge_end, question, answer_type, poll_options, profiles(full_name, username, avatar_url, region)'
+  const POST_SELECT_BASIC = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, likes_count, created_at, profiles(full_name, username, avatar_url, region)'
 
   function timeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime()
@@ -1032,55 +979,55 @@ export default function FeedPage() {
   }, [])
 
   const loadPosts = useCallback(async (uid?: string) => {
-    // Try full column set; fall back to basic if migration columns don't exist yet
+    // Try full column set; fall back to basic select if migration columns don't exist yet
     let { data: rawPosts, error: postsError } = await supabase
       .from('posts')
       .select(POST_SELECT)
       .order('created_at', { ascending: false })
-      .limit(PAGE_SIZE * 2)
+      .limit(PAGE_SIZE)
 
     if (postsError) {
       console.error('Full posts query failed, retrying basic:', postsError)
       const { data: basic } = await supabase
         .from('posts')
-        .select('id, user_id, content, activity_type, distance_km, duration_minutes, image_url, likes_count, created_at, profiles(full_name, username, avatar_url, region)')
+        .select(POST_SELECT_BASIC)
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE)
       rawPosts = basic as any
     }
 
-    if (rawPosts && rawPosts.length > 0) {
-      // Buddy posts first, then everyone else
-      const effectiveUid = uid
-      let sorted: typeof rawPosts = rawPosts
-
-      if (effectiveUid) {
-        const { data: buddyData } = await supabase
-          .from('follow_requests')
-          .select('from_user_id, to_user_id')
-          .or(`from_user_id.eq.${effectiveUid},to_user_id.eq.${effectiveUid}`)
-          .eq('status', 'accepted')
-
-        const buddyIds = new Set<string>([effectiveUid])
-        ;(buddyData ?? []).forEach((b: { from_user_id: string; to_user_id: string }) => {
-          buddyIds.add(b.from_user_id === effectiveUid ? b.to_user_id : b.from_user_id)
-        })
-
-        sorted = [
-          ...rawPosts.filter((p: { user_id: string }) => buddyIds.has(p.user_id)),
-          ...rawPosts.filter((p: { user_id: string }) => !buddyIds.has(p.user_id)),
-        ].slice(0, PAGE_SIZE) as typeof rawPosts
-      } else {
-        sorted = rawPosts.slice(0, PAGE_SIZE) as typeof rawPosts
-      }
-
-      const mapped = await mapPosts(sorted)
-      setPosts(mapped)
-      setHasMore(rawPosts.length > PAGE_SIZE)
-    } else {
-      setPosts(DEMO_POSTS.slice(0, PAGE_SIZE))
-      setHasMore(DEMO_POSTS.length > PAGE_SIZE)
+    if (!rawPosts || rawPosts.length === 0) {
+      setPosts([])
+      setHasMore(false)
+      return
     }
+
+    // Buddy posts first, then everyone else
+    let sorted: typeof rawPosts = rawPosts
+    if (uid) {
+      const { data: buddyData } = await supabase
+        .from('follow_requests')
+        .select('from_user_id, to_user_id')
+        .or(`from_user_id.eq.${uid},to_user_id.eq.${uid}`)
+        .eq('status', 'accepted')
+
+      const buddyIds = new Set<string>([uid])
+      ;(buddyData ?? []).forEach((b: { from_user_id: string; to_user_id: string }) => {
+        buddyIds.add(b.from_user_id === uid ? b.to_user_id : b.from_user_id)
+      })
+
+      sorted = [
+        ...rawPosts.filter((p: { user_id: string }) => buddyIds.has(p.user_id)),
+        ...rawPosts.filter((p: { user_id: string }) => !buddyIds.has(p.user_id)),
+      ] as typeof rawPosts
+    }
+
+    // Track cursor for pagination (use raw created_at before timeAgo formatting)
+    lastCreatedAtRef.current = sorted[sorted.length - 1].created_at
+
+    const mapped = await mapPosts(sorted)
+    setPosts(mapped)
+    setHasMore(rawPosts.length >= PAGE_SIZE)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mapPosts])
 
@@ -1112,29 +1059,44 @@ export default function FeedPage() {
     return () => clearTimeout(t)
   }, [])
 
-  // Infinite scroll
+  // Infinite scroll — loads next page from DB using cursor
   const loadMore = useCallback(async () => {
-    if (loadingMore || !hasMore || allSeen) return
+    if (loadingMore || !hasMore || allSeen || !lastCreatedAtRef.current) return
     setLoadingMore(true)
-    pageRef.current += 1
 
-    await new Promise(r => setTimeout(r, 800)) // simulate network
+    const cursor = lastCreatedAtRef.current
+    let { data: rawPosts, error } = await supabase
+      .from('posts')
+      .select(POST_SELECT)
+      .order('created_at', { ascending: false })
+      .lt('created_at', cursor)
+      .limit(PAGE_SIZE)
 
-    const start = pageRef.current * PAGE_SIZE
-    const next  = DEMO_POSTS.slice(start, start + PAGE_SIZE)
+    if (error) {
+      const { data: basic } = await supabase
+        .from('posts')
+        .select(POST_SELECT_BASIC)
+        .order('created_at', { ascending: false })
+        .lt('created_at', cursor)
+        .limit(PAGE_SIZE)
+      rawPosts = basic as any
+    }
 
-    if (next.length === 0) {
+    if (!rawPosts || rawPosts.length === 0) {
       setAllSeen(true)
       setHasMore(false)
     } else {
-      setPosts(prev => [...prev, ...next.map(p => ({ ...p, id: p.id + '_' + pageRef.current }))])
-      if (start + PAGE_SIZE >= DEMO_POSTS.length) {
+      lastCreatedAtRef.current = rawPosts[rawPosts.length - 1].created_at
+      const mapped = await mapPosts(rawPosts)
+      setPosts(prev => [...prev, ...mapped])
+      if (rawPosts.length < PAGE_SIZE) {
         setAllSeen(true)
         setHasMore(false)
       }
     }
     setLoadingMore(false)
-  }, [loadingMore, hasMore, allSeen])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loadingMore, hasMore, allSeen, mapPosts])
 
   useEffect(() => {
     const el = sentinelRef.current
@@ -1161,7 +1123,7 @@ export default function FeedPage() {
   }
 
   async function handlePosted() {
-    await loadPosts()
+    await loadPosts(userId ?? undefined)
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
