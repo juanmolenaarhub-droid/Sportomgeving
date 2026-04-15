@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
   Home, Users, MessageCircle, Bell, User,
-  LogOut, Search, MapPin, Settings,
+  LogOut, Search, MapPin, Settings, Play,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Avatar } from '@/components/Avatar'
@@ -14,6 +14,7 @@ import { ProfileCardProvider } from '@/components/ProfileCardModal'
 
 const NAV_ITEMS = [
   { href: '/dashboard',          label: 'Home',      icon: Home,          exact: true  },
+  { href: '/dashboard/videos',   label: 'Videos',    icon: Play,          exact: false },
   { href: '/dashboard/meetup',   label: 'Meetup',    icon: MapPin,        exact: false },
   { href: '/dashboard/messages', label: 'Berichten', icon: MessageCircle, exact: false },
   { href: '/dashboard/groups',   label: 'Groepen',   icon: Users,         exact: false },
@@ -21,8 +22,8 @@ const NAV_ITEMS = [
 
 const MOBILE_ITEMS = [
   { href: '/dashboard',                icon: Home,          label: 'Home',         exact: true  },
+  { href: '/dashboard/videos',        icon: Play,          label: 'Videos',       exact: false },
   { href: '/dashboard/meetup',        icon: MapPin,        label: 'Meetup',       exact: false },
-  { href: '/dashboard/find',          icon: Search,        label: 'Buddies',      exact: false },
   { href: '/dashboard/messages',      icon: MessageCircle, label: 'Berichten',    exact: false },
   { href: '/dashboard/notifications', icon: Bell,          label: 'Notificaties', exact: false },
 ] as const

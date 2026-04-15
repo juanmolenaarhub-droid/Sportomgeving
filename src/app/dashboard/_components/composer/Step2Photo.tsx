@@ -99,6 +99,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
   const [likesHidden, setLikesHidden] = useState(false)
   const [notShareable, setNotShareable] = useState(false)
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState<string | null>(null)
 
   // ── File handling ──
 
@@ -174,6 +175,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
   }
 
   async function handleShareSubmit() {
+    setSubmitError(null)
     setSubmitting(true)
     try {
       await onSubmit({
@@ -191,6 +193,8 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
         notShareable,
         mediaFile: files[0] ?? null,
       })
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Er is een fout opgetreden.')
     } finally {
       setSubmitting(false)
     }
@@ -428,6 +432,13 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
           {submitting ? 'Bezig…' : 'Delen'}
         </button>
       </div>
+
+      {/* Error banner */}
+      {submitError && (
+        <div className="px-4 py-2 bg-red-50 border-b border-red-100">
+          <p className="text-[13px] text-red-600">{submitError}</p>
+        </div>
+      )}
 
       {/* Layout: desktop side-by-side, mobile stacked */}
       <div className="flex-1 overflow-y-auto">

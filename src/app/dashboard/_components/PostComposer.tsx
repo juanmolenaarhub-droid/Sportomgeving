@@ -225,15 +225,17 @@ export default function PostComposer({
     // Upload media if present
     let mediaUrl: string | null = null
     if (form.mediaFile) {
-      const ext  = form.mediaFile.name.split('.').pop()
+      const ext  = form.mediaFile.name.split('.').pop() ?? 'jpg'
       const path = `${userId}/${Date.now()}.${ext}`
       const { error: uploadError } = await supabase.storage
         .from('post-media')
-        .upload(path, form.mediaFile, { upsert: true })
-      if (!uploadError) {
-        const { data: urlData } = supabase.storage.from('post-media').getPublicUrl(path)
-        mediaUrl = urlData.publicUrl
+        .upload(path, form.mediaFile)
+      if (uploadError) {
+        console.error('Storage upload error:', uploadError)
+        throw new Error(`Foto uploaden mislukt: ${uploadError.message}`)
       }
+      const { data: urlData } = supabase.storage.from('post-media').getPublicUrl(path)
+      mediaUrl = urlData.publicUrl
     }
 
     // Build the post row — include type-specific extras where the column exists
@@ -287,7 +289,11 @@ export default function PostComposer({
       postRow.anonymous_answers  = form.anonymousAnswers ?? false
     }
 
-    await supabase.from('posts').insert(postRow)
+    const { error: insertError } = await supabase.from('posts').insert(postRow)
+    if (insertError) {
+      console.error('Post insert error:', insertError)
+      throw new Error(`Post opslaan mislukt: ${insertError.message}`)
+    }
 
     onPosted?.()
     handleClose()

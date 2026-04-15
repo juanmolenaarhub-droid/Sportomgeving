@@ -6,6 +6,7 @@ import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, MapPin,
   Camera, Image as ImageIcon, Zap, X, Plus,
   Users, Activity, Star, TrendingUp, UserPlus,
+  Music2, AtSign, Flame, Trophy, HelpCircle, BarChart2, Calendar,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
@@ -33,6 +34,7 @@ type Post = {
   userRegion: string
   userAvatarUrl?: string
   content: string
+  type?: string
   sport_tag?: string
   activity_type?: string
   distance_km?: number
@@ -45,6 +47,22 @@ type Post = {
   created_at: string
   is_sponsored?: boolean
   sponsor_name?: string
+  // Extra velden
+  location?: string
+  music?: string
+  tagged_users?: string[]
+  tagged_user_names?: string[]
+  calories?: number
+  activity_name?: string
+  activity_date?: string
+  challenge_name?: string
+  challenge_type?: string
+  challenge_goal?: string
+  challenge_start?: string
+  challenge_end?: string
+  question?: string
+  answer_type?: string
+  poll_options?: string[]
 }
 
 type Story = {
@@ -252,34 +270,6 @@ function StoriesBar({ stories, userName, avatarUrl, onAddStory }: {
   )
 }
 
-type FeedTab = 'buddies' | 'ontdekken' | 'trending'
-
-function FeedTabs({ active, onChange }: { active: FeedTab; onChange: (t: FeedTab) => void }) {
-  const tabs: { key: FeedTab; label: string }[] = [
-    { key: 'buddies',    label: 'Buddies'    },
-    { key: 'ontdekken', label: 'Ontdekken'  },
-    { key: 'trending',  label: 'Trending'   },
-  ]
-  return (
-    <div className="bg-white rounded-2xl border border-black/8 p-1.5 flex gap-1">
-      {tabs.map(tab => (
-        <button
-          key={tab.key}
-          onClick={() => onChange(tab.key)}
-          className="flex-1 py-2 rounded-xl text-sm font-bold transition-all"
-          style={{
-            ...SYNE,
-            background: active === tab.key ? '#111111' : 'transparent',
-            color: active === tab.key ? 'white' : '#6B7280',
-          }}
-        >
-          {tab.label}
-        </button>
-      ))}
-    </div>
-  )
-}
-
 // ── Shared action bar ─────────────────────────────────────────────────────────
 function CardActions({ post, onLike, onSave }: {
   post: Post
@@ -479,6 +469,7 @@ function ActivityCard({ post, onLike, onSave }: {
         </div>
       )}
 
+      <PostMeta post={post} />
       <CardActions post={post} onLike={onLike} onSave={onSave} />
     </div>
   )
@@ -539,6 +530,7 @@ function PostCard({ post, onLike, onSave }: {
         </div>
       )}
 
+      <PostMeta post={post} />
       <CardActions post={post} onLike={onLike} onSave={onSave} />
     </div>
   )
@@ -699,6 +691,142 @@ function RightSidebar({ profile, buddyCount }: {
   )
 }
 
+// ── Post meta chips (locatie, muziek, tags, challenge, poll) ─────────────────
+function PostMeta({ post }: { post: Post }) {
+  const [pollVotes, setPollVotes] = useState<Record<number, number>>({})
+  const [myVote, setMyVote] = useState<number | null>(null)
+  const totalVotes = Object.values(pollVotes).reduce((a, b) => a + b, 0)
+
+  const hasChips = post.location || post.music || (post.tagged_user_names?.length ?? 0) > 0
+  const isChallenge = post.type === 'challenge' && post.challenge_name
+  const isPoll = post.type === 'question' && post.answer_type === 'poll' && (post.poll_options?.length ?? 0) > 0
+  const isQuestion = post.type === 'question' && post.answer_type === 'open' && post.question
+  const isActivity = post.type === 'activity' && (post.activity_name || post.calories || post.activity_date)
+
+  if (!hasChips && !isChallenge && !isPoll && !isQuestion && !isActivity) return null
+
+  return (
+    <div className="px-4 pb-3 space-y-2.5">
+
+      {/* Chips rij */}
+      {hasChips && (
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {post.location && (
+            <span className="inline-flex items-center gap-1 bg-[#F5F0E8] text-[#111] text-[11px] font-semibold px-2.5 py-1 rounded-full">
+              <MapPin className="w-3 h-3 text-[#E87722]" />{post.location}
+            </span>
+          )}
+          {post.music && (
+            <span className="inline-flex items-center gap-1 bg-[#F5F0E8] text-[#111] text-[11px] font-semibold px-2.5 py-1 rounded-full">
+              <Music2 className="w-3 h-3 text-[#E87722]" />{post.music}
+            </span>
+          )}
+          {(post.tagged_user_names ?? []).map(name => (
+            <span key={name} className="inline-flex items-center gap-1 bg-[#F5F0E8] text-[#111] text-[11px] font-semibold px-2.5 py-1 rounded-full">
+              <AtSign className="w-3 h-3 text-[#E87722]" />{name}
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Activiteit extra info */}
+      {isActivity && (
+        <div className="flex flex-wrap gap-1.5">
+          {post.activity_name && (
+            <span className="inline-flex items-center gap-1 bg-orange-50 text-[#E87722] text-[11px] font-bold px-2.5 py-1 rounded-full">
+              <Flame className="w-3 h-3" />{post.activity_name}
+            </span>
+          )}
+          {post.calories && (
+            <span className="inline-flex items-center gap-1 bg-orange-50 text-[#E87722] text-[11px] font-bold px-2.5 py-1 rounded-full">
+              <Zap className="w-3 h-3" />{post.calories} kcal
+            </span>
+          )}
+          {post.activity_date && (
+            <span className="inline-flex items-center gap-1 bg-[#F5F0E8] text-gray-600 text-[11px] font-semibold px-2.5 py-1 rounded-full">
+              <Calendar className="w-3 h-3" />{post.activity_date}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Challenge blok */}
+      {isChallenge && (
+        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 space-y-1.5">
+          <div className="flex items-center gap-2">
+            <Trophy className="w-4 h-4 text-amber-500 shrink-0" />
+            <span className="text-sm font-black text-amber-900">{post.challenge_name}</span>
+          </div>
+          <div className="flex flex-wrap gap-x-4 gap-y-1">
+            {post.challenge_type && (
+              <span className="text-[11px] text-amber-700 font-semibold">{post.challenge_type}</span>
+            )}
+            {post.challenge_goal && (
+              <span className="text-[11px] text-amber-700 font-semibold">Doel: {post.challenge_goal}</span>
+            )}
+            {post.challenge_start && post.challenge_end && (
+              <span className="text-[11px] text-amber-600">{post.challenge_start} → {post.challenge_end}</span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Open vraag */}
+      {isQuestion && (
+        <div className="bg-purple-50 border border-purple-200 rounded-2xl p-3 flex items-start gap-2">
+          <HelpCircle className="w-4 h-4 text-purple-500 shrink-0 mt-0.5" />
+          <p className="text-sm font-semibold text-purple-900">{post.question}</p>
+        </div>
+      )}
+
+      {/* Poll */}
+      {isPoll && (
+        <div className="space-y-2 pt-0.5">
+          <div className="flex items-center gap-1.5 mb-1">
+            <BarChart2 className="w-3.5 h-3.5 text-purple-500" />
+            <span className="text-[11px] font-bold text-purple-600 uppercase tracking-wide">Poll</span>
+          </div>
+          {(post.poll_options ?? []).map((opt, i) => {
+            const votes = pollVotes[i] ?? 0
+            const pct = totalVotes > 0 ? Math.round((votes / totalVotes) * 100) : 0
+            const voted = myVote === i
+            return (
+              <button
+                key={i}
+                onClick={() => {
+                  if (myVote !== null) return
+                  setMyVote(i)
+                  setPollVotes(prev => ({ ...prev, [i]: (prev[i] ?? 0) + 1 }))
+                }}
+                className="w-full text-left rounded-xl overflow-hidden border transition-colors"
+                style={{ borderColor: voted ? '#E87722' : '#E5E7EB' }}
+              >
+                <div className="relative px-3 py-2.5">
+                  {myVote !== null && (
+                    <div
+                      className="absolute inset-0 rounded-xl transition-all"
+                      style={{ width: `${pct}%`, background: voted ? '#FFF0E5' : '#F9FAFB' }}
+                    />
+                  )}
+                  <div className="relative flex items-center justify-between">
+                    <span className="text-sm font-semibold" style={{ color: voted ? '#E87722' : '#374151' }}>{opt}</span>
+                    {myVote !== null && (
+                      <span className="text-xs font-bold" style={{ color: voted ? '#E87722' : '#9CA3AF' }}>{pct}%</span>
+                    )}
+                  </div>
+                </div>
+              </button>
+            )
+          })}
+          {myVote !== null && (
+            <p className="text-[11px] text-gray-400 text-center">{totalVotes} stem{totalVotes !== 1 ? 'men' : ''}</p>
+          )}
+        </div>
+      )}
+    </div>
+  )
+}
+
 function EmptyState() {
   return (
     <div className="bg-white rounded-2xl border border-black/8 p-10 text-center">
@@ -763,7 +891,7 @@ export default function FeedPage() {
 
   const [profile,       setProfile]       = useState<UserProfile | null>(null)
   const [posts,         setPosts]         = useState<Post[]>([])
-  const [tab,           setTab]           = useState<FeedTab>('buddies')
+  const [userId,        setUserId]        = useState<string | null>(null)
   const [loading,       setLoading]       = useState(true)
   const [loadingMore,   setLoadingMore]   = useState(false)
   const [hasMore,       setHasMore]       = useState(true)
@@ -778,6 +906,119 @@ export default function FeedPage() {
   const pageRef     = useRef(0)
   const PAGE_SIZE   = 8
 
+  const POST_SELECT = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, likes_count, created_at, location, music, tagged_users, calories, activity_name, activity_date, challenge_name, challenge_type, challenge_goal, challenge_start, challenge_end, question, answer_type, poll_options, profiles(full_name, username, avatar_url, region)'
+
+  function timeAgo(dateStr: string): string {
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins  = Math.floor(diff / 60000)
+    const hours = Math.floor(diff / 3600000)
+    const days  = Math.floor(diff / 86400000)
+    if (mins < 1)  return 'Zojuist'
+    if (mins < 60) return `${mins} min geleden`
+    if (hours < 24) return `${hours} uur geleden`
+    return `${days} dag${days > 1 ? 'en' : ''} geleden`
+  }
+
+  const mapPosts = useCallback(async (rawPosts: any[]): Promise<Post[]> => {
+    const allTaggedIds = [...new Set(rawPosts.flatMap((p: any) => (p.tagged_users ?? []) as string[]))]
+    let taggedNamesMap: Record<string, string> = {}
+    if (allTaggedIds.length > 0) {
+      const { data: taggedProfiles } = await supabase.from('profiles').select('id, full_name, username').in('id', allTaggedIds)
+      taggedNamesMap = Object.fromEntries((taggedProfiles ?? []).map((p: any) => [p.id, p.full_name ?? p.username ?? '?']))
+    }
+    return rawPosts.map((p: any) => {
+      const prof = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
+      return {
+        id: p.id,
+        userId: p.user_id,
+        userName: prof?.full_name ?? prof?.username ?? 'Gebruiker',
+        userRegion: prof?.region ?? '',
+        userAvatarUrl: prof?.avatar_url ?? undefined,
+        content: p.content ?? '',
+        type: p.type,
+        sport_tag: p.sport_tag,
+        activity_type: p.activity_type,
+        distance_km: p.distance_km,
+        duration_minutes: p.duration_minutes,
+        image_url: p.image_url ?? p.media_url,
+        likes_count: p.likes_count ?? 0,
+        comments_count: 0,
+        liked: false,
+        saved: false,
+        created_at: timeAgo(p.created_at),
+        location: p.location,
+        music: p.music,
+        tagged_users: p.tagged_users,
+        tagged_user_names: (p.tagged_users ?? []).map((id: string) => taggedNamesMap[id]).filter(Boolean),
+        calories: p.calories,
+        activity_name: p.activity_name,
+        activity_date: p.activity_date,
+        challenge_name: p.challenge_name,
+        challenge_type: p.challenge_type,
+        challenge_goal: p.challenge_goal,
+        challenge_start: p.challenge_start,
+        challenge_end: p.challenge_end,
+        question: p.question,
+        answer_type: p.answer_type,
+        poll_options: p.poll_options,
+      }
+    })
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const loadPosts = useCallback(async (uid?: string) => {
+    // Try full column set; fall back to basic if migration columns don't exist yet
+    let { data: rawPosts, error: postsError } = await supabase
+      .from('posts')
+      .select(POST_SELECT)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE * 2)
+
+    if (postsError) {
+      console.error('Full posts query failed, retrying basic:', postsError)
+      const { data: basic } = await supabase
+        .from('posts')
+        .select('id, user_id, content, activity_type, distance_km, duration_minutes, image_url, likes_count, created_at, profiles(full_name, username, avatar_url, region)')
+        .order('created_at', { ascending: false })
+        .limit(PAGE_SIZE)
+      rawPosts = basic as any
+    }
+
+    if (rawPosts && rawPosts.length > 0) {
+      // Buddy posts first, then everyone else
+      const effectiveUid = uid
+      let sorted: typeof rawPosts = rawPosts
+
+      if (effectiveUid) {
+        const { data: buddyData } = await supabase
+          .from('follow_requests')
+          .select('from_user_id, to_user_id')
+          .or(`from_user_id.eq.${effectiveUid},to_user_id.eq.${effectiveUid}`)
+          .eq('status', 'accepted')
+
+        const buddyIds = new Set<string>([effectiveUid])
+        ;(buddyData ?? []).forEach((b: { from_user_id: string; to_user_id: string }) => {
+          buddyIds.add(b.from_user_id === effectiveUid ? b.to_user_id : b.from_user_id)
+        })
+
+        sorted = [
+          ...rawPosts.filter((p: { user_id: string }) => buddyIds.has(p.user_id)),
+          ...rawPosts.filter((p: { user_id: string }) => !buddyIds.has(p.user_id)),
+        ].slice(0, PAGE_SIZE) as typeof rawPosts
+      } else {
+        sorted = rawPosts.slice(0, PAGE_SIZE) as typeof rawPosts
+      }
+
+      const mapped = await mapPosts(sorted)
+      setPosts(mapped)
+      setHasMore(rawPosts.length > PAGE_SIZE)
+    } else {
+      setPosts(DEMO_POSTS.slice(0, PAGE_SIZE))
+      setHasMore(DEMO_POSTS.length > PAGE_SIZE)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mapPosts])
+
   // Load profile + initial posts
   useEffect(() => {
     async function init() {
@@ -785,52 +1026,15 @@ export default function FeedPage() {
       if (!user) return
 
       const [{ data: prof }, { count: bc }] = await Promise.all([
-        supabase.from('profiles')
-          .select('id, full_name, username, avatar_url, region')
-          .eq('id', user.id)
-          .single(),
-        supabase.from('follow_requests')
-          .select('*', { count: 'exact', head: true })
-          .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
-          .eq('status', 'accepted'),
+        supabase.from('profiles').select('id, full_name, username, avatar_url, region').eq('id', user.id).single(),
+        supabase.from('follow_requests').select('*', { count: 'exact', head: true }).or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`).eq('status', 'accepted'),
       ])
 
       if (prof) setProfile({ ...prof, sport: null })
       setBuddyCount(bc ?? 0)
+      setUserId(user.id)
 
-      // Try loading real posts, fallback to demo
-      const { data: realPosts } = await supabase
-        .from('posts')
-        .select('id, user_id, content, sport_tag, activity_type, distance_km, duration_minutes, image_url, likes_count, created_at')
-        .order('created_at', { ascending: false })
-        .limit(PAGE_SIZE)
-
-      if (realPosts && realPosts.length > 0) {
-        const mapped: Post[] = realPosts.map((p: any) => ({
-          id: p.id,
-          userId: p.user_id,
-          userName: 'Gebruiker',
-          userRegion: '',
-          content: p.content ?? '',
-          sport_tag: p.sport_tag,
-          activity_type: p.activity_type,
-          distance_km: p.distance_km,
-          duration_minutes: p.duration_minutes,
-          image_url: p.image_url,
-          likes_count: p.likes_count ?? 0,
-          comments_count: 0,
-          liked: false,
-          saved: false,
-          created_at: new Date(p.created_at).toLocaleDateString('nl-NL'),
-        }))
-        setPosts(mapped)
-        setHasMore(realPosts.length === PAGE_SIZE)
-      } else {
-        // Demo fallback
-        setPosts(DEMO_POSTS.slice(0, PAGE_SIZE))
-        setHasMore(DEMO_POSTS.length > PAGE_SIZE)
-      }
-
+      await loadPosts(user.id)
       setLoading(false)
     }
     init()
@@ -877,19 +1081,6 @@ export default function FeedPage() {
     return () => observer.disconnect()
   }, [loadMore])
 
-  // Tab change resets feed (demo: just shuffle order)
-  function handleTabChange(t: FeedTab) {
-    setTab(t)
-    setAllSeen(false)
-    setHasMore(true)
-    pageRef.current = 0
-    if (t === 'trending') {
-      setPosts([...DEMO_POSTS].sort((a, b) => b.likes_count - a.likes_count))
-    } else {
-      setPosts([...DEMO_POSTS])
-    }
-  }
-
   function handleLike(id: string) {
     setPosts(prev => prev.map(p =>
       p.id === id
@@ -904,21 +1095,9 @@ export default function FeedPage() {
     ))
   }
 
-  function handleNewPost(content: string, sport: string) {
-    const newPost: Post = {
-      id: 'new_' + Date.now(),
-      userId: profile?.id ?? 'me',
-      userName: profile?.full_name ?? profile?.username ?? 'Jij',
-      userRegion: profile?.region ?? '',
-      content,
-      sport_tag: sport || undefined,
-      likes_count: 0,
-      comments_count: 0,
-      liked: false,
-      saved: false,
-      created_at: 'Nu',
-    }
-    setPosts(prev => [newPost, ...prev])
+  async function handlePosted() {
+    await loadPosts()
+    window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
   function handleRefreshFeed() {
@@ -972,7 +1151,7 @@ export default function FeedPage() {
       <PostComposer
         isOpen={composerOpen}
         onClose={() => setComposerOpen(false)}
-        onPosted={() => handleNewPost('', '')}
+        onPosted={handlePosted}
       />
 
       {/* Floating action button — mobile only */}
@@ -1002,7 +1181,6 @@ export default function FeedPage() {
             onAddStory={() => setComposerOpen(true)}
           />
 
-          <FeedTabs active={tab} onChange={handleTabChange} />
 
           {/* Feed content */}
           {posts.length === 0 ? (

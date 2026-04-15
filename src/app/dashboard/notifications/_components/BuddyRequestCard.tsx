@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useTransition } from 'react'
-import { Check, X } from 'lucide-react'
+import { Check, X, MessageCircle } from 'lucide-react'
 import Link from 'next/link'
 import { StoryAvatar } from '@/components/StoryAvatar'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
@@ -39,7 +39,16 @@ export function BuddyRequestCard({ requestId, fromUserId, name, sport, message, 
         <div className="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center shrink-0">
           <Check className="w-4 h-4 text-white" />
         </div>
-        <p className="text-sm text-green-700 font-semibold">Je bent nu buddies met {name}!</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm text-green-700 font-semibold">Je bent nu buddies met {name}!</p>
+        </div>
+        <Link
+          href={`/dashboard/messages`}
+          className="flex items-center gap-1.5 bg-[#111] text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-[#E87722] transition-colors shrink-0"
+        >
+          <MessageCircle className="w-3.5 h-3.5" />
+          Chat
+        </Link>
       </div>
     )
   }

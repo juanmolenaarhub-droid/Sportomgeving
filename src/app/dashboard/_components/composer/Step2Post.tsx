@@ -2,7 +2,7 @@
 
 import { useState, useRef, useCallback } from 'react'
 import {
-  ArrowLeft, Image as ImageIcon, Loader2, ChevronRight,
+  ArrowLeft, Image as ImageIcon, Loader2,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
@@ -148,6 +148,8 @@ export default function Step2Post({
         notShareable,
         mediaFile,
       })
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Er is een fout opgetreden bij het plaatsen.')
     } finally {
       setSubmitting(false)
     }

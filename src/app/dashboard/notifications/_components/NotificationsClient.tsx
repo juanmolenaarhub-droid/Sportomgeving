@@ -26,9 +26,13 @@ function timeAgo(dateStr: string): string {
 
 function getRoute(type: string, link: string | null): string {
   if (link) return link
-  if (type.includes('meetup')) return '/dashboard/meetup'
-  if (type.includes('message') || type.includes('chat')) return '/dashboard/messages'
-  if (type.includes('match') || type.includes('buddy') || type.includes('follow')) return '/dashboard/notifications'
+  if (type.includes('meetup'))                                   return '/dashboard/meetup'
+  if (type.includes('message') || type.includes('chat'))        return '/dashboard/messages'
+  if (type.includes('accepted'))                                 return '/dashboard/messages'
+  if (type.includes('match') || type.includes('buddy'))         return '/dashboard/notifications'
+  if (type.includes('follow') || type.includes('request'))      return '/dashboard/notifications'
+  if (type.includes('group'))                                    return '/dashboard/groups'
+  if (type.includes('post') || type.includes('like') || type.includes('comment')) return '/dashboard'
   return '/dashboard'
 }
 
