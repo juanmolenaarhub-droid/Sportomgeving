@@ -21,78 +21,19 @@ type VideoItem = {
   music: string
 }
 
-// ─── 10 demo video's als fallback ─────────────────────────────────────────────
+// ─── 10 demo video's als fallback (ForBigger series = kort + snel, ~3–12 MB) ──
+const BASE = 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/'
 const DEMO_VIDEOS: VideoItem[] = [
-  {
-    id: 'v1',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
-    displayName: 'Tim van Berg', username: 'tim_hardloopt', sport: 'Hardlopen',
-    caption: 'Perfecte ochtendrun door het Vondelpark 🏃‍♂️ Wie wil er volgende week mee?',
-    likes: 1840, comments: 47, music: 'Running Playlist — Spotify',
-  },
-  {
-    id: 'v2',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerEscapes.mp4',
-    displayName: 'Sarah Jansen', username: 'sarah_fietst', sport: 'Fietsen',
-    caption: 'Nieuwe PR op de fiets! 42 km in 1 uur 15 🚴‍♀️ Dit was mijn beste week ooit',
-    likes: 934, comments: 23, music: 'Cycling Vibes — Spotify',
-  },
-  {
-    id: 'v3',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerFun.mp4',
-    displayName: 'Marco de Wit', username: 'marco_gym', sport: 'Gym',
-    caption: 'Arm dag 💪 Pull-ups PR: 20 reps clean. Tip: langzaam omlaag = beter resultaat',
-    likes: 2100, comments: 89, music: 'Gym Hits 2026 — Spotify',
-  },
-  {
-    id: 'v4',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerJoyrides.mp4',
-    displayName: 'Lisa Hoek', username: 'lisa_yoga', sport: 'Yoga',
-    caption: 'Morning flow 🧘‍♀️ Start je dag goed. 20 minuten en je voelt het verschil',
-    likes: 673, comments: 31, music: 'Yoga & Meditation — Spotify',
-  },
-  {
-    id: 'v5',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerMeltdowns.mp4',
-    displayName: 'Kevin Storm', username: 'kevin_padel', sport: 'Padel',
-    caption: 'Beste padel punt ooit? 🎾 Eerlijk: ja. Buddy gezocht voor de rematch!',
-    likes: 3200, comments: 142, music: 'Court Energy — Spotify',
-  },
-  {
-    id: 'v6',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
-    displayName: 'Joris Bakker', username: 'joris_zwemt', sport: 'Zwemmen',
-    caption: '100m vrije slag in 58 seconden 🏊‍♂️ Doel: onder de 55. Wie traint er mee?',
-    likes: 780, comments: 44, music: 'Pool Vibes — Spotify',
-  },
-  {
-    id: 'v7',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4',
-    displayName: 'Bram van Dijk', username: 'bram_bokst', sport: 'Boksen',
-    caption: 'Training session 💥 3 minuten per ronde, 6 rondes. Boksen is beste full-body workout',
-    likes: 2890, comments: 97, music: 'Fight Night — Spotify',
-  },
-  {
-    id: 'v8',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/SubaruOutbackOnStreetAndDirt.mp4',
-    displayName: 'Nadia El-Amin', username: 'nadia_triathlon', sport: 'Triathlon',
-    caption: 'Eerste triathlon klaar 🏆 Zwemmen + fietsen + hardlopen in één dag. Nooit meer? Toch wel.',
-    likes: 5600, comments: 318, music: 'Triathlon Beast Mode — Spotify',
-  },
-  {
-    id: 'v9',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/WeAreGoingOnBullrun.mp4',
-    displayName: 'Emma Kool', username: 'emma_klimt', sport: 'Klimmen',
-    caption: 'Boulder 7A+ eindelijk geflashed! 🧗‍♀️ Drie weken geprobeerd. Het gevoel is onbeschrijflijk',
-    likes: 1230, comments: 61, music: 'Send It — Spotify',
-  },
-  {
-    id: 'v10',
-    src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
-    displayName: 'Roos Vermeer', username: 'roos_hardloopt', sport: 'Hardlopen',
-    caption: 'Halve marathon gehaald! 21 km in 1:58 uur 🎉 Maanden van training betalen zich uit',
-    likes: 4100, comments: 203, music: 'Half Marathon Mix — Spotify',
-  },
+  { id:'v1',  src:`${BASE}ForBiggerFun.mp4`,       displayName:'Tim van Berg',   username:'tim_hardloopt', sport:'Hardlopen', caption:'Perfecte ochtendrun door het Vondelpark 🏃‍♂️ Wie wil mee?',              likes:1840, comments:47,  music:'Running Playlist — Spotify' },
+  { id:'v2',  src:`${BASE}ForBiggerJoyrides.mp4`,  displayName:'Sarah Jansen',   username:'sarah_fietst',  sport:'Fietsen',   caption:'Nieuwe PR op de fiets! 42 km in 1:15 🚴‍♀️ Beste week ooit',           likes:934,  comments:23,  music:'Cycling Vibes — Spotify' },
+  { id:'v3',  src:`${BASE}ForBiggerMeltdowns.mp4`, displayName:'Marco de Wit',   username:'marco_gym',     sport:'Gym',       caption:'Arm dag 💪 Pull-ups PR: 20 reps. Tip: langzaam omlaag = beter',         likes:2100, comments:89,  music:'Gym Hits 2026 — Spotify' },
+  { id:'v4',  src:`${BASE}ForBiggerBlazes.mp4`,    displayName:'Lisa Hoek',      username:'lisa_yoga',     sport:'Yoga',      caption:'Morning flow 🧘‍♀️ 20 minuten en je voelt het verschil',                 likes:673,  comments:31,  music:'Yoga & Meditation — Spotify' },
+  { id:'v5',  src:`${BASE}ForBiggerEscapes.mp4`,   displayName:'Kevin Storm',    username:'kevin_padel',   sport:'Padel',     caption:'Beste padel punt ooit? 🎾 Ja. Buddy gezocht voor de rematch!',          likes:3200, comments:142, music:'Court Energy — Spotify' },
+  { id:'v6',  src:`${BASE}ForBiggerFun.mp4`,       displayName:'Joris Bakker',   username:'joris_zwemt',   sport:'Zwemmen',   caption:'100m vrije slag in 58 sec 🏊‍♂️ Doel: onder de 55. Wie traint mee?',    likes:780,  comments:44,  music:'Pool Vibes — Spotify' },
+  { id:'v7',  src:`${BASE}ForBiggerJoyrides.mp4`,  displayName:'Bram van Dijk',  username:'bram_bokst',    sport:'Boksen',    caption:'Training 💥 3 min/ronde, 6 rondes. Boksen is beste full-body workout',  likes:2890, comments:97,  music:'Fight Night — Spotify' },
+  { id:'v8',  src:`${BASE}ForBiggerMeltdowns.mp4`, displayName:'Nadia El-Amin',  username:'nadia_triathlon',sport:'Triathlon', caption:'Eerste triathlon klaar 🏆 Swim + bike + run in één dag. Nooit meer? Toch wel.', likes:5600, comments:318, music:'Beast Mode — Spotify' },
+  { id:'v9',  src:`${BASE}ForBiggerBlazes.mp4`,    displayName:'Emma Kool',      username:'emma_klimt',    sport:'Klimmen',   caption:'Boulder 7A+ geflashed! 🧗‍♀️ Drie weken geprobeerd. Onbeschrijflijk',    likes:1230, comments:61,  music:'Send It — Spotify' },
+  { id:'v10', src:`${BASE}ForBiggerEscapes.mp4`,   displayName:'Roos Vermeer',   username:'roos_hardloopt',sport:'Hardlopen', caption:'Halve marathon: 21 km in 1:58 🎉 Maanden van training betalen zich uit', likes:4100, comments:203, music:'Half Marathon Mix — Spotify' },
 ]
 
 function fmt(n: number) {
@@ -119,13 +60,13 @@ function VideoCard({
   const [paused,   setPaused]   = useState(false)
   const [progress, setProgress] = useState(0)
   const [loaded,   setLoaded]   = useState(false)
+  const [hasError, setHasError] = useState(false)
 
-  // ── Mount: muted MUST be set via DOM ref, React prop doesn't work ──────────
+  // ── Mount: force muted via DOM (React muted prop unreliable on mobile) ─────
   useEffect(() => {
     const v = videoRef.current
     if (!v) return
-    v.muted    = true
-    v.playsInline = true
+    v.muted = true
   }, [])
 
   // ── Play / pause when card becomes active ─────────────────────────────────
@@ -134,19 +75,20 @@ function VideoCard({
     if (!v) return
 
     if (isActive) {
-      v.muted    = isMuted
+      v.muted = true   // always start muted so autoplay policy allows it
       v.currentTime = 0
-      v.play()
-        .then(() => setPaused(false))
-        .catch(() => setPaused(true))   // autoplay blocked → show play icon
+      const p = v.play()
+      if (p !== undefined) {
+        p.then(() => setPaused(false)).catch(() => setPaused(true))
+      }
     } else {
       v.pause()
       setPaused(false)
       setProgress(0)
     }
-  }, [isActive])   // intentionally exclude isMuted — handled separately
+  }, [isActive])
 
-  // ── Mute toggle without restarting video ─────────────────────────────────
+  // ── Mute toggle ───────────────────────────────────────────────────────────
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = isMuted
   }, [isMuted])
@@ -162,29 +104,38 @@ function VideoCard({
     return () => v.removeEventListener('timeupdate', tick)
   }, [])
 
-  // ── Tap progress bar to seek ──────────────────────────────────────────────
+  // ── Seek on progress bar tap ──────────────────────────────────────────────
   const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation()
     const v   = videoRef.current
     const bar = barRef.current
     if (!v || !bar || !v.duration) return
     const rect = bar.getBoundingClientRect()
-    const pct  = (e.clientX - rect.left) / rect.width
-    v.currentTime = pct * v.duration
+    v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration
   }, [])
 
-  // ── Tap video to pause / resume ───────────────────────────────────────────
+  // ── Tap video body to pause / resume ─────────────────────────────────────
   function handleTap() {
     const v = videoRef.current
     if (!v) return
     if (v.paused) {
-      v.play()
-        .then(() => setPaused(false))
-        .catch(() => {})
+      v.muted = isMuted
+      v.play().then(() => setPaused(false)).catch(() => {})
     } else {
       v.pause()
       setPaused(true)
     }
+  }
+
+  // ── Play button (proper user-gesture target) ──────────────────────────────
+  function handlePlayBtn(e: React.MouseEvent) {
+    e.stopPropagation()
+    const v = videoRef.current
+    if (!v) return
+    v.muted = true   // must be muted for policy
+    v.play()
+      .then(() => { setPaused(false); setHasError(false) })
+      .catch(() => setHasError(true))
   }
 
   function handleLike(e: React.MouseEvent) {
@@ -209,31 +160,42 @@ function VideoCard({
         playsInline
         preload={isActive ? 'auto' : 'metadata'}
         onCanPlay={() => setLoaded(true)}
+        onError={() => { setHasError(true); setLoaded(true) }}
       />
 
       {/* Loading spinner */}
-      {isActive && !loaded && (
+      {isActive && !loaded && !hasError && (
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        </div>
+      )}
+
+      {/* Error state */}
+      {hasError && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
+          <span className="text-white/60 text-sm">Video kan niet laden</span>
         </div>
       )}
 
       {/* Gradient overlays */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80 pointer-events-none" />
 
-      {/* Paused / blocked indicator */}
-      {paused && (
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+      {/* ── Play button — real clickable target for user-gesture ─────── */}
+      {paused && !hasError && (
+        <button
+          className="absolute inset-0 flex items-center justify-center"
+          onClick={handlePlayBtn}
+        >
           <div className="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm">
             <Play className="w-7 h-7 text-white ml-1" />
           </div>
-        </div>
+        </button>
       )}
 
-      {/* ── Right actions ────────────────────────────────────────── */}
+      {/* ── Right actions — pushed up to clear mobile nav ────────────── */}
       <div
         className="absolute right-3 flex flex-col items-center gap-5"
-        style={{ bottom: 80 }}
+        style={{ bottom: 108 }}
         onClick={e => e.stopPropagation()}
       >
         {/* Avatar */}
@@ -289,10 +251,10 @@ function VideoCard({
         </button>
       </div>
 
-      {/* ── Bottom info ──────────────────────────────────────────── */}
+      {/* ── Bottom info — bottom-[88px] clears the mobile floating nav ── */}
       <div
         className="absolute left-4 right-16 space-y-1"
-        style={{ bottom: 36 }}
+        style={{ bottom: 88 }}
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center gap-2">
