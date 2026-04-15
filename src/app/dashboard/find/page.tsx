@@ -695,7 +695,7 @@ function BuddyCard({ buddy, myBeschikbaarheid, onOpen, onRequest }: { buddy: Bud
             {score >= 50 && (
               <span
                 className="text-[10px] font-black px-2 py-0.5 rounded-full text-white"
-                style={{ background: score >= 80 ? '#E87722' : score >= 60 ? '#111111' : '#999' }}
+                style={{ background: '#E87722' }}
               >
                 {score}% match
               </span>
