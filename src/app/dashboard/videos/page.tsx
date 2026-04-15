@@ -6,9 +6,23 @@ import {
   Volume2, VolumeX, Music2, Plus, Play,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
+import { createClient } from '@/lib/supabase'
 
-// ─── 10 test video's van gratis bronnen ───────────────────────────────────────
-const DEMO_VIDEOS = [
+type VideoItem = {
+  id: string
+  src: string
+  thumbnailUrl?: string
+  displayName: string
+  username: string
+  sport: string
+  caption: string
+  likes: number
+  comments: number
+  music: string
+}
+
+// ─── 10 demo video's als fallback ─────────────────────────────────────────────
+const DEMO_VIDEOS: VideoItem[] = [
   {
     id: 'v1',
     src: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ForBiggerBlazes.mp4',
@@ -92,7 +106,7 @@ function VideoCard({
   isMuted,
   onMuteToggle,
 }: {
-  video: typeof DEMO_VIDEOS[number]
+  video: VideoItem
   isActive: boolean
   isMuted: boolean
   onMuteToggle: () => void
@@ -189,6 +203,7 @@ function VideoCard({
       <video
         ref={videoRef}
         src={video.src}
+        poster={video.thumbnailUrl}
         className="absolute inset-0 w-full h-full object-cover"
         loop
         playsInline
@@ -318,9 +333,49 @@ function VideoCard({
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
 export default function VideosPage() {
+  const supabase = createClient()
+  const [videos, setVideos] = useState<VideoItem[]>(DEMO_VIDEOS)
   const [activeIndex, setActiveIndex] = useState(0)
   const [isMuted, setIsMuted] = useState(true)
   const containerRef = useRef<HTMLDivElement>(null)
+
+  // Fetch real video posts from DB; prepend them before the demo videos
+  useEffect(() => {
+    async function loadVideos() {
+      const { data } = await supabase
+        .from('posts')
+        .select('id, user_id, content, sport_tag, media_url, thumbnail_url, likes_count, created_at, profiles(full_name, username)')
+        .eq('media_type', 'video')
+        .not('media_url', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(30)
+
+      if (!data || data.length === 0) return
+
+      const dbVideos: VideoItem[] = data.map((p: any) => {
+        const prof = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
+        const displayName = prof?.full_name ?? prof?.username ?? 'Gebruiker'
+        const username = (prof?.username ?? displayName).toLowerCase().replace(/\s+/g, '_')
+        return {
+          id: p.id,
+          src: p.media_url,
+          thumbnailUrl: p.thumbnail_url ?? undefined,
+          displayName,
+          username,
+          sport: p.sport_tag ?? 'Sport',
+          caption: p.content ?? '',
+          likes: p.likes_count ?? 0,
+          comments: 0,
+          music: '',
+        }
+      })
+
+      // Real videos first, then demo videos as fill
+      setVideos([...dbVideos, ...DEMO_VIDEOS])
+    }
+    loadVideos()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     const el = containerRef.current
@@ -339,7 +394,7 @@ export default function VideosPage() {
       className="flex-1 overflow-y-scroll"
       style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
     >
-      {DEMO_VIDEOS.map((video, i) => (
+      {videos.map((video, i) => (
         <div
           key={video.id}
           className="w-full shrink-0"

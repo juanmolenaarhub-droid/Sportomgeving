@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import {
   Heart, MessageCircle, Share2, Bookmark, MoreHorizontal, MapPin,
-  Camera, Image as ImageIcon, Zap, X, Plus,
+  Camera, Image as ImageIcon, Zap, X, Plus, Play,
   Users, Activity, Star, TrendingUp, UserPlus,
   Music2, AtSign, Flame, Trophy, HelpCircle, BarChart2, Calendar,
 } from 'lucide-react'
@@ -40,6 +40,9 @@ type Post = {
   distance_km?: number
   duration_minutes?: number
   image_url?: string
+  media_url?: string
+  media_type?: string
+  thumbnail_url?: string
   likes_count: number
   comments_count: number
   liked: boolean
@@ -313,6 +316,65 @@ function CardActions({ post, onLike, onSave }: {
 }
 
 // ── Pragmatike curved block ────────────────────────────────────────────────────
+// ── Inline video player ───────────────────────────────────────────────────────
+function VideoBlock({ post }: { post: Post }) {
+  const [playing, setPlaying] = useState(false)
+  const videoRef = useRef<HTMLVideoElement>(null)
+
+  function handlePlay(e: React.MouseEvent) {
+    e.stopPropagation()
+    setPlaying(true)
+    setTimeout(() => {
+      const v = videoRef.current
+      if (!v) return
+      v.muted = false
+      v.play().catch(() => {})
+    }, 50)
+  }
+
+  if (!post.media_url) return null
+
+  return (
+    <div className="mx-3 rounded-[18px] overflow-hidden bg-black relative" style={{ aspectRatio: '16/9' }}>
+      {playing ? (
+        // eslint-disable-next-line jsx-a11y/media-has-caption
+        <video
+          ref={videoRef}
+          src={post.media_url}
+          className="w-full h-full object-contain"
+          controls
+          playsInline
+          autoPlay
+        />
+      ) : (
+        <>
+          {post.thumbnail_url || post.image_url ? (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={post.thumbnail_url ?? post.image_url!}
+              alt=""
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <div className="w-full h-full bg-black" />
+          )}
+          <div className="absolute inset-0 bg-black/30 flex items-center justify-center">
+            <button
+              onClick={handlePlay}
+              className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/30 hover:bg-white/30 transition-colors"
+            >
+              <Play className="w-7 h-7 text-white ml-1" />
+            </button>
+          </div>
+          <div className="absolute top-3 right-3 bg-black/50 rounded-full px-2 py-0.5">
+            <span className="text-white text-[10px] font-bold">VIDEO</span>
+          </div>
+        </>
+      )}
+    </div>
+  )
+}
+
 function CurvedBlock({ post, gradient }: { post: Post; gradient: SportGradient }) {
   const isActivity = !!(post.distance_km || post.duration_minutes)
   const stats      = isActivity ? getActivityStats(post) : []
@@ -449,9 +511,9 @@ function ActivityCard({ post, onLike, onSave }: {
         </button>
       </div>
 
-      {/* Curved block */}
+      {/* Media block */}
       <div className="mt-3">
-        <CurvedBlock post={post} gradient={gradient} />
+        {post.media_type === 'video' ? <VideoBlock post={post} /> : <CurvedBlock post={post} gradient={gradient} />}
       </div>
 
       {/* Caption */}
@@ -510,9 +572,9 @@ function PostCard({ post, onLike, onSave }: {
         </button>
       </div>
 
-      {/* Curved block */}
+      {/* Media block */}
       <div className="mt-3">
-        <CurvedBlock post={post} gradient={gradient} />
+        {post.media_type === 'video' ? <VideoBlock post={post} /> : <CurvedBlock post={post} gradient={gradient} />}
       </div>
 
       {/* Caption */}
@@ -906,7 +968,7 @@ export default function FeedPage() {
   const pageRef     = useRef(0)
   const PAGE_SIZE   = 8
 
-  const POST_SELECT = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, likes_count, created_at, location, music, tagged_users, calories, activity_name, activity_date, challenge_name, challenge_type, challenge_goal, challenge_start, challenge_end, question, answer_type, poll_options, profiles(full_name, username, avatar_url, region)'
+  const POST_SELECT = 'id, user_id, content, type, sport_tag, activity_type, distance_km, duration_minutes, image_url, media_url, media_type, thumbnail_url, likes_count, created_at, location, music, tagged_users, calories, activity_name, activity_date, challenge_name, challenge_type, challenge_goal, challenge_start, challenge_end, question, answer_type, poll_options, profiles(full_name, username, avatar_url, region)'
 
   function timeAgo(dateStr: string): string {
     const diff = Date.now() - new Date(dateStr).getTime()
@@ -940,7 +1002,10 @@ export default function FeedPage() {
         activity_type: p.activity_type,
         distance_km: p.distance_km,
         duration_minutes: p.duration_minutes,
-        image_url: p.image_url ?? p.media_url,
+        media_type: p.media_type,
+        media_url: p.media_url,
+        thumbnail_url: p.thumbnail_url,
+        image_url: p.media_type === 'video' ? (p.thumbnail_url ?? null) : (p.image_url ?? p.media_url),
         likes_count: p.likes_count ?? 0,
         comments_count: 0,
         liked: false,

@@ -23,6 +23,7 @@ export type StepTwoResult = {
   likesHidden: boolean
   notShareable: boolean
   mediaFile: File | null
+  thumbnailFile?: File | null
 }
 
 interface Props {
@@ -100,6 +101,9 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
   const [notShareable, setNotShareable] = useState(false)
   const [submitting, setSubmitting] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
+  const [thumbnailFile, setThumbnailFile] = useState<File | null>(null)
+  const [thumbnailPreview, setThumbnailPreview] = useState<string | null>(null)
+  const thumbInputRef = useRef<HTMLInputElement>(null)
 
   // ── File handling ──
 
@@ -174,6 +178,14 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
     })
   }
 
+  function handleThumbnailInput(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0] ?? null
+    if (!file) return
+    setThumbnailFile(file)
+    setThumbnailPreview(URL.createObjectURL(file))
+    e.target.value = ''
+  }
+
   async function handleShareSubmit() {
     setSubmitError(null)
     setSubmitting(true)
@@ -192,6 +204,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
         likesHidden,
         notShareable,
         mediaFile: files[0] ?? null,
+        thumbnailFile: thumbnailFile ?? null,
       })
     } catch (err) {
       setSubmitError(err instanceof Error ? err.message : 'Er is een fout opgetreden.')
@@ -517,6 +530,43 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
                 ))}
               </div>
             </div>
+
+            {/* Thumbnail — only for video files */}
+            {firstFile && isVideo(firstFile) && (
+              <div>
+                <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-wide" style={SYNE}>
+                  Thumbnail (optioneel)
+                </p>
+                {thumbnailPreview ? (
+                  <div className="relative w-full aspect-video rounded-xl overflow-hidden bg-black">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={thumbnailPreview} alt="Thumbnail" className="w-full h-full object-cover" />
+                    <button
+                      onClick={() => { setThumbnailFile(null); setThumbnailPreview(null) }}
+                      className="absolute top-2 right-2 w-7 h-7 bg-black/60 rounded-full flex items-center justify-center"
+                    >
+                      <X size={14} color="white" />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => thumbInputRef.current?.click()}
+                    className="w-full h-20 rounded-xl flex items-center justify-center gap-2 transition-colors hover:bg-[#F0EDE8]"
+                    style={{ border: '2px dashed #E0DDD8', background: '#FAFAF7' }}
+                  >
+                    <ImageIcon size={18} color="#9CA3AF" />
+                    <span className="text-[13px] text-gray-400" style={SYNE}>Kies een thumbnail afbeelding</span>
+                  </button>
+                )}
+                <input
+                  ref={thumbInputRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleThumbnailInput}
+                />
+              </div>
+            )}
 
             {/* Location */}
             <div>

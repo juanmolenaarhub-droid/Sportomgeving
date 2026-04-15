@@ -30,6 +30,7 @@ export type StepTwoResult = {
   likesHidden: boolean
   notShareable: boolean
   mediaFile: File | null
+  thumbnailFile?: File | null
   // Activity
   activityName?: string
   distanceKm?: number
@@ -224,6 +225,7 @@ export default function PostComposer({
 
     // Upload media if present
     let mediaUrl: string | null = null
+    let mediaType: string | null = null
     if (form.mediaFile) {
       const ext  = form.mediaFile.name.split('.').pop() ?? 'jpg'
       const path = `${userId}/${Date.now()}.${ext}`
@@ -232,10 +234,28 @@ export default function PostComposer({
         .upload(path, form.mediaFile)
       if (uploadError) {
         console.error('Storage upload error:', uploadError)
-        throw new Error(`Foto uploaden mislukt: ${uploadError.message}`)
+        throw new Error(`Bestand uploaden mislukt: ${uploadError.message}`)
       }
       const { data: urlData } = supabase.storage.from('post-media').getPublicUrl(path)
       mediaUrl = urlData.publicUrl
+      mediaType = form.mediaFile.type.startsWith('video/') ? 'video' : 'image'
+    }
+
+    // Upload thumbnail if present (video posts only)
+    let thumbnailUrl: string | null = null
+    if (form.thumbnailFile) {
+      const ext  = form.thumbnailFile.name.split('.').pop() ?? 'jpg'
+      const path = `${userId}/thumb_${Date.now()}.${ext}`
+      const { error: thumbError } = await supabase.storage
+        .from('post-media')
+        .upload(path, form.thumbnailFile)
+      if (thumbError) {
+        console.error('Thumbnail upload error:', thumbError)
+        // non-fatal: continue without thumbnail
+      } else {
+        const { data: thumbData } = supabase.storage.from('post-media').getPublicUrl(path)
+        thumbnailUrl = thumbData.publicUrl
+      }
     }
 
     // Build the post row — include type-specific extras where the column exists
@@ -254,6 +274,8 @@ export default function PostComposer({
       likes_hidden:      form.likesHidden,
       not_shareable:     form.notShareable,
       media_url:         mediaUrl,
+      thumbnail_url:     thumbnailUrl,
+      media_type:        mediaType,
       likes_count:       0,
     }
 
