@@ -169,8 +169,10 @@ export function FullScreenCard({
           className="absolute inset-0 w-full h-full object-cover"
           loop
           playsInline
+          autoPlay={isActive}
+          muted
           preload={isActive ? 'auto' : 'metadata'}
-          onCanPlay={() => setLoaded(true)}
+          onCanPlay={() => { setLoaded(true); if (isActive && videoRef.current) videoRef.current.play().catch(() => {}) }}
           onError={() => { setHasError(true); setLoaded(true) }}
         />
       ) : current?.url ? (

@@ -10,8 +10,6 @@ import { FullScreenViewer } from './_components/FullScreenViewer'
 import { normalizePost } from './_components/types'
 import type { PlayPost } from './_components/types'
 
-// ─── Constants ────────────────────────────────────────────────────────────────
-
 type Tab = 'verkennen' | 'volgend' | 'voorjou'
 
 const SPORT_PILLS = [
@@ -21,8 +19,6 @@ const SPORT_PILLS = [
 
 const PAGE_SIZE = 20
 
-// ─── Page ─────────────────────────────────────────────────────────────────────
-
 export default function PlayPage() {
   const supabase = createClient()
 
@@ -31,33 +27,33 @@ export default function PlayPage() {
   const [activePill,  setActivePill]  = useState<string | null>(null)
   const [isMuted,     setIsMuted]     = useState(true)
 
-  // Verkennen (explore) state
+  // Verkennen state
   const [explorePosts,   setExplorePosts]   = useState<PlayPost[]>([])
   const [exploreLoading, setExploreLoading] = useState(false)
   const [exploreHasMore, setExploreHasMore] = useState(true)
   const exploreCursorRef = useRef<string | null>(null)
 
-  // Volgend (following) state
-  const [followPosts,    setFollowPosts]    = useState<PlayPost[]>([])
-  const [followLoading,  setFollowLoading]  = useState(false)
-  const [followHasMore,  setFollowHasMore]  = useState(true)
+  // Volgend state
+  const [followPosts,     setFollowPosts]     = useState<PlayPost[]>([])
+  const [followLoading,   setFollowLoading]   = useState(false)
+  const [followHasMore,   setFollowHasMore]   = useState(true)
   const [followActiveIdx, setFollowActiveIdx] = useState(0)
-  const followCursorRef  = useRef<string | null>(null)
-  const buddyIdsRef      = useRef<string[]>([])
+  const followCursorRef = useRef<string | null>(null)
 
-  // Viewer state (for Verkennen grid tap)
+  // Buddy IDs — loaded once, stored in state so effects can react to it
+  const [buddyIds, setBuddyIds] = useState<string[]>([])
+  const buddyIdsLoadedRef = useRef(false)
+
+  // Viewer state (Verkennen grid tap)
   const [viewerPosts, setViewerPosts] = useState<PlayPost[]>([])
   const [viewerIndex, setViewerIndex] = useState(0)
   const [viewerOpen,  setViewerOpen]  = useState(false)
 
-  const userIdRef = useRef('')
-
-  // ── Load buddy IDs once ──────────────────────────────────────────────────
+  // ── Load buddy IDs on mount ────────────────────────────────────────────
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-      userIdRef.current = user.id
 
       const { data: reqs } = await supabase
         .from('follow_requests')
@@ -68,7 +64,8 @@ export default function PlayPage() {
       const ids = (reqs ?? []).map(r =>
         r.from_user_id === user.id ? r.to_user_id : r.from_user_id
       )
-      buddyIdsRef.current = [user.id, ...ids]
+      buddyIdsLoadedRef.current = true
+      setBuddyIds([user.id, ...ids])
     }
     init()
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -121,7 +118,9 @@ export default function PlayPage() {
   }, [activePill, searchQuery, exploreHasMore, exploreLoading])
 
   // ── Fetch following posts ────────────────────────────────────────────────
-  const loadFollowPosts = useCallback(async (reset = false) => {
+  const loadFollowPosts = useCallback(async (reset = false, ids?: string[]) => {
+    const resolvedIds = ids ?? buddyIds
+    if (resolvedIds.length === 0) return
     if (!reset && (!followHasMore || followLoading)) return
     if (reset) {
       followCursorRef.current = null
@@ -129,16 +128,10 @@ export default function PlayPage() {
     }
     setFollowLoading(true)
 
-    const buddyIds = buddyIdsRef.current
-    if (buddyIds.length === 0) {
-      setFollowLoading(false)
-      return
-    }
-
     let query = supabase
       .from('posts')
       .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at')
-      .in('user_id', buddyIds)
+      .in('user_id', resolvedIds)
       .not('media_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
@@ -169,16 +162,27 @@ export default function PlayPage() {
     setFollowHasMore(data.length >= PAGE_SIZE)
     setFollowLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [followHasMore, followLoading])
+  }, [buddyIds, followHasMore, followLoading])
 
-  // Initial load + reload on filter change
+  // Initial explore load + reload on filter change
   useEffect(() => {
     loadExplorePosts(true)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePill, searchQuery])
 
+  // Load follow posts when buddy IDs arrive (covers the tab-switch-before-load case)
   useEffect(() => {
-    if (tab === 'volgend' && followPosts.length === 0) loadFollowPosts(true)
+    if (buddyIds.length > 0 && tab === 'volgend' && followPosts.length === 0) {
+      loadFollowPosts(true, buddyIds)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [buddyIds])
+
+  // Load follow posts when switching to volgend tab (buddy IDs already available)
+  useEffect(() => {
+    if (tab === 'volgend' && buddyIds.length > 0 && followPosts.length === 0) {
+      loadFollowPosts(true, buddyIds)
+    }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
@@ -192,12 +196,11 @@ export default function PlayPage() {
     setActivePill(prev => prev === pill ? null : pill)
   }
 
-  const isDark = tab !== 'verkennen'
+  const isDark      = tab !== 'verkennen'
   const isFullscreen = tab === 'volgend' || tab === 'voorjou'
 
   return (
     <>
-      {/* FullScreen Viewer overlay (Verkennen grid tap) */}
       {viewerOpen && (
         <FullScreenViewer
           posts={viewerPosts}
@@ -208,22 +211,26 @@ export default function PlayPage() {
         />
       )}
 
-      {/* Page wrapper — full height when in vertical feed mode */}
+      {/*
+        When in fullscreen mode (Volgend/Voor jou) we need to fill the exact
+        available height so the vertical scroll-snap works. The layout gives us
+        a flex-1 flex-col overflow-hidden container — we mirror that here.
+      */}
       <div
-        className="flex flex-col"
-        style={{
-          height:     isFullscreen ? '100%' : undefined,
-          background: isDark ? '#000' : undefined,
-        }}
+        className={`flex flex-col ${isFullscreen ? 'flex-1 min-h-0' : ''}`}
+        style={{ background: isDark ? '#000' : undefined }}
       >
-        {/* ── Top bar ────────────────────────────────────────────────── */}
+        {/* ── Top bar ──────────────────────────────────────────────── */}
         <div
-          className="shrink-0 sticky top-0 z-20 border-b"
+          className="shrink-0 border-b"
           style={{
-            background:          isDark ? 'rgba(0,0,0,0.85)' : '#fff',
-            borderColor:         isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-            backdropFilter:      'blur(12px)',
-            WebkitBackdropFilter:'blur(12px)',
+            background:           isDark ? 'rgba(0,0,0,0.85)' : '#fff',
+            borderColor:          isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+            backdropFilter:       'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            position:             isFullscreen ? 'relative' : 'sticky',
+            top:                  isFullscreen ? undefined : 0,
+            zIndex:               20,
           }}
         >
           {/* Tabs */}
@@ -258,7 +265,7 @@ export default function PlayPage() {
             })}
           </div>
 
-          {/* Search + pills — only on Verkennen */}
+          {/* Search + pills — only Verkennen */}
           {tab === 'verkennen' && (
             <div className="px-4 pb-3 space-y-2 mt-2">
               <div className="relative">
@@ -298,7 +305,7 @@ export default function PlayPage() {
           )}
         </div>
 
-        {/* ── Tab content ────────────────────────────────────────────── */}
+        {/* ── Tab content ────────────────────────────────────────── */}
 
         {tab === 'verkennen' && (
           <div className="px-3 pt-3">
