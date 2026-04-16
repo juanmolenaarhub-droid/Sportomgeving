@@ -15,7 +15,6 @@ import {
   type MeetupModalDetail,
   type ModalParticipant,
 } from '@/app/actions/meetups'
-import { getSportEmoji } from './MeetupMapPin'
 import MeetupBeheerSheet from './MeetupBeheerSheet'
 
 const LocationPreviewMap = dynamic(() => import('./LocationPreviewMap'), { ssr: false })
@@ -204,7 +203,6 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
     ? { backgroundImage: `url(${m.coverImageUrl})`, backgroundSize: 'cover', backgroundPosition: 'center' }
     : { background: ORANGE_GRADIENT }
 
-  const emoji = m ? getSportEmoji(m.sport) : '🏅'
 
   return (
     <>
@@ -262,14 +260,14 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
               position: 'absolute', top: 12, right: 12, zIndex: 5,
               background: '#E87722', color: '#fff', fontSize: 12, fontWeight: 700,
               padding: '4px 10px', borderRadius: 20,
-            }}>⚡ Nu</span>
+            }}>Nu</span>
           )}
 
           {/* Sport emoji + titel linksonder */}
           {m && (
             <div style={{ position: 'absolute', bottom: 12, left: 12, right: 12, display: 'flex', alignItems: 'flex-end', gap: 9 }}>
-              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>
-                {emoji}
+              <div style={{ width: 40, height: 40, borderRadius: 10, background: 'rgba(255,255,255,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 9, fontWeight: 800, color: 'white', flexShrink: 0, letterSpacing: 0.5 }}>
+                {m.sport.slice(0, 3).toUpperCase()}
               </div>
               <p style={{ color: '#fff', fontSize: 17, fontWeight: 700, lineHeight: 1.25, margin: 0, flex: 1, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
                 {m.title}
@@ -412,7 +410,7 @@ function InfoTab({ data }: {
       {interestedCount >= 3 && (
         <div style={{ margin: '16px 16px 0', background: '#DCFCE7', borderRadius: 20, padding: '6px 14px' }}>
           <span style={{ fontSize: 13, color: '#15803D', fontWeight: 600 }}>
-            Al {interestedCount} mensen zijn geïnteresseerd 🔥
+            Al {interestedCount} mensen zijn geïnteresseerd
           </span>
         </div>
       )}

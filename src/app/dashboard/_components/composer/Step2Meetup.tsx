@@ -190,7 +190,6 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
     }
   }
 
-  const sportEmoji = getSportById(sport)?.emoji ?? '🏅'
   const previewDate = date
     ? new Date(date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })
     : null
@@ -524,7 +523,6 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                 Voorbeeld
               </p>
               <div className="flex items-center gap-2 mb-1">
-                <span className="text-lg">{sportEmoji}</span>
                 <span className="text-[12px] text-gray-500" style={SYNE}>
                   {sport || 'Sport'}
                 </span>

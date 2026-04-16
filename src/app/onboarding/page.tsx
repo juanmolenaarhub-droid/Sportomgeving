@@ -605,7 +605,7 @@ export default function OnboardingPage() {
                         return (
                           <div key={s.sportId} className="p-3 rounded-xl" style={{ background: '#F9F9F9', border: '1px solid #F0F0F0' }}>
                             <p style={{ fontSize: 12, fontWeight: 700, color: '#E87722', marginBottom: 8 }}>
-                              {sport?.emoji} {sport?.label ?? s.sportId}
+                              {sport?.label ?? s.sportId}
                             </p>
                             <div className="flex gap-2">
                               {LEVELS.map(l => (
@@ -684,7 +684,6 @@ export default function OnboardingPage() {
                               <Check className="w-3 h-3 text-white" strokeWidth={3} />
                             </span>
                           )}
-                          <span style={{ fontSize: 30 }}>{slot.emoji}</span>
                           <div className="text-center">
                             <p style={{ ...SYNE, fontSize: 14, fontWeight: 700, color: selected ? '#E87722' : '#111' }}>{slot.label}</p>
                             <p style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{slot.sub}</p>

@@ -40,11 +40,10 @@ const CATEGORY_ORDER: SportCategory[] = [
   'overig',
 ]
 
-/** Returns emoji + label for any value — including custom free-text */
-function displayForValue(id: string): { emoji: string; label: string } {
+/** Returns label for any value — including custom free-text */
+function displayForValue(id: string): { label: string } {
   const known = getSportById(id)
-  if (known) return { emoji: known.emoji, label: known.label }
-  return { emoji: '✏️', label: id }
+  return { label: known?.label ?? id }
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -189,7 +188,6 @@ export function SportSelector({
                 key={id}
                 className="inline-flex items-center gap-1 bg-[#111111] text-white text-xs px-2.5 py-1 rounded-full"
               >
-                <span>{d.emoji}</span>
                 <span className="font-semibold">{d.label}</span>
                 {!disabled && (
                   <button
@@ -226,7 +224,7 @@ export function SportSelector({
       >
         <span className={singleDisplay ? 'text-gray-900 font-medium' : 'text-gray-400'}>
           {singleDisplay
-            ? `${singleDisplay.emoji} ${singleDisplay.label}`
+            ? singleDisplay.label
             : multiple
             ? (selected.length === 0 ? placeholder : `${selected.length} sport${selected.length !== 1 ? 'en' : ''} gekozen`)
             : placeholder}
@@ -293,7 +291,7 @@ export function SportSelector({
                   return (
                     <SportRow
                       key={sport.id}
-                      emoji={sport.emoji}
+                      emoji=""
                       label={sport.label}
                       selected={isSelected}
                       focused={isFocused}
@@ -332,7 +330,6 @@ export function SportSelector({
                               : 'bg-white text-gray-600 border-gray-200 hover:border-[#E87722] hover:text-[#E87722]'
                           }`}
                         >
-                          <span>{sport.emoji}</span>
                           <span>{sport.label}</span>
                           {isSelected && <Check className="w-3 h-3" />}
                         </button>
@@ -357,7 +354,7 @@ export function SportSelector({
                         return (
                           <SportRow
                             key={sport.id}
-                            emoji={sport.emoji}
+                            emoji=""
                             label={sport.label}
                             selected={isSelected}
                             focused={isFocused}
@@ -431,7 +428,7 @@ interface SportRowProps {
   onClick: () => void
 }
 
-function SportRow({ emoji, label, selected, focused, disabled, multiple, onClick }: SportRowProps) {
+function SportRow({ label, selected, focused, disabled, multiple, onClick }: SportRowProps) {
   return (
     <div
       role="option"
@@ -458,7 +455,6 @@ function SportRow({ emoji, label, selected, focused, disabled, multiple, onClick
           {selected && <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />}
         </span>
       )}
-      <span className="text-base leading-none">{emoji}</span>
       <span className="text-sm font-medium text-gray-800 flex-1">{label}</span>
       {!multiple && selected && (
         <Check className="w-4 h-4 text-[#E87722] shrink-0" />

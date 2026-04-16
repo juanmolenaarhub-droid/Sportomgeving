@@ -146,13 +146,12 @@ export default function RegisterPage() {
               </div>
               <div className="space-y-3">
                 {[
-                  { emoji: '🏃', text: 'Daan V. uit Amsterdam vond een hardloopbuddy', time: '2 min geleden', delay: '0s' },
-                  { emoji: '🚴', text: 'Lisa M. uit Utrecht heeft een match geaccepteerd', time: '5 min geleden', delay: '0.3s' },
-                  { emoji: '🏊', text: 'Marco R. uit Rotterdam stuurde een buddy-verzoek', time: '8 min geleden', delay: '0.6s' },
+                  { text: 'Daan V. uit Amsterdam vond een hardloopbuddy', time: '2 min geleden', delay: '0s' },
+                  { text: 'Lisa M. uit Utrecht heeft een match geaccepteerd', time: '5 min geleden', delay: '0.3s' },
+                  { text: 'Marco R. uit Rotterdam stuurde een buddy-verzoek', time: '8 min geleden', delay: '0.6s' },
                 ].map((item) => (
                   <div key={item.text} className="flex items-start justify-between gap-3" style={{ animation: `rfadein .5s ease both`, animationDelay: item.delay }}>
                     <div className="flex items-start gap-2">
-                      <span style={{ fontSize: 13 }}>{item.emoji}</span>
                       <span style={{ fontSize: 11, color: 'rgba(255,255,255,0.75)', fontWeight: 500, lineHeight: 1.4 }}>{item.text}</span>
                     </div>
                     <span style={{ fontSize: 10, color: 'rgba(255,255,255,0.25)', fontWeight: 500, whiteSpace: 'nowrap', flexShrink: 0 }}>{item.time}</span>

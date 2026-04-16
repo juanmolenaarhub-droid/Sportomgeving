@@ -226,7 +226,7 @@ export default function Step2Post({
               className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-white text-[11px] font-semibold"
               style={{ backgroundColor: '#E87722', ...SYNE }}
             >
-              {getSportById(sport)?.emoji} {getSportById(sport)?.label ?? sport}
+              {getSportById(sport)?.label ?? sport}
             </span>
           )}
         </button>

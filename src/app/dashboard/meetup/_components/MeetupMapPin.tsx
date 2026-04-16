@@ -3,18 +3,11 @@
 const SPORT_COLORS: Record<string, string> = {
   default: '#E87722',
 }
-const SPORT_EMOJIS: Record<string, string> = {
-  'Hardlopen': '🏃', 'Fietsen': '🚴', 'Zwemmen': '🏊', 'Gym': '💪',
-  'Tennis': '🎾', 'Padel': '🏸', 'Voetbal': '⚽', 'Yoga': '🧘',
-  'Wandelen': '🚶', 'Golf': '⛳', 'Boksen': '🥊', 'Klimmen': '🧗',
-  default: '🏅',
-}
-
 export function getSportColor(s: string): string {
   return SPORT_COLORS[s] ?? SPORT_COLORS.default
 }
-export function getSportEmoji(s: string): string {
-  return SPORT_EMOJIS[s] ?? SPORT_EMOJIS.default
+export function getSportEmoji(_s: string): string {
+  return ''
 }
 
 type Props = {
@@ -26,7 +19,6 @@ type Props = {
 
 export default function MeetupMapPin({ sport, isSpontaneous, isSelected, onClick }: Props) {
   const color = getSportColor(sport)
-  const emoji = getSportEmoji(sport)
 
   return (
     <>
@@ -107,13 +99,17 @@ export default function MeetupMapPin({ sport, isSpontaneous, isSelected, onClick
           top: 8,
           left: '50%',
           transform: 'translateX(-50%)',
-          fontSize: 12,
+          fontSize: 8,
+          fontWeight: 700,
           lineHeight: '20px',
           textAlign: 'center',
           userSelect: 'none',
           pointerEvents: 'none',
+          color: '#333',
+          overflow: 'hidden',
+          width: 18,
         }}>
-          {emoji}
+          {sport.slice(0, 3).toUpperCase()}
         </div>
       </div>
     </>

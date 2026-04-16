@@ -40,7 +40,7 @@ function GroupCard({ group, onJoin, onLeave }: { group: Group; onJoin: () => voi
         const s = getSportById(group.sport!) ?? { emoji: '🏅', label: group.sport! }
         return (
           <span className="inline-block text-[10px] font-bold bg-orange-50 text-[#E87722] px-2 py-0.5 rounded-full mb-2">
-            {s.emoji} {s.label}
+            {s.label}
           </span>
         )
       })()}

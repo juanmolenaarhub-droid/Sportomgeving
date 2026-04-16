@@ -601,7 +601,7 @@ export default function FindPage() {
           {POPULAR_SPORTS.map(sport => (
             <button key={sport.id} onClick={() => setSelectedSport(selectedSport === sport.id ? '' : sport.id)}
               className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border-2 transition-all shrink-0 ${selectedSport === sport.id ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'}`}>
-              {sport.emoji} {sport.label}
+              {sport.label}
             </button>
           ))}
         </div>

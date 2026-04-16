@@ -5,7 +5,6 @@ import { Clock, MapPin } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { showInterest, withdrawInterest, clearDeclinedParticipant } from '@/app/actions/meetups'
 import type { MeetupListItem } from '@/app/actions/meetups'
-import { getSportEmoji } from './MeetupMapPin'
 
 const ORANGE_GRADIENT = 'linear-gradient(160deg, #E87722 0%, #8B3300 100%)'
 
@@ -74,7 +73,6 @@ export default function MeetupPopupCard({
 
   const isCreator = meetup.creatorId === currentUserId
   const spotsLeft = meetup.maxParticipants - meetup.acceptedCount
-  const emoji = getSportEmoji(meetup.sport)
   const chip = INTEREST_CHIPS[meetup.sport] ?? INTEREST_CHIPS.default
 
   const isExpiringSoon = meetup.isSpontaneous && meetup.expiresAt
@@ -130,7 +128,7 @@ export default function MeetupPopupCard({
             <span style={{
               background: '#E87722', color: '#fff', fontSize: 12, fontWeight: 700,
               padding: '4px 10px', borderRadius: 20, lineHeight: 1,
-            }}>⚡ Nu</span>
+            }}>Nu</span>
           )}
           <button
             onClick={onClose}
@@ -148,11 +146,11 @@ export default function MeetupPopupCard({
           display: 'flex', alignItems: 'flex-end', gap: 9,
         }}>
           <div style={{
-            width: 44, height: 44, borderRadius: 10, background: 'white',
+            width: 44, height: 44, borderRadius: 10, background: 'rgba(255,255,255,0.15)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 20, flexShrink: 0,
+            fontSize: 10, fontWeight: 800, color: 'white', flexShrink: 0, letterSpacing: 0.5,
           }}>
-            {emoji}
+            {meetup.sport.slice(0, 3).toUpperCase()}
           </div>
           <p style={{
             color: '#fff', fontSize: 17, fontWeight: 700, lineHeight: 1.25, margin: 0, flex: 1,
