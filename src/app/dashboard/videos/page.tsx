@@ -48,18 +48,31 @@ export default function PlayPage() {
   const [viewerIndex, setViewerIndex] = useState(0)
   const [viewerOpen,  setViewerOpen]  = useState(false)
 
-  // ── Trap back-navigation: never leave Play page via swipe/back button ───
+  // ── Trap ALL navigation away from the Play page ─────────────────────────
   useEffect(() => {
-    // Push a guard entry so the first "back" hits this, not a previous page
+    // Guard 1: history API (back button / iOS swipe)
     history.pushState(null, '', window.location.href)
-
     function onPopState() {
-      // Immediately re-push so the back stack never empties
       history.pushState(null, '', window.location.href)
     }
-
     window.addEventListener('popstate', onPopState)
-    return () => window.removeEventListener('popstate', onPopState)
+
+    // Guard 2: Navigation API — intercepts Next.js Link clicks too (Safari 18.4+, Chrome 102+)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const nav = (window as any).navigation
+    function onNavigate(e: any) {
+      try {
+        const dest = new URL(e.destination.url)
+        // Block navigation to /dashboard (exact) — keep the user on Play
+        if (dest.pathname === '/dashboard') e.preventDefault()
+      } catch { /* ignore */ }
+    }
+    if (nav?.addEventListener) nav.addEventListener('navigate', onNavigate)
+
+    return () => {
+      window.removeEventListener('popstate', onPopState)
+      if (nav?.removeEventListener) nav.removeEventListener('navigate', onNavigate)
+    }
   }, [])
 
   // ── Init: load buddy IDs ─────────────────────────────────────────────────

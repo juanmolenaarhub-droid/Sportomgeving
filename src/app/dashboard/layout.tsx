@@ -166,8 +166,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <header className="bg-white border-b border-black/8 sticky top-0 z-30">
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
 
-          {/* Logo */}
-          <Link href="/dashboard">
+          {/* Logo — stays on Play page to prevent accidental navigation */}
+          <Link href={pathname === '/dashboard/videos' ? '/dashboard/videos' : '/dashboard'}>
             <Image src="/logo.png" alt="Buddys" height={36} width={120} className="object-contain" />
           </Link>
 
@@ -312,10 +312,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="flex items-center justify-around">
           {MOBILE_ITEMS.map(({ href, icon: Icon, label, exact }) => {
             const active = isActive(href, exact)
+            // On the Play page, the Home nav item stays on the Play page (no accidental /dashboard nav)
+            const resolvedHref = (pathname === '/dashboard/videos' && href === '/dashboard')
+              ? '/dashboard/videos'
+              : href
             return (
               <Link
                 key={href}
-                href={href}
+                href={resolvedHref}
                 className="relative flex flex-col items-center gap-0.5 py-1 px-2 min-w-[44px]"
               >
                 <Icon
