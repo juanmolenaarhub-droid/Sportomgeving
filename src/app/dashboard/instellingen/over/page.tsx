@@ -8,9 +8,9 @@ const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const VERSION = '0.1.0-beta'
 
 const LINKS = [
-  { label: 'Privacybeleid', href: '#' },
-  { label: 'Gebruiksvoorwaarden', href: '#' },
-  { label: 'Contact', href: '#' },
+  { label: 'Privacybeleid', href: '/privacybeleid' },
+  { label: 'Gebruiksvoorwaarden', href: '/gebruiksvoorwaarden' },
+  { label: 'Contact', href: 'mailto:hallo@buddys.nl' },
 ]
 
 export default function OverPage() {
@@ -59,14 +59,20 @@ export default function OverPage() {
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Volg ons</p>
         <div className="flex flex-wrap gap-3">
-          {['Instagram', 'X / Twitter', 'TikTok'].map(label => (
-            <Link
+          {[
+            { label: 'Instagram', href: 'https://instagram.com/buddysnl' },
+            { label: 'X / Twitter', href: 'https://twitter.com/buddysnl' },
+            { label: 'TikTok', href: 'https://tiktok.com/@buddysnl' },
+          ].map(({ label, href }) => (
+            <a
               key={label}
-              href="#"
+              href={href}
+              target="_blank"
+              rel="noopener noreferrer"
               className="flex items-center gap-2 px-4 py-2.5 border border-black/10 rounded-xl text-sm font-semibold text-gray-600 hover:border-[#E87722] hover:text-[#111] transition-colors"
             >
               {label}
-            </Link>
+            </a>
           ))}
         </div>
       </div>

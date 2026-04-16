@@ -1,405 +1,353 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import {
-  Heart, MessageCircle, Share2,
-  Volume2, VolumeX, Music2, Plus, Play,
-} from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
+import { Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { GridView } from './_components/GridView'
+import { VoorJouFeed } from './_components/VoorJouFeed'
+import { FullScreenViewer } from './_components/FullScreenViewer'
+import { normalizePost } from './_components/types'
+import type { PlayPost } from './_components/types'
 
-type VideoItem = {
-  id: string
-  src: string
-  thumbnailUrl?: string
-  displayName: string
-  username: string
-  sport: string
-  caption: string
-  likes: number
-  comments: number
-  music: string
-}
+// ─── Constants ────────────────────────────────────────────────────────────────
 
-// ─── 10 demo video's — gebruiken meerdere betrouwbare gratis bronnen ──────────
-// W3Schools (1 MB, altijd beschikbaar) + Pixabay/Pexels CDN losse MP4's
-const DEMO_VIDEOS: VideoItem[] = [
-  { id:'v1',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Tim van Berg',    username:'tim_hardloopt',  sport:'Hardlopen',
-    caption:'Perfecte ochtendrun door het Vondelpark 🏃‍♂️ Wie wil mee volgende week?',
-    likes:1840, comments:47,  music:'Running Playlist — Spotify' },
-  { id:'v2',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Sarah Jansen',    username:'sarah_fietst',   sport:'Fietsen',
-    caption:'Nieuwe PR op de fiets! 42 km in 1 uur 15 🚴‍♀️ Beste week ooit',
-    likes:934,  comments:23,  music:'Cycling Vibes — Spotify' },
-  { id:'v3',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Marco de Wit',    username:'marco_gym',      sport:'Gym',
-    caption:'Arm dag 💪 Pull-ups PR: 20 reps clean. Langzaam omlaag = beter resultaat',
-    likes:2100, comments:89,  music:'Gym Hits 2026 — Spotify' },
-  { id:'v4',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Lisa Hoek',       username:'lisa_yoga',      sport:'Yoga',
-    caption:'Morning flow 🧘‍♀️ 20 minuten en je voelt het verschil. Probeer het!',
-    likes:673,  comments:31,  music:'Yoga & Meditation — Spotify' },
-  { id:'v5',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Kevin Storm',     username:'kevin_padel',    sport:'Padel',
-    caption:'Beste padel punt ooit? 🎾 Eerlijk gezegd: ja. Buddy gezocht voor rematch!',
-    likes:3200, comments:142, music:'Court Energy — Spotify' },
-  { id:'v6',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Joris Bakker',    username:'joris_zwemt',    sport:'Zwemmen',
-    caption:'100m vrije slag in 58 sec 🏊‍♂️ Doel: onder de 55. Wie traint mee?',
-    likes:780,  comments:44,  music:'Pool Vibes — Spotify' },
-  { id:'v7',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Bram van Dijk',   username:'bram_bokst',     sport:'Boksen',
-    caption:'Training 💥 3 min per ronde, 6 rondes. Boksen = beste full-body workout',
-    likes:2890, comments:97,  music:'Fight Night — Spotify' },
-  { id:'v8',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Nadia El-Amin',   username:'nadia_triathlon',sport:'Triathlon',
-    caption:'Eerste triathlon klaar 🏆 Zwemmen + fietsen + hardlopen. Nooit meer? Toch wel.',
-    likes:5600, comments:318, music:'Beast Mode — Spotify' },
-  { id:'v9',  src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Emma Kool',       username:'emma_klimt',     sport:'Klimmen',
-    caption:'Boulder 7A+ eindelijk geflashed! 🧗‍♀️ Drie weken geprobeerd. Onbeschrijflijk',
-    likes:1230, comments:61,  music:'Send It — Spotify' },
-  { id:'v10', src:'https://www.w3schools.com/html/mov_bbb.mp4',
-    displayName:'Roos Vermeer',    username:'roos_hardloopt', sport:'Hardlopen',
-    caption:'Halve marathon: 21 km in 1:58 🎉 Maanden training betalen zich uit!',
-    likes:4100, comments:203, music:'Half Marathon Mix — Spotify' },
+type Tab = 'verkennen' | 'volgend' | 'voorjou'
+
+const SPORT_PILLS = [
+  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Yoga',
+  'Padel', 'Voetbal', 'Boksen', 'Klimmen', 'Tennis',
 ]
 
-function fmt(n: number) {
-  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
-}
-
-// ─── VideoCard ────────────────────────────────────────────────────────────────
-function VideoCard({
-  video,
-  isActive,
-  isMuted,
-  onMuteToggle,
-}: {
-  video: VideoItem
-  isActive: boolean
-  isMuted: boolean
-  onMuteToggle: () => void
-}) {
-  const videoRef   = useRef<HTMLVideoElement>(null)
-  const barRef     = useRef<HTMLDivElement>(null)
-  const [liked,    setLiked]    = useState(false)
-  const [likes,    setLikes]    = useState(video.likes)
-  const [bounce,   setBounce]   = useState(false)
-  const [paused,   setPaused]   = useState(false)
-  const [progress, setProgress] = useState(0)
-  const [loaded,   setLoaded]   = useState(false)
-  const [hasError, setHasError] = useState(false)
-
-  // ── Mount: force muted via DOM (React muted prop unreliable on mobile) ─────
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    v.muted = true
-  }, [])
-
-  // ── Play / pause when card becomes active ─────────────────────────────────
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-
-    if (isActive) {
-      v.muted = true   // always start muted so autoplay policy allows it
-      v.currentTime = 0
-      const p = v.play()
-      if (p !== undefined) {
-        p.then(() => setPaused(false)).catch(() => setPaused(true))
-      }
-    } else {
-      v.pause()
-      setPaused(false)
-      setProgress(0)
-    }
-  }, [isActive])
-
-  // ── Mute toggle ───────────────────────────────────────────────────────────
-  useEffect(() => {
-    if (videoRef.current) videoRef.current.muted = isMuted
-  }, [isMuted])
-
-  // ── Progress bar ─────────────────────────────────────────────────────────
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    function tick() {
-      if (v!.duration) setProgress(v!.currentTime / v!.duration)
-    }
-    v.addEventListener('timeupdate', tick)
-    return () => v.removeEventListener('timeupdate', tick)
-  }, [])
-
-  // ── Seek on progress bar tap ──────────────────────────────────────────────
-  const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-    const v   = videoRef.current
-    const bar = barRef.current
-    if (!v || !bar || !v.duration) return
-    const rect = bar.getBoundingClientRect()
-    v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration
-  }, [])
-
-  // ── Tap video body to pause / resume ─────────────────────────────────────
-  function handleTap() {
-    const v = videoRef.current
-    if (!v) return
-    if (v.paused) {
-      v.muted = isMuted
-      v.play().then(() => setPaused(false)).catch(() => {})
-    } else {
-      v.pause()
-      setPaused(true)
-    }
-  }
-
-  // ── Play button (proper user-gesture target) ──────────────────────────────
-  function handlePlayBtn(e: React.MouseEvent) {
-    e.stopPropagation()
-    const v = videoRef.current
-    if (!v) return
-    v.muted = true   // must be muted for policy
-    v.play()
-      .then(() => { setPaused(false); setHasError(false) })
-      .catch(() => setHasError(true))
-  }
-
-  function handleLike(e: React.MouseEvent) {
-    e.stopPropagation()
-    setLiked(p => !p)
-    setLikes(p => liked ? p - 1 : p + 1)
-    setBounce(true)
-    setTimeout(() => setBounce(false), 300)
-  }
-
-  return (
-    <div className="relative w-full h-full bg-black select-none" onClick={handleTap}>
-
-      {/* ── Video element ─────────────────────────────────────────── */}
-      {/* eslint-disable-next-line jsx-a11y/media-has-caption */}
-      <video
-        ref={videoRef}
-        src={video.src}
-        poster={video.thumbnailUrl}
-        className="absolute inset-0 w-full h-full object-cover"
-        loop
-        playsInline
-        preload={isActive ? 'auto' : 'metadata'}
-        onCanPlay={() => setLoaded(true)}
-        onError={() => { setHasError(true); setLoaded(true) }}
-      />
-
-      {/* Loading spinner */}
-      {isActive && !loaded && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-        </div>
-      )}
-
-      {/* Error state */}
-      {hasError && (
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-2 pointer-events-none">
-          <span className="text-white/60 text-sm">Video kan niet laden</span>
-        </div>
-      )}
-
-      {/* Gradient overlays */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80 pointer-events-none" />
-
-      {/* ── Play button — real clickable target for user-gesture ─────── */}
-      {paused && !hasError && (
-        <button
-          className="absolute inset-0 flex items-center justify-center"
-          onClick={handlePlayBtn}
-        >
-          <div className="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <Play className="w-7 h-7 text-white ml-1" />
-          </div>
-        </button>
-      )}
-
-      {/* ── Right actions — pushed up to clear mobile nav ────────────── */}
-      <div
-        className="absolute right-3 flex flex-col items-center gap-5"
-        style={{ bottom: 108 }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Avatar */}
-        <div className="relative">
-          <div className="w-11 h-11 rounded-full ring-2 ring-white overflow-hidden">
-            <Avatar name={video.displayName} imageUrl={null} size="sm" />
-          </div>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 bg-[#E87722] rounded-full flex items-center justify-center ring-2 ring-black">
-            <Plus className="w-3 h-3 text-white" strokeWidth={3} />
-          </div>
-        </div>
-
-        {/* Like */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm">
-            <Heart
-              className="w-6 h-6 transition-transform duration-150"
-              style={{
-                color: liked ? '#E87722' : 'white',
-                fill:  liked ? '#E87722' : 'none',
-                transform: bounce ? 'scale(1.4)' : 'scale(1)',
-              }}
-            />
-          </div>
-          <span className="text-white text-[11px] font-bold drop-shadow">{fmt(likes)}</span>
-        </button>
-
-        {/* Comment */}
-        <button onClick={e => e.stopPropagation()} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm">
-            <MessageCircle className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-white text-[11px] font-bold drop-shadow">{fmt(video.comments)}</span>
-        </button>
-
-        {/* Share */}
-        <button onClick={e => e.stopPropagation()} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm">
-            <Share2 className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-white text-[11px] font-bold drop-shadow">Deel</span>
-        </button>
-
-        {/* Mute */}
-        <button
-          onClick={e => { e.stopPropagation(); onMuteToggle() }}
-          className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm"
-        >
-          {isMuted
-            ? <VolumeX className="w-5 h-5 text-white" />
-            : <Volume2 className="w-5 h-5 text-white" />
-          }
-        </button>
-      </div>
-
-      {/* ── Bottom info — bottom-[88px] clears the mobile floating nav ── */}
-      <div
-        className="absolute left-4 right-16 space-y-1"
-        style={{ bottom: 88 }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-white font-black text-[14px] drop-shadow">@{video.username}</span>
-          <span
-            className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
-            style={{ background: '#E87722' }}
-          >
-            {video.sport}
-          </span>
-        </div>
-        <p className="text-white/90 text-[13px] leading-snug drop-shadow line-clamp-2">{video.caption}</p>
-        <div className="flex items-center gap-1.5">
-          <Music2 className="w-3 h-3 text-white/60 shrink-0" />
-          <span className="text-white/60 text-xs truncate">{video.music}</span>
-        </div>
-      </div>
-
-      {/* ── Progress bar ─────────────────────────────────────────── */}
-      <div
-        ref={barRef}
-        className="absolute bottom-0 left-0 right-0 h-1 bg-white/25 cursor-pointer"
-        onClick={handleSeek}
-      >
-        <div
-          className="h-full bg-white"
-          style={{ width: `${progress * 100}%`, transition: 'width 0.1s linear' }}
-        />
-        {/* Scrubber dot */}
-        <div
-          className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md -translate-x-1/2"
-          style={{ left: `${progress * 100}%` }}
-        />
-      </div>
-    </div>
-  )
-}
+const PAGE_SIZE = 20
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
-export default function VideosPage() {
+
+export default function PlayPage() {
   const supabase = createClient()
-  const [videos, setVideos] = useState<VideoItem[]>(DEMO_VIDEOS)
-  const [activeIndex, setActiveIndex] = useState(0)
-  const [isMuted, setIsMuted] = useState(true)
-  const containerRef = useRef<HTMLDivElement>(null)
 
-  // Fetch real video posts from DB; prepend them before the demo videos
+  const [tab,         setTab]         = useState<Tab>('verkennen')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activePill,  setActivePill]  = useState<string | null>(null)
+  const [isMuted,     setIsMuted]     = useState(true)
+
+  // Verkennen (explore) state
+  const [explorePosts,   setExplorePosts]   = useState<PlayPost[]>([])
+  const [exploreLoading, setExploreLoading] = useState(false)
+  const [exploreHasMore, setExploreHasMore] = useState(true)
+  const exploreCursorRef = useRef<string | null>(null)
+
+  // Volgend (following) state
+  const [followPosts,   setFollowPosts]   = useState<PlayPost[]>([])
+  const [followLoading, setFollowLoading] = useState(false)
+  const [followHasMore, setFollowHasMore] = useState(true)
+  const followCursorRef = useRef<string | null>(null)
+  const buddyIdsRef     = useRef<string[]>([])
+
+  // Viewer state
+  const [viewerPosts, setViewerPosts] = useState<PlayPost[]>([])
+  const [viewerIndex, setViewerIndex] = useState(0)
+  const [viewerOpen,  setViewerOpen]  = useState(false)
+
+  const userIdRef = useRef('')
+
+  // ── Load buddy IDs once ──────────────────────────────────────────────────
   useEffect(() => {
-    async function loadVideos() {
-      const { data } = await supabase
-        .from('posts')
-        .select('id, user_id, content, sport_tag, media_url, thumbnail_url, likes_count, created_at, profiles(full_name, username)')
-        .eq('media_type', 'video')
-        .not('media_url', 'is', null)
-        .order('created_at', { ascending: false })
-        .limit(30)
+    async function init() {
+      const { data: { user } } = await supabase.auth.getUser()
+      if (!user) return
+      userIdRef.current = user.id
 
-      if (!data || data.length === 0) return
+      const { data: reqs } = await supabase
+        .from('follow_requests')
+        .select('from_user_id, to_user_id')
+        .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
+        .eq('status', 'accepted')
 
-      const dbVideos: VideoItem[] = data.map((p: any) => {
-        const prof = Array.isArray(p.profiles) ? p.profiles[0] : p.profiles
-        const displayName = prof?.full_name ?? prof?.username ?? 'Gebruiker'
-        const username = (prof?.username ?? displayName).toLowerCase().replace(/\s+/g, '_')
-        return {
-          id: p.id,
-          src: p.media_url,
-          thumbnailUrl: p.thumbnail_url ?? undefined,
-          displayName,
-          username,
-          sport: p.sport_tag ?? 'Sport',
-          caption: p.content ?? '',
-          likes: p.likes_count ?? 0,
-          comments: 0,
-          music: '',
-        }
-      })
-
-      // Real videos first, then demo videos as fill
-      setVideos([...dbVideos, ...DEMO_VIDEOS])
+      const ids = (reqs ?? []).map(r =>
+        r.from_user_id === user.id ? r.to_user_id : r.from_user_id
+      )
+      buddyIdsRef.current = [user.id, ...ids]
     }
-    loadVideos()
+    init()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) return
-    function onScroll() {
-      const idx = Math.round(el!.scrollTop / el!.clientHeight)
-      setActiveIndex(idx)
+  // ── Fetch explore posts ──────────────────────────────────────────────────
+  const loadExplorePosts = useCallback(async (reset = false) => {
+    if (!reset && (!exploreHasMore || exploreLoading)) return
+    if (reset) {
+      exploreCursorRef.current = null
+      setExploreHasMore(true)
     }
-    el.addEventListener('scroll', onScroll, { passive: true })
-    return () => el.removeEventListener('scroll', onScroll)
-  }, [])
+    setExploreLoading(true)
+
+    let query = supabase
+      .from('posts')
+      .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at')
+      .not('media_url', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+
+    if (exploreCursorRef.current) query = query.lt('created_at', exploreCursorRef.current)
+
+    // Sport filter
+    const sportFilter = activePill
+    if (sportFilter) query = query.contains('sport_tags', [sportFilter])
+
+    // Search query on content
+    if (searchQuery.trim()) query = query.ilike('content', `%${searchQuery.trim()}%`)
+
+    const { data } = await query
+    if (!data || data.length === 0) {
+      setExploreHasMore(false)
+      setExploreLoading(false)
+      return
+    }
+
+    exploreCursorRef.current = data[data.length - 1].created_at
+
+    const userIds = [...new Set(data.map(p => p.user_id))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, region')
+      .in('id', userIds)
+    const profileMap: Record<string, unknown> = {}
+    for (const p of profiles ?? []) profileMap[p.id] = p
+
+    const newPosts = data.map(row => normalizePost(row, profileMap[row.user_id]))
+
+    if (reset) setExplorePosts(newPosts)
+    else       setExplorePosts(prev => [...prev, ...newPosts])
+
+    setExploreHasMore(data.length >= PAGE_SIZE)
+    setExploreLoading(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePill, searchQuery, exploreHasMore, exploreLoading])
+
+  // ── Fetch following posts ────────────────────────────────────────────────
+  const loadFollowPosts = useCallback(async (reset = false) => {
+    if (!reset && (!followHasMore || followLoading)) return
+    if (reset) {
+      followCursorRef.current = null
+      setFollowHasMore(true)
+    }
+    setFollowLoading(true)
+
+    const buddyIds = buddyIdsRef.current
+    if (buddyIds.length === 0) {
+      setFollowLoading(false)
+      return
+    }
+
+    let query = supabase
+      .from('posts')
+      .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at')
+      .in('user_id', buddyIds)
+      .not('media_url', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(PAGE_SIZE)
+
+    if (followCursorRef.current) query = query.lt('created_at', followCursorRef.current)
+
+    const { data } = await query
+    if (!data || data.length === 0) {
+      setFollowHasMore(false)
+      setFollowLoading(false)
+      return
+    }
+
+    followCursorRef.current = data[data.length - 1].created_at
+
+    const userIds = [...new Set(data.map(p => p.user_id))]
+    const { data: profiles } = await supabase
+      .from('profiles')
+      .select('id, full_name, username, avatar_url, region')
+      .in('id', userIds)
+    const profileMap: Record<string, unknown> = {}
+    for (const p of profiles ?? []) profileMap[p.id] = p
+
+    const newPosts = data.map(row => normalizePost(row, profileMap[row.user_id]))
+
+    if (reset) setFollowPosts(newPosts)
+    else       setFollowPosts(prev => [...prev, ...newPosts])
+
+    setFollowHasMore(data.length >= PAGE_SIZE)
+    setFollowLoading(false)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [followHasMore, followLoading])
+
+  // Initial load + reload on filter change
+  useEffect(() => {
+    loadExplorePosts(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activePill, searchQuery])
+
+  useEffect(() => {
+    if (tab === 'volgend' && followPosts.length === 0) loadFollowPosts(true)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tab])
+
+  // ── Open viewer ──────────────────────────────────────────────────────────
+  function openViewer(posts: PlayPost[], index: number) {
+    setViewerPosts(posts)
+    setViewerIndex(index)
+    setViewerOpen(true)
+  }
+
+  // ── Pill toggle ──────────────────────────────────────────────────────────
+  function togglePill(pill: string) {
+    setActivePill(prev => prev === pill ? null : pill)
+  }
+
+  const isVoorJou = tab === 'voorjou'
 
   return (
-    <div
-      ref={containerRef}
-      className="flex-1 overflow-y-scroll"
-      style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
-    >
-      {videos.map((video, i) => (
+    <>
+      {/* FullScreen Viewer overlay */}
+      {viewerOpen && (
+        <FullScreenViewer
+          posts={viewerPosts}
+          initialIndex={viewerIndex}
+          onClose={() => setViewerOpen(false)}
+          isMuted={isMuted}
+          onMuteToggle={() => setIsMuted(v => !v)}
+        />
+      )}
+
+      {/* Page wrapper */}
+      <div
+        className="flex flex-col"
+        style={{
+          minHeight: isVoorJou ? '100%' : undefined,
+          background: isVoorJou ? '#000' : undefined,
+        }}
+      >
+        {/* ── Top bar ──────────────────────────────────────────────────── */}
         <div
-          key={video.id}
-          className="w-full shrink-0"
-          style={{ height: '100%', scrollSnapAlign: 'start', scrollSnapStop: 'always' }}
+          className="sticky top-0 z-20 border-b"
+          style={{
+            background:   isVoorJou ? 'rgba(0,0,0,0.85)' : '#fff',
+            borderColor:  isVoorJou ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+          }}
         >
-          <VideoCard
-            video={video}
-            isActive={i === activeIndex}
-            isMuted={isMuted}
-            onMuteToggle={() => setIsMuted(v => !v)}
-          />
+          {/* Tab switcher */}
+          <div className="flex items-center px-4 pt-3 pb-0 gap-1">
+            {([ 'verkennen', 'volgend', 'voorjou'] as Tab[]).map(t => {
+              const labels: Record<Tab, string> = {
+                verkennen: 'Verkennen',
+                volgend:   'Volgend',
+                voorjou:   'Voor jou',
+              }
+              const active = tab === t
+              return (
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className="relative pb-3 px-3 text-sm font-bold transition-colors"
+                  style={{
+                    color: active
+                      ? (isVoorJou ? '#fff' : '#111')
+                      : (isVoorJou ? 'rgba(255,255,255,0.4)' : '#9ca3af'),
+                  }}
+                >
+                  {labels[t]}
+                  {active && (
+                    <span
+                      className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
+                      style={{ background: '#E87722' }}
+                    />
+                  )}
+                </button>
+              )
+            })}
+          </div>
+
+          {/* Search + pills (only Verkennen/Volgend) */}
+          {tab !== 'voorjou' && (
+            <div className="px-4 pb-3 space-y-2 mt-2">
+              {/* Search bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                <input
+                  type="text"
+                  placeholder="Zoek op sport, naam of beschrijving..."
+                  value={searchQuery}
+                  onChange={e => setSearchQuery(e.target.value)}
+                  className="w-full pl-9 pr-9 py-2.5 text-sm bg-gray-100 rounded-xl border-none outline-none placeholder:text-gray-400 font-medium"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute right-3 top-1/2 -translate-y-1/2"
+                  >
+                    <X className="w-4 h-4 text-gray-400" />
+                  </button>
+                )}
+              </div>
+
+              {/* Sport pills */}
+              <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
+                {SPORT_PILLS.map(pill => {
+                  const active = activePill === pill
+                  return (
+                    <button
+                      key={pill}
+                      onClick={() => togglePill(pill)}
+                      className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
+                      style={{
+                        background: active ? '#E87722' : '#F3F4F6',
+                        color:      active ? '#fff'    : '#374151',
+                      }}
+                    >
+                      {pill}
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+          )}
         </div>
-      ))}
-    </div>
+
+        {/* ── Tab content ──────────────────────────────────────────────── */}
+        {tab === 'verkennen' && (
+          <div className="px-3 pt-3">
+            <GridView
+              posts={explorePosts}
+              loading={exploreLoading}
+              hasMore={exploreHasMore}
+              onCardClick={i => openViewer(explorePosts, i)}
+              onLoadMore={() => loadExplorePosts(false)}
+            />
+          </div>
+        )}
+
+        {tab === 'volgend' && (
+          <div className="px-3 pt-3">
+            {followPosts.length === 0 && !followLoading ? (
+              <div className="py-16 text-center space-y-2">
+                <p className="text-gray-500 font-semibold text-sm">Nog niks hier</p>
+                <p className="text-gray-400 text-xs">Volg buddies om hun posts te zien</p>
+              </div>
+            ) : (
+              <GridView
+                posts={followPosts}
+                loading={followLoading}
+                hasMore={followHasMore}
+                onCardClick={i => openViewer(followPosts, i)}
+                onLoadMore={() => loadFollowPosts(false)}
+              />
+            )}
+          </div>
+        )}
+
+        {tab === 'voorjou' && (
+          <div className="flex flex-col" style={{ height: 'calc(100vh - 112px)' }}>
+            <VoorJouFeed isMuted={isMuted} onMuteToggle={() => setIsMuted(v => !v)} />
+          </div>
+        )}
+      </div>
+    </>
   )
 }
