@@ -10,7 +10,7 @@ import { FullScreenViewer } from './_components/FullScreenViewer'
 import { normalizePost } from './_components/types'
 import type { PlayPost } from './_components/types'
 
-type Tab = 'verkennen' | 'volgend' | 'voorjou'
+type Tab = 'ontdekken' | 'volgend' | 'voorjou'
 
 const SPORT_PILLS = [
   'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Yoga',
@@ -22,12 +22,12 @@ const PAGE_SIZE = 20
 export default function PlayPage() {
   const supabase = createClient()
 
-  const [tab,         setTab]         = useState<Tab>('verkennen')
+  const [tab,         setTab]         = useState<Tab>('ontdekken')
   const [searchQuery, setSearchQuery] = useState('')
   const [activePill,  setActivePill]  = useState<string | null>(null)
   const [isMuted,     setIsMuted]     = useState(true)
 
-  // Verkennen state
+  // Ontdekken state
   const [explorePosts,   setExplorePosts]   = useState<PlayPost[]>([])
   const [exploreLoading, setExploreLoading] = useState(false)
   const [exploreHasMore, setExploreHasMore] = useState(true)
@@ -40,164 +40,117 @@ export default function PlayPage() {
   const [followActiveIdx, setFollowActiveIdx] = useState(0)
   const followCursorRef = useRef<string | null>(null)
 
-  // Buddy IDs — loaded once, stored in state so effects can react to it
+  // Buddy IDs in state so effects react when they arrive
   const [buddyIds, setBuddyIds] = useState<string[]>([])
-  const buddyIdsLoadedRef = useRef(false)
 
-  // Viewer state (Verkennen grid tap)
+  // Viewer (Ontdekken grid tap)
   const [viewerPosts, setViewerPosts] = useState<PlayPost[]>([])
   const [viewerIndex, setViewerIndex] = useState(0)
   const [viewerOpen,  setViewerOpen]  = useState(false)
 
-  // ── Load buddy IDs on mount ────────────────────────────────────────────
+  // ── Init: load buddy IDs ─────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
       if (!user) return
-
       const { data: reqs } = await supabase
         .from('follow_requests')
         .select('from_user_id, to_user_id')
         .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
         .eq('status', 'accepted')
-
       const ids = (reqs ?? []).map(r =>
         r.from_user_id === user.id ? r.to_user_id : r.from_user_id
       )
-      buddyIdsLoadedRef.current = true
       setBuddyIds([user.id, ...ids])
     }
     init()
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // ── Fetch explore posts ──────────────────────────────────────────────────
+  // ── Fetch ontdekken posts ────────────────────────────────────────────────
   const loadExplorePosts = useCallback(async (reset = false) => {
     if (!reset && (!exploreHasMore || exploreLoading)) return
-    if (reset) {
-      exploreCursorRef.current = null
-      setExploreHasMore(true)
-    }
+    if (reset) { exploreCursorRef.current = null; setExploreHasMore(true) }
     setExploreLoading(true)
 
-    let query = supabase
+    let q = supabase
       .from('posts')
       .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at')
       .not('media_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
+    if (exploreCursorRef.current) q = q.lt('created_at', exploreCursorRef.current)
+    if (activePill)               q = q.contains('sport_tags', [activePill])
+    if (searchQuery.trim())       q = q.ilike('content', `%${searchQuery.trim()}%`)
 
-    if (exploreCursorRef.current) query = query.lt('created_at', exploreCursorRef.current)
-    if (activePill)               query = query.contains('sport_tags', [activePill])
-    if (searchQuery.trim())       query = query.ilike('content', `%${searchQuery.trim()}%`)
-
-    const { data } = await query
-    if (!data || data.length === 0) {
-      setExploreHasMore(false)
-      setExploreLoading(false)
-      return
-    }
-
+    const { data } = await q
+    if (!data || data.length === 0) { setExploreHasMore(false); setExploreLoading(false); return }
     exploreCursorRef.current = data[data.length - 1].created_at
 
-    const userIds = [...new Set(data.map(p => p.user_id))]
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, full_name, username, avatar_url, region')
-      .in('id', userIds)
-    const profileMap: Record<string, unknown> = {}
-    for (const p of profiles ?? []) profileMap[p.id] = p
+    const ids = [...new Set(data.map(p => p.user_id))]
+    const { data: profs } = await supabase.from('profiles').select('id, full_name, username, avatar_url, region').in('id', ids)
+    const pm: Record<string, unknown> = {}
+    for (const p of profs ?? []) pm[p.id] = p
+    const posts = data.map(r => normalizePost(r, pm[r.user_id]))
 
-    const newPosts = data.map(row => normalizePost(row, profileMap[row.user_id]))
-    if (reset) setExplorePosts(newPosts)
-    else       setExplorePosts(prev => [...prev, ...newPosts])
-
+    if (reset) setExplorePosts(posts)
+    else       setExplorePosts(prev => [...prev, ...posts])
     setExploreHasMore(data.length >= PAGE_SIZE)
     setExploreLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePill, searchQuery, exploreHasMore, exploreLoading])
 
-  // ── Fetch following posts ────────────────────────────────────────────────
+  // ── Fetch volgend posts ──────────────────────────────────────────────────
   const loadFollowPosts = useCallback(async (reset = false, ids?: string[]) => {
     const resolvedIds = ids ?? buddyIds
     if (resolvedIds.length === 0) return
     if (!reset && (!followHasMore || followLoading)) return
-    if (reset) {
-      followCursorRef.current = null
-      setFollowHasMore(true)
-    }
+    if (reset) { followCursorRef.current = null; setFollowHasMore(true) }
     setFollowLoading(true)
 
-    let query = supabase
+    let q = supabase
       .from('posts')
       .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at')
       .in('user_id', resolvedIds)
       .not('media_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
+    if (followCursorRef.current) q = q.lt('created_at', followCursorRef.current)
 
-    if (followCursorRef.current) query = query.lt('created_at', followCursorRef.current)
-
-    const { data } = await query
-    if (!data || data.length === 0) {
-      setFollowHasMore(false)
-      setFollowLoading(false)
-      return
-    }
-
+    const { data } = await q
+    if (!data || data.length === 0) { setFollowHasMore(false); setFollowLoading(false); return }
     followCursorRef.current = data[data.length - 1].created_at
 
-    const userIds = [...new Set(data.map(p => p.user_id))]
-    const { data: profiles } = await supabase
-      .from('profiles')
-      .select('id, full_name, username, avatar_url, region')
-      .in('id', userIds)
-    const profileMap: Record<string, unknown> = {}
-    for (const p of profiles ?? []) profileMap[p.id] = p
+    const ids2 = [...new Set(data.map(p => p.user_id))]
+    const { data: profs } = await supabase.from('profiles').select('id, full_name, username, avatar_url, region').in('id', ids2)
+    const pm: Record<string, unknown> = {}
+    for (const p of profs ?? []) pm[p.id] = p
+    const posts = data.map(r => normalizePost(r, pm[r.user_id]))
 
-    const newPosts = data.map(row => normalizePost(row, profileMap[row.user_id]))
-    if (reset) setFollowPosts(newPosts)
-    else       setFollowPosts(prev => [...prev, ...newPosts])
-
+    if (reset) setFollowPosts(posts)
+    else       setFollowPosts(prev => [...prev, ...posts])
     setFollowHasMore(data.length >= PAGE_SIZE)
     setFollowLoading(false)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buddyIds, followHasMore, followLoading])
 
-  // Initial explore load + reload on filter change
-  useEffect(() => {
-    loadExplorePosts(true)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activePill, searchQuery])
+  // Reload explore on filter change
+  useEffect(() => { loadExplorePosts(true) }, // eslint-disable-next-line react-hooks/exhaustive-deps
+  [activePill, searchQuery])
 
-  // Load follow posts when buddy IDs arrive (covers the tab-switch-before-load case)
+  // Load volgend when buddy IDs arrive
   useEffect(() => {
-    if (buddyIds.length > 0 && tab === 'volgend' && followPosts.length === 0) {
-      loadFollowPosts(true, buddyIds)
-    }
+    if (buddyIds.length > 0 && followPosts.length === 0) loadFollowPosts(true, buddyIds)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [buddyIds])
 
-  // Load follow posts when switching to volgend tab (buddy IDs already available)
+  // Load volgend on tab switch (IDs might already be available)
   useEffect(() => {
-    if (tab === 'volgend' && buddyIds.length > 0 && followPosts.length === 0) {
-      loadFollowPosts(true, buddyIds)
-    }
+    if (tab === 'volgend' && buddyIds.length > 0 && followPosts.length === 0) loadFollowPosts(true, buddyIds)
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
-  function openViewer(posts: PlayPost[], index: number) {
-    setViewerPosts(posts)
-    setViewerIndex(index)
-    setViewerOpen(true)
-  }
-
-  function togglePill(pill: string) {
-    setActivePill(prev => prev === pill ? null : pill)
-  }
-
-  const isDark      = tab !== 'verkennen'
-  const isFullscreen = tab === 'volgend' || tab === 'voorjou'
+  const isDark = tab !== 'ontdekken'
 
   return (
     <>
@@ -212,61 +165,50 @@ export default function PlayPage() {
       )}
 
       {/*
-        When in fullscreen mode (Volgend/Voor jou) we need to fill the exact
-        available height so the vertical scroll-snap works. The layout gives us
-        a flex-1 flex-col overflow-hidden container — we mirror that here.
+        Stable wrapper — structure NEVER changes between tabs.
+        flex-1 min-h-0 fills the layout's flex-1 flex-col overflow-hidden container.
       */}
       <div
-        className={`flex flex-col ${isFullscreen ? 'flex-1 min-h-0' : ''}`}
+        className="flex flex-col flex-1 min-h-0"
         style={{ background: isDark ? '#000' : undefined }}
       >
-        {/* ── Top bar ──────────────────────────────────────────────── */}
+        {/* ── Tab bar — always sticky, always the same DOM position ── */}
         <div
-          className="shrink-0 border-b"
+          className="shrink-0 sticky top-0 z-20 border-b"
           style={{
-            background:           isDark ? 'rgba(0,0,0,0.85)' : '#fff',
+            background:           isDark ? 'rgba(0,0,0,0.88)' : '#fff',
             borderColor:          isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
             backdropFilter:       'blur(12px)',
             WebkitBackdropFilter: 'blur(12px)',
-            position:             isFullscreen ? 'relative' : 'sticky',
-            top:                  isFullscreen ? undefined : 0,
-            zIndex:               20,
           }}
         >
-          {/* Tabs */}
           <div className="flex items-center px-4 pt-3 pb-0 gap-1">
-            {(['verkennen', 'volgend', 'voorjou'] as Tab[]).map(t => {
-              const labels: Record<Tab, string> = {
-                verkennen: 'Verkennen',
-                volgend:   'Volgend',
-                voorjou:   'Voor jou',
-              }
+            {(['ontdekken', 'volgend', 'voorjou'] as Tab[]).map(t => {
+              const labels: Record<Tab, string> = { ontdekken: 'Ontdekken', volgend: 'Volgend', voorjou: 'Voor jou' }
               const active = tab === t
               return (
                 <button
                   key={t}
-                  onClick={() => setTab(t)}
-                  className="relative pb-3 px-3 text-sm font-bold transition-colors"
+                  type="button"
+                  onClick={e => { e.preventDefault(); e.stopPropagation(); setTab(t) }}
+                  className="relative pb-3 px-3 text-sm font-bold transition-colors select-none"
                   style={{
                     color: active
-                      ? (isDark ? '#fff' : '#111')
+                      ? (isDark ? '#fff'  : '#111')
                       : (isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af'),
                   }}
                 >
                   {labels[t]}
                   {active && (
-                    <span
-                      className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full"
-                      style={{ background: '#E87722' }}
-                    />
+                    <span className="absolute bottom-0 left-3 right-3 h-0.5 rounded-full" style={{ background: '#E87722' }} />
                   )}
                 </button>
               )
             })}
           </div>
 
-          {/* Search + pills — only Verkennen */}
-          {tab === 'verkennen' && (
+          {/* Search + pills — Ontdekken only */}
+          {tab === 'ontdekken' && (
             <div className="px-4 pb-3 space-y-2 mt-2">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
@@ -278,7 +220,7 @@ export default function PlayPage() {
                   className="w-full pl-9 pr-9 py-2.5 text-sm bg-gray-100 rounded-xl border-none outline-none placeholder:text-gray-400 font-medium"
                 />
                 {searchQuery && (
-                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <button type="button" onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
                     <X className="w-4 h-4 text-gray-400" />
                   </button>
                 )}
@@ -289,12 +231,10 @@ export default function PlayPage() {
                   return (
                     <button
                       key={pill}
-                      onClick={() => togglePill(pill)}
+                      type="button"
+                      onClick={() => setActivePill(prev => prev === pill ? null : pill)}
                       className="shrink-0 text-xs font-bold px-3 py-1.5 rounded-full transition-all"
-                      style={{
-                        background: active ? '#E87722' : '#F3F4F6',
-                        color:      active ? '#fff'    : '#374151',
-                      }}
+                      style={{ background: active ? '#E87722' : '#F3F4F6', color: active ? '#fff' : '#374151' }}
                     >
                       {pill}
                     </button>
@@ -305,17 +245,19 @@ export default function PlayPage() {
           )}
         </div>
 
-        {/* ── Tab content ────────────────────────────────────────── */}
+        {/* ── Content area — flex-1 min-h-0 ensures each tab fills remaining height ── */}
 
-        {tab === 'verkennen' && (
-          <div className="px-3 pt-3">
-            <GridView
-              posts={explorePosts}
-              loading={exploreLoading}
-              hasMore={exploreHasMore}
-              onCardClick={i => openViewer(explorePosts, i)}
-              onLoadMore={() => loadExplorePosts(false)}
-            />
+        {tab === 'ontdekken' && (
+          <div className="flex-1 min-h-0 overflow-y-auto">
+            <div className="px-3 pt-3">
+              <GridView
+                posts={explorePosts}
+                loading={exploreLoading}
+                hasMore={exploreHasMore}
+                onCardClick={i => { setViewerPosts(explorePosts); setViewerIndex(i); setViewerOpen(true) }}
+                onLoadMore={() => loadExplorePosts(false)}
+              />
+            </div>
           </div>
         )}
 
