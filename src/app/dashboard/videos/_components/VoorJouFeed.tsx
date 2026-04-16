@@ -180,7 +180,12 @@ export function VoorJouFeed({ isMuted, onMuteToggle }: Props) {
     <div
       ref={containerRef}
       className="flex-1 min-h-0 overflow-y-scroll"
-      style={{ scrollSnapType: 'y mandatory', WebkitOverflowScrolling: 'touch' }}
+      style={{
+        scrollSnapType: 'y mandatory',
+        WebkitOverflowScrolling: 'touch',
+        overscrollBehavior: 'contain',
+        touchAction: 'pan-y',
+      }}
     >
       {posts.map((post, i) => (
         <div
