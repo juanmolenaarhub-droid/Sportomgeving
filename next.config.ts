@@ -1,6 +1,8 @@
 import type { NextConfig } from "next";
 
 const securityHeaders = [
+  // DNS prefetch voor betere performance
+  { key: 'X-DNS-Prefetch-Control', value: 'on' },
   // Voorkomt dat de site in een iframe geladen wordt (clickjacking)
   { key: 'X-Frame-Options', value: 'DENY' },
   // Voorkomt MIME type sniffing

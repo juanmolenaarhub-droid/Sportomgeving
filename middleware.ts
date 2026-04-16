@@ -27,9 +27,22 @@ export async function middleware(request: NextRequest) {
 
   // Ververs de auth sessie zodat die niet verloopt
   const { data: { user } } = await supabase.auth.getUser()
+  const pathname = request.nextUrl.pathname
+
+  // E-mailverificatie check
+  if (
+    user &&
+    !user.email_confirmed_at &&
+    !pathname.startsWith('/verify-email') &&
+    !pathname.startsWith('/auth')
+  ) {
+    const url = request.nextUrl.clone()
+    url.pathname = '/verify-email'
+    return NextResponse.redirect(url)
+  }
 
   // Admin route: alleen de admin user mag erin
-  if (request.nextUrl.pathname.startsWith('/admin')) {
+  if (pathname.startsWith('/admin')) {
     const adminUserId = process.env.ADMIN_USER_ID
     if (!user || user.id !== adminUserId) {
       const url = request.nextUrl.clone()
@@ -40,9 +53,7 @@ export async function middleware(request: NextRequest) {
 
   // Beschermde routes: redirect naar login als niet ingelogd
   const protectedPaths = ['/dashboard', '/onboarding']
-  const isProtected = protectedPaths.some((path) =>
-    request.nextUrl.pathname.startsWith(path)
-  )
+  const isProtected = protectedPaths.some((p) => pathname.startsWith(p))
 
   if (isProtected && !user) {
     const url = request.nextUrl.clone()
