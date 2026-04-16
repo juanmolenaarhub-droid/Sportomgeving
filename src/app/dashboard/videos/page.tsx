@@ -48,6 +48,20 @@ export default function PlayPage() {
   const [viewerIndex, setViewerIndex] = useState(0)
   const [viewerOpen,  setViewerOpen]  = useState(false)
 
+  // ── Trap back-navigation: never leave Play page via swipe/back button ───
+  useEffect(() => {
+    // Push a guard entry so the first "back" hits this, not a previous page
+    history.pushState(null, '', window.location.href)
+
+    function onPopState() {
+      // Immediately re-push so the back stack never empties
+      history.pushState(null, '', window.location.href)
+    }
+
+    window.addEventListener('popstate', onPopState)
+    return () => window.removeEventListener('popstate', onPopState)
+  }, [])
+
   // ── Init: load buddy IDs ─────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
