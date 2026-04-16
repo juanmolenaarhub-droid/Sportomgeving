@@ -4,6 +4,8 @@ import { useState, useRef, useCallback } from 'react'
 import {
   ArrowLeft, Image as ImageIcon, Loader2,
 } from 'lucide-react'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
@@ -44,11 +46,6 @@ interface Step2PostProps {
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
-
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal',
-  'Tennis', 'Padel', 'Yoga', 'Triathlon', 'Boksen', 'Klimmen', 'Overig',
-]
 
 const INTEGRATIONS = [
   { name: 'Strava',       dot: '#E87722' },
@@ -135,7 +132,7 @@ export default function Step2Post({
     try {
       await onSubmit({
         content,
-        sport,
+        sport: getSportById(sport)?.label ?? sport,
         locationName,
         locationLat,
         locationLng,
@@ -229,7 +226,7 @@ export default function Step2Post({
               className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-white text-[11px] font-semibold"
               style={{ backgroundColor: '#E87722', ...SYNE }}
             >
-              {sport}
+              {getSportById(sport)?.emoji} {getSportById(sport)?.label ?? sport}
             </span>
           )}
         </button>
@@ -283,28 +280,15 @@ export default function Step2Post({
             </div>
           </div>
 
-          {/* Sport pills */}
+          {/* Sport */}
           <div className="px-4 py-3">
-            <p className="text-[11px] font-semibold text-gray-400 uppercase mb-2" style={SYNE}>
-              Sport
-            </p>
-            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-              {SPORTS.map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => setSport(prev => prev === s ? '' : s)}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors"
-                  style={
-                    sport === s
-                      ? { backgroundColor: '#E87722', color: '#fff', borderColor: '#E87722', ...SYNE }
-                      : { backgroundColor: 'transparent', color: '#374151', borderColor: '#F5F2EE', ...SYNE }
-                  }
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+            <SportSelector
+              value={sport}
+              onChange={v => setSport(v as string)}
+              multiple={false}
+              label="Sport"
+              placeholder="Kies een sport (optioneel)..."
+            />
           </div>
 
           {/* Location */}

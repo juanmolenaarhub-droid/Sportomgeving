@@ -2,6 +2,8 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Plus, X } from 'lucide-react'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import TagPeoplePanel from '@/components/composer/TagPeoplePanel'
@@ -42,10 +44,6 @@ interface Props {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal',
-  'Tennis', 'Padel', 'Yoga', 'Triathlon', 'Boksen', 'Klimmen', 'Overig',
-]
 
 const POLL_DURATIONS: { label: string; days: number }[] = [
   { label: '1 dag', days: 1 },
@@ -90,7 +88,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
     try {
       await onSubmit({
         content: question.trim(),
-        sport,
+        sport: getSportById(sport)?.label ?? sport,
         locationName: '',
         locationLat: null,
         locationLng: null,
@@ -207,27 +205,15 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
         {/* Divider */}
         <div className="border-t" style={{ borderColor: '#F5F2EE' }} />
 
-        {/* Sport pills – horizontal scroll */}
+        {/* Sport selector */}
         <div>
-          <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-wide" style={SYNE}>
-            Sport (optioneel)
-          </p>
-          <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-            {SPORTS.map((s) => (
-              <button
-                key={s}
-                onClick={() => setSport(sport === s ? '' : s)}
-                className="px-3 py-1.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap flex-shrink-0"
-                style={{
-                  ...SYNE,
-                  background: sport === s ? '#E87722' : '#F5F2EE',
-                  color: sport === s ? '#fff' : '#6B7280',
-                }}
-              >
-                {s}
-              </button>
-            ))}
-          </div>
+          <SportSelector
+            value={sport}
+            onChange={v => setSport(v as string)}
+            multiple={false}
+            label="Sport (optioneel)"
+            placeholder="Kies een sport..."
+          />
         </div>
 
         {/* Answer type toggle */}

@@ -4,6 +4,7 @@ import { useState, useEffect, createContext, useContext, useCallback } from 'rea
 import Link from 'next/link'
 import { MapPin, X, ArrowRight, UserPlus, Check, Send } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { getSportByLabel } from '@/lib/sports'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -175,7 +176,7 @@ function ProfileCardModalInner({
               <div className="flex flex-wrap gap-2">
                 {profile.sports!.slice(0, 3).map(s => (
                   <div key={s.label} className="flex items-center gap-1.5 bg-gray-50 rounded-xl px-3 py-1.5">
-                    <span className="text-xs font-semibold text-gray-700">{s.label}</span>
+                    <span className="text-xs font-semibold text-gray-700">{getSportByLabel(s.label)?.emoji ?? '🏅'} {s.label}</span>
                     <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${levelStyle(s.level)}`}>{s.level}</span>
                   </div>
                 ))}

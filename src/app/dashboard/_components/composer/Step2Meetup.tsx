@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft, MapPin, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
@@ -54,18 +56,7 @@ interface ExistingMeetup {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal',
-  'Tennis', 'Padel', 'Yoga', 'Triathlon', 'Boksen', 'Klimmen', 'Overig',
-]
-
 const SKILL_LEVELS = ['Beginner', 'Gemiddeld', 'Gevorderd', 'Alle niveaus']
-
-const SPORT_EMOJI: Record<string, string> = {
-  Hardlopen: '🏃', Fietsen: '🚴', Zwemmen: '🏊', Gym: '🏋️',
-  Voetbal: '⚽', Tennis: '🎾', Padel: '🏓', Yoga: '🧘',
-  Triathlon: '🏅', Boksen: '🥊', Klimmen: '🧗', Overig: '🏅',
-}
 
 function formatMeetupDate(iso: string): string {
   const d = new Date(iso)
@@ -151,7 +142,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
           .insert({
             organizer_id: userId,
             name: meetupName.trim(),
-            sport,
+            sport: getSportById(sport)?.label ?? sport,
             date: date || null,
             start_time: startTime || null,
             end_time: endTime || null,
@@ -199,7 +190,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
     }
   }
 
-  const sportEmoji = SPORT_EMOJI[sport] ?? '🏅'
+  const sportEmoji = getSportById(sport)?.emoji ?? '🏅'
   const previewDate = date
     ? new Date(date).toLocaleDateString('nl-NL', { weekday: 'short', day: 'numeric', month: 'short' })
     : null
@@ -338,27 +329,16 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
               )}
             </div>
 
-            {/* Sport pills */}
+            {/* Sport selector */}
             <div>
-              <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-wide" style={SYNE}>
-                Sport *
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {SPORTS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSport(s)}
-                    className="px-3 py-1.5 rounded-full text-[13px] font-medium transition-all"
-                    style={{
-                      ...SYNE,
-                      background: sport === s ? '#E87722' : '#F5F2EE',
-                      color: sport === s ? '#fff' : '#6B7280',
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+              <SportSelector
+                value={sport}
+                onChange={v => setSport(v as string)}
+                multiple={false}
+                label="Sport *"
+                placeholder="Kies een sport..."
+                error={errors.sport}
+              />
               {errors.sport && (
                 <p className="text-red-500 text-[11px] mt-1">{errors.sport}</p>
               )}

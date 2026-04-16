@@ -7,18 +7,18 @@ import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { updateProfile } from '@/app/actions/settings'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById, getSportByLabel } from '@/lib/sports'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
-const SPORTS = [
-  'Hardlopen', 'Triathlon', 'Fietsen', 'Zwemmen', 'Voetbal',
-  'Tennis', 'Padel', 'Gym', 'Basketbal', 'Yoga', 'Boksen', 'Klimmen', 'Overig',
+const NIVEAUS: { value: 'beginner' | 'intermediate' | 'advanced'; label: string }[] = [
+  { value: 'beginner',     label: 'Beginner'  },
+  { value: 'intermediate', label: 'Gemiddeld' },
+  { value: 'advanced',     label: 'Gevorderd' },
 ]
-const NIVEAUS = [
-  { value: 'beginner',     label: 'Beginner',  desc: 'Ik ben net begonnen' },
-  { value: 'intermediate', label: 'Gemiddeld', desc: 'Enige ervaring' },
-  { value: 'advanced',     label: 'Gevorderd', desc: 'Regelmatig actief' },
-]
+
+type SportEntry = { sportId: string; niveau: 'beginner' | 'intermediate' | 'advanced' }
 const BESCHIKBAARHEID = [
   { value: 'ma_ochtend', label: 'Ochtend', day: 'Ma' },
   { value: 'ma_middag',  label: 'Middag',  day: 'Ma' },
@@ -59,12 +59,6 @@ type ProfileData = {
   beschikbaarheid: string[]
 }
 
-type SportRow = {
-  sport_id: number
-  level: string
-  sports: { name: string } | { name: string }[] | null
-}
-
 function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
   useEffect(() => { const t = setTimeout(onDone, 3000); return () => clearTimeout(t) }, [onDone])
   return (
@@ -86,8 +80,7 @@ export default function ProfielInstellingenPage() {
     phone: '', birth_date: '', training_location: '',
     avatar_url: null, banner_url: null, beschikbaarheid: [],
   })
-  const [sport, setSport]   = useState('Hardlopen')
-  const [niveau, setNiveau] = useState<'beginner' | 'intermediate' | 'advanced'>('beginner')
+  const [selectedSports, setSelectedSports] = useState<SportEntry[]>([])
 
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
@@ -103,7 +96,7 @@ export default function ProfielInstellingenPage() {
         supabase.from('profiles')
           .select('full_name, username, bio, region, website, phone, birth_date, training_location, avatar_url, banner_url, beschikbaarheid')
           .eq('id', user.id).single(),
-        supabase.from('user_sports').select('sport_id, level, sports(name)').eq('user_id', user.id).limit(1).maybeSingle(),
+        supabase.from('user_sports').select('level, sports(name)').eq('user_id', user.id),
       ])
 
       if (prof) {
@@ -121,11 +114,16 @@ export default function ProfielInstellingenPage() {
           beschikbaarheid: (prof.beschikbaarheid as string[]) ?? [],
         })
       }
-      if (sp) {
-        const spRow = sp as SportRow
-        const name = Array.isArray(spRow.sports) ? (spRow.sports[0] as { name: string })?.name : (spRow.sports as { name: string } | null)?.name
-        if (name) setSport(name)
-        setNiveau((spRow.level as 'beginner' | 'intermediate' | 'advanced') ?? 'beginner')
+      if (sp && sp.length > 0) {
+        const entries: SportEntry[] = (sp as { level: string; sports: { name: string } | { name: string }[] | null }[])
+          .map(s => {
+            const name = Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name
+            if (!name) return null
+            const found = getSportByLabel(name)
+            return { sportId: found?.id ?? name.toLowerCase(), niveau: s.level as SportEntry['niveau'] }
+          })
+          .filter((e): e is SportEntry => e !== null)
+        setSelectedSports(entries)
       }
       setLoading(false)
     }
@@ -143,6 +141,34 @@ export default function ProfielInstellingenPage() {
         ? prev.beschikbaarheid.filter(v => v !== val)
         : [...prev.beschikbaarheid, val],
     }))
+  }
+
+  function handleSportsChange(ids: string | string[]) {
+    const newIds = ids as string[]
+    setSelectedSports(prev => {
+      const kept  = prev.filter(e => newIds.includes(e.sportId))
+      const added = newIds
+        .filter(id => !prev.some(e => e.sportId === id))
+        .map(id => ({ sportId: id, niveau: 'intermediate' as const }))
+      return [...kept, ...added]
+    })
+  }
+
+  function setNiveauForSport(sportId: string, niveau: SportEntry['niveau']) {
+    setSelectedSports(prev => prev.map(e => e.sportId === sportId ? { ...e, niveau } : e))
+  }
+
+  async function saveSports(userId: string) {
+    await supabase.from('user_sports').delete().eq('user_id', userId)
+    const inserts = await Promise.all(
+      selectedSports.map(async s => {
+        const label = getSportById(s.sportId)?.label ?? s.sportId
+        const { data } = await supabase.from('sports').select('id').eq('name', label).maybeSingle()
+        return data ? { user_id: userId, sport_id: data.id, level: s.niveau, looking_for_partner: true } : null
+      })
+    )
+    const valid = inserts.filter(Boolean)
+    if (valid.length > 0) await supabase.from('user_sports').insert(valid)
   }
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -187,16 +213,20 @@ export default function ProfielInstellingenPage() {
     if (!form.username.trim()) return setError('Gebruikersnaam is verplicht')
 
     startTransition(async () => {
-      const res = await updateProfile({
-        full_name: sanitizeText(limitLength(form.full_name, 80)),
-        username: sanitizeText(limitLength(form.username, 40)),
-        bio: sanitizeText(limitLength(form.bio, 160)),
-        region: sanitizeText(limitLength(form.region, 80)),
-        website: form.website.trim(),
-        phone: form.phone.trim(),
-        birth_date: form.birth_date || undefined,
-        training_location: sanitizeText(limitLength(form.training_location, 80)),
-      })
+      const { data: { user } } = await supabase.auth.getUser()
+      const [res] = await Promise.all([
+        updateProfile({
+          full_name: sanitizeText(limitLength(form.full_name, 80)),
+          username: sanitizeText(limitLength(form.username, 40)),
+          bio: sanitizeText(limitLength(form.bio, 160)),
+          region: sanitizeText(limitLength(form.region, 80)),
+          website: form.website.trim(),
+          phone: form.phone.trim(),
+          birth_date: form.birth_date || undefined,
+          training_location: sanitizeText(limitLength(form.training_location, 80)),
+        }),
+        user ? saveSports(user.id) : Promise.resolve(),
+      ])
       if (res.success) {
         setToast('Profiel opgeslagen!')
       } else {
@@ -310,6 +340,53 @@ export default function ProfielInstellingenPage() {
         <Field label="Trainingslocatie">
           <input value={form.training_location} onChange={e => set('training_location', e.target.value)} placeholder="Bijv. Vondelpark of Basic-Fit Noord" className={INPUT} />
         </Field>
+      </div>
+
+      {/* Sporten */}
+      <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
+        <div>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Jouw sporten</p>
+          <p className="text-xs text-gray-400 mt-0.5">Selecteer alle sporten die je beoefent.</p>
+        </div>
+
+        <SportSelector
+          value={selectedSports.map(e => e.sportId)}
+          onChange={handleSportsChange}
+          multiple
+          placeholder="Zoek of voeg een sport toe..."
+        />
+
+        {selectedSports.length > 0 && (
+          <div className="space-y-3 pt-1">
+            <p className="text-xs font-bold text-gray-500">Niveau per sport</p>
+            {selectedSports.map(entry => {
+              const sport = getSportById(entry.sportId)
+              return (
+                <div key={entry.sportId} className="flex items-center justify-between gap-4">
+                  <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>
+                    {sport?.emoji ?? '✏️'} {sport?.label ?? entry.sportId}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {NIVEAUS.map(n => (
+                      <button
+                        key={n.value}
+                        type="button"
+                        onClick={() => setNiveauForSport(entry.sportId, n.value)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                        style={{
+                          background: entry.niveau === n.value ? '#E87722' : '#F3F4F6',
+                          color: entry.niveau === n.value ? 'white' : '#6B7280',
+                        }}
+                      >
+                        {n.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
       </div>
 
       {/* Beschikbaarheid weekrooster */}

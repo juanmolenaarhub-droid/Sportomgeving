@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { Users, MapPin, Search, Plus, Lock, Globe, Check, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 
 type Group = {
   id: string
@@ -15,8 +17,6 @@ type Group = {
   joined: boolean
   created_by: string
 }
-
-const SPORTS = ['Hardlopen', 'Fietsen', 'Gym', 'Yoga', 'Zwemmen', 'Voetbal', 'Padel', 'Tennis', 'Golf', 'Wandelen', 'Boksen', 'Klimmen']
 
 function GroupCard({ group, onJoin, onLeave }: { group: Group; onJoin: () => void; onLeave: () => void }) {
   return (
@@ -36,9 +36,14 @@ function GroupCard({ group, onJoin, onLeave }: { group: Group; onJoin: () => voi
           <MapPin className="w-3 h-3" /> {group.region}
         </p>
       )}
-      {group.sport && (
-        <span className="inline-block text-[10px] font-bold bg-orange-50 text-[#E87722] px-2 py-0.5 rounded-full mb-2">{group.sport}</span>
-      )}
+      {group.sport && (() => {
+        const s = getSportById(group.sport!) ?? { emoji: '🏅', label: group.sport! }
+        return (
+          <span className="inline-block text-[10px] font-bold bg-orange-50 text-[#E87722] px-2 py-0.5 rounded-full mb-2">
+            {s.emoji} {s.label}
+          </span>
+        )
+      })()}
       <p className="text-sm text-gray-500 mb-4 leading-relaxed line-clamp-2">{group.description}</p>
       <div className="flex items-center justify-between">
         <span className="text-xs text-gray-400">{group.member_count} leden</span>
@@ -72,7 +77,7 @@ export default function GroupsPage() {
 
   // Create form state
   const [newName, setNewName] = useState('')
-  const [newSport, setNewSport] = useState('Hardlopen')
+  const [newSport, setNewSport] = useState('hardlopen')
   const [newRegion, setNewRegion] = useState('')
   const [newDesc, setNewDesc] = useState('')
   const [newPrivate, setNewPrivate] = useState(false)
@@ -127,7 +132,7 @@ export default function GroupsPage() {
     const supabase = createClient()
     const { data: grp } = await supabase.from('groups').insert({
       name: newName.trim(),
-      sport: newSport || null,
+      sport: newSport ? (getSportById(newSport)?.label ?? newSport) : null,
       region: newRegion.trim() || null,
       description: newDesc.trim() || null,
       private: newPrivate,
@@ -142,7 +147,7 @@ export default function GroupsPage() {
       setAllGroups(prev => [newGroup, ...prev])
     }
 
-    setNewName(''); setNewSport('Hardlopen'); setNewRegion(''); setNewDesc(''); setNewPrivate(false)
+    setNewName(''); setNewSport('hardlopen'); setNewRegion(''); setNewDesc(''); setNewPrivate(false)
     setShowCreate(false); setCreating(false)
   }
 
@@ -187,11 +192,13 @@ export default function GroupsPage() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-gray-600 mb-1.5">Sport</label>
-                  <select value={newSport} onChange={e => setNewSport(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white">
-                    {SPORTS.map(s => <option key={s}>{s}</option>)}
-                  </select>
+                  <SportSelector
+                    value={newSport}
+                    onChange={v => setNewSport(v as string)}
+                    label="Sport"
+                    multiple={false}
+                    placeholder="Kies sport..."
+                  />
                 </div>
                 <div>
                   <label className="block text-xs font-bold text-gray-600 mb-1.5">Stad</label>

@@ -2,6 +2,8 @@
 
 import { useState, useCallback, useMemo } from 'react'
 import { ArrowLeft, Loader2 } from 'lucide-react'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
@@ -43,10 +45,6 @@ interface Step2ActivityProps {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal',
-  'Tennis', 'Padel', 'Yoga', 'Triathlon', 'Boksen', 'Klimmen', 'Overig',
-]
 
 const GRADIENTS: Record<string, string> = {
   hardlopen: 'linear-gradient(145deg, #E87722, #C0392B)',
@@ -286,7 +284,7 @@ export default function Step2Activity({
     try {
       await onSubmit({
         content,
-        sport,
+        sport: getSportById(sport)?.label ?? sport,
         locationName,
         locationLat,
         locationLng,
@@ -558,32 +556,16 @@ export default function Step2Activity({
             </span>
           </div>
 
-          {/* Sport pills (required) */}
+          {/* Sport selector (required) */}
           <div className="px-4 py-3">
-            <FieldLabel label="Sport" required />
-            {sportError && (
-              <p className="text-[12px] text-red-500 mb-2">{sportError}</p>
-            )}
-            <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-              {SPORTS.map(s => (
-                <button
-                  key={s}
-                  type="button"
-                  onClick={() => {
-                    setSport(prev => prev === s ? '' : s)
-                    setSportError(null)
-                  }}
-                  className="shrink-0 px-3 py-1.5 rounded-full text-[12px] font-semibold border transition-colors"
-                  style={
-                    sport === s
-                      ? { backgroundColor: '#E87722', color: '#fff', borderColor: '#E87722', ...SYNE }
-                      : { backgroundColor: 'transparent', color: '#374151', borderColor: '#F5F2EE', ...SYNE }
-                  }
-                >
-                  {s}
-                </button>
-              ))}
-            </div>
+            <SportSelector
+              value={sport}
+              onChange={v => { setSport(v as string); setSportError(null) }}
+              multiple={false}
+              label="Sport"
+              placeholder="Kies een sport..."
+              error={sportError ?? undefined}
+            />
           </div>
 
           {/* Activity name */}

@@ -3,11 +3,12 @@
 import { useState, useEffect, useRef, useTransition } from 'react'
 import { useRouter } from 'next/navigation'
 import dynamic from 'next/dynamic'
-import { ArrowLeft, Zap, Calendar, MapPin, ChevronDown, Users, Globe, Lock, Check, ImagePlus, X } from 'lucide-react'
+import { ArrowLeft, Zap, Calendar, MapPin, Users, Globe, Lock, Check, ImagePlus, X } from 'lucide-react'
 import { createMeetup } from '@/app/actions/meetups'
 import { createClient } from '@/lib/supabase'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 
-const SPORTS = ['Hardlopen', 'Fietsen', 'Gym', 'Yoga', 'Zwemmen', 'Voetbal', 'Padel', 'Tennis', 'Golf', 'Wandelen', 'Boksen', 'Klimmen']
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
 // Mini kaartje voor locatiepreview
@@ -40,7 +41,7 @@ export default function NewMeetupPage() {
   const [mode, setMode] = useState<'spontaan' | 'gepland' | null>(null)
 
   // Stap 2: details
-  const [sport, setSport] = useState('Hardlopen')
+  const [sport, setSport] = useState('hardlopen')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [locationQuery, setLocationQuery] = useState('')
@@ -74,11 +75,11 @@ export default function NewMeetupPage() {
   const maxDateStr = new Date(Date.now() + 14 * 86400000).toISOString().split('T')[0]
 
   const titlePlaceholders: Record<string, string> = {
-    'Hardlopen': 'Ochtendrun Vondelpark',
-    'Fietsen': 'Zondagsrit door de polder',
-    'Gym': 'Wie gaat er mee naar de gym?',
-    'Yoga': 'Yoga sessie in het park',
-    default: 'Beschrijf jouw meetup...',
+    'hardlopen':   'Ochtendrun Vondelpark',
+    'fietsen':     'Zondagsrit door de polder',
+    'fitness':     'Wie gaat er mee naar de gym?',
+    'yoga':        'Yoga sessie in het park',
+    'default':     'Beschrijf jouw meetup...',
   }
 
   function handleCoverSelect(e: React.ChangeEvent<HTMLInputElement>) {
@@ -130,7 +131,7 @@ export default function NewMeetupPage() {
       }
 
       const res = await createMeetup({
-        sport,
+        sport: getSportById(sport)?.label ?? sport,
         title: title.trim(),
         description: description.trim() || undefined,
         locationName: selectedLocation.name,
@@ -221,19 +222,13 @@ export default function NewMeetupPage() {
         <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Stap 2 — Details</p>
 
         {/* Sport */}
-        <div>
-          <label className="block text-xs font-bold text-gray-600 mb-1.5">Sport <span className="text-[#E87722]">*</span></label>
-          <div className="relative">
-            <select
-              value={sport}
-              onChange={e => setSport(e.target.value)}
-              className="w-full appearance-none border border-black/10 rounded-xl pl-4 pr-8 py-2.5 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white"
-            >
-              {SPORTS.map(s => <option key={s}>{s}</option>)}
-            </select>
-            <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-          </div>
-        </div>
+        <SportSelector
+          value={sport}
+          onChange={v => setSport(v as string)}
+          label="Sport"
+          multiple={false}
+          placeholder="Kies een sport..."
+        />
 
         {/* Titel */}
         <div>

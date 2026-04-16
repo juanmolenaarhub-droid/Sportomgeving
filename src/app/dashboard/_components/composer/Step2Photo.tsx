@@ -2,6 +2,8 @@
 
 import { useState, useRef, useCallback } from 'react'
 import { ArrowLeft, ImageIcon, X, Upload } from 'lucide-react'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
@@ -63,10 +65,6 @@ const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const MAX_PHOTOS = 10
 const ACCEPT = 'image/*,video/mp4,video/quicktime'
 
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal',
-  'Tennis', 'Padel', 'Yoga', 'Triathlon', 'Boksen', 'Klimmen', 'Overig',
-]
 
 function isVideo(file: File) {
   return file.type.startsWith('video/')
@@ -192,7 +190,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
     try {
       await onSubmit({
         content: caption.trim(),
-        sport,
+        sport: getSportById(sport)?.label ?? sport,
         locationName,
         locationLat,
         locationLng,
@@ -508,27 +506,15 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
 
             <div className="border-t" style={{ borderColor: '#F5F2EE' }} />
 
-            {/* Sport pills */}
+            {/* Sport selector */}
             <div>
-              <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-wide" style={SYNE}>
-                Sport
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {SPORTS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSport(sport === s ? '' : s)}
-                    className="px-3 py-1.5 rounded-full text-[13px] font-medium transition-all"
-                    style={{
-                      ...SYNE,
-                      background: sport === s ? '#E87722' : '#F5F2EE',
-                      color: sport === s ? '#fff' : '#6B7280',
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
+              <SportSelector
+                value={sport}
+                onChange={v => setSport(v as string)}
+                multiple={false}
+                label="Sport"
+                placeholder="Kies een sport..."
+              />
             </div>
 
             {/* Thumbnail — only for video files */}

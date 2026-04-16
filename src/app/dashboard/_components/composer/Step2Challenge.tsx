@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react'
 import { ArrowLeft } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import TagPeoplePanel from '@/components/composer/TagPeoplePanel'
@@ -53,10 +55,6 @@ interface ExistingChallenge {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym', 'Voetbal',
-  'Tennis', 'Padel', 'Yoga', 'Triathlon', 'Boksen', 'Klimmen', 'Overig',
-]
 
 type ChallengeType = 'Afstand (km)' | 'Tijd (min)' | 'Aantal (keer)' | 'Hoogteverschil (m)' | 'Vrij'
 
@@ -171,7 +169,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
 
       await onSubmit({
         content: description.trim(),
-        sport,
+        sport: getSportById(sport)?.label ?? sport,
         locationName: '',
         locationLat: null,
         locationLng: null,
@@ -331,30 +329,16 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
               )}
             </div>
 
-            {/* Sport pills */}
+            {/* Sport selector */}
             <div>
-              <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-wide" style={SYNE}>
-                Sport *
-              </p>
-              <div className="flex flex-wrap gap-2">
-                {SPORTS.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setSport(s)}
-                    className="px-3 py-1.5 rounded-full text-[13px] font-medium transition-all"
-                    style={{
-                      ...SYNE,
-                      background: sport === s ? '#E87722' : '#F5F2EE',
-                      color: sport === s ? '#fff' : '#6B7280',
-                    }}
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-              {errors.sport && (
-                <p className="text-red-500 text-[11px] mt-1">{errors.sport}</p>
-              )}
+              <SportSelector
+                value={sport}
+                onChange={v => setSport(v as string)}
+                multiple={false}
+                label="Sport *"
+                placeholder="Kies een sport..."
+                error={errors.sport}
+              />
             </div>
 
             {/* Challenge type pills – horizontal scroll */}

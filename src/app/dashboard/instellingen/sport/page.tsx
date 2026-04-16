@@ -5,14 +5,10 @@ import Link from 'next/link'
 import { ArrowLeft, Check } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { updateSportSettings } from '@/app/actions/settings'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportByLabel, getSportById } from '@/lib/sports'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
-
-const SPORTS = [
-  'Hardlopen', 'Fietsen', 'Zwemmen', 'Gym',
-  'Voetbal', 'Tennis', 'Padel', 'Yoga',
-  'Boksen', 'Klimmen', 'Triathlon', 'Overig',
-]
 
 const NIVEAUS: { value: 'beginner' | 'intermediate' | 'advanced'; label: string }[] = [
   { value: 'beginner',     label: 'Beginner'  },
@@ -23,7 +19,7 @@ const NIVEAUS: { value: 'beginner' | 'intermediate' | 'advanced'; label: string 
 const DAYS  = ['Ma', 'Di', 'Wo', 'Do', 'Vr', 'Za', 'Zo']
 const TIMES = ['Ochtend', 'Middag', 'Avond']
 
-type SportEntry = { sport: string; niveau: 'beginner' | 'intermediate' | 'advanced' }
+type SportEntry = { sportId: string; niveau: 'beginner' | 'intermediate' | 'advanced' }
 
 function Toast({ msg, onDone }: { msg: string; onDone: () => void }) {
   useEffect(() => { const t = setTimeout(onDone, 3000); return () => clearTimeout(t) }, [onDone])
@@ -41,7 +37,6 @@ export default function SportInstellingenPage() {
   const [toast, setToast]             = useState<string | null>(null)
   const [error, setError]             = useState<string | null>(null)
 
-  // Array van geselecteerde sporten, elk met eigen niveau
   const [selectedSports, setSelectedSports] = useState<SportEntry[]>([])
   const [beschikbaarheid, setBeschikbaarheid] = useState<string[]>([])
 
@@ -58,29 +53,41 @@ export default function SportInstellingenPage() {
       if (prof) setBeschikbaarheid((prof.beschikbaarheid as string[]) ?? [])
 
       if (userSports && userSports.length > 0) {
-        const entries: SportEntry[] = userSports.map((s: any) => {
-          const name = Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name
-          return { sport: name ?? '', niveau: s.level as SportEntry['niveau'] }
-        }).filter((e: SportEntry) => e.sport)
+        const entries: SportEntry[] = (userSports as { level: string; sports: { name: string } | { name: string }[] | null }[])
+          .map(s => {
+            const name = Array.isArray(s.sports) ? s.sports[0]?.name : s.sports?.name
+            if (!name) return null
+            // Convert display name → slug ID (fall back to lowercase name if not found)
+            const sport = getSportByLabel(name)
+            const sportId = sport?.id ?? name.toLowerCase()
+            return { sportId, niveau: s.level as SportEntry['niveau'] }
+          })
+          .filter((e): e is SportEntry => e !== null)
         setSelectedSports(entries)
       }
 
       setLoading(false)
     }
     load()
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  function toggleSport(sport: string) {
+  /** Called by SportSelector — receives array of sport slug IDs */
+  function handleSportsChange(ids: string | string[]) {
+    const newIds = ids as string[]
     setSelectedSports(prev => {
-      const exists = prev.find(e => e.sport === sport)
-      if (exists) return prev.filter(e => e.sport !== sport)
-      return [...prev, { sport, niveau: 'intermediate' }]
+      // Keep existing entries with their niveau; add new ones as 'intermediate'
+      const kept    = prev.filter(e => newIds.includes(e.sportId))
+      const added   = newIds
+        .filter(id => !prev.some(e => e.sportId === id))
+        .map(id => ({ sportId: id, niveau: 'intermediate' as const }))
+      return [...kept, ...added]
     })
   }
 
-  function setNiveau(sport: string, niveau: SportEntry['niveau']) {
+  function setNiveau(sportId: string, niveau: SportEntry['niveau']) {
     setSelectedSports(prev =>
-      prev.map(e => e.sport === sport ? { ...e, niveau } : e)
+      prev.map(e => e.sportId === sportId ? { ...e, niveau } : e)
     )
   }
 
@@ -97,9 +104,10 @@ export default function SportInstellingenPage() {
 
   function handleSave() {
     setError(null)
-    // Primaire sport = eerste geselecteerde sport (of lege string als geen)
-    const primaireSport = selectedSports[0]?.sport ?? ''
-    const primaireNiveau = selectedSports[0]?.niveau ?? 'intermediate'
+    const first = selectedSports[0]
+    // Convert slug ID → display label for the DB lookup in updateSportSettings
+    const primaireSport   = first ? (getSportById(first.sportId)?.label ?? first.sportId) : ''
+    const primaireNiveau  = first?.niveau ?? 'intermediate'
 
     startTransition(async () => {
       const res = await updateSportSettings({
@@ -117,6 +125,8 @@ export default function SportInstellingenPage() {
       <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
     </div>
   )
+
+  const selectedIds = selectedSports.map(e => e.sportId)
 
   return (
     <div className="max-w-2xl mx-auto space-y-5 pb-10">
@@ -136,79 +146,58 @@ export default function SportInstellingenPage() {
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
       )}
 
-      {/* Stap 1 — Sport selecteren */}
+      {/* Sport selecteren */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <div>
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Jouw sporten & niveaus</p>
           <p className="text-xs text-gray-400 mt-0.5">Selecteer alle sporten die je doet.</p>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-          {SPORTS.map(sport => {
-            const isSelected = selectedSports.some(e => e.sport === sport)
-            return (
-              <button
-                key={sport}
-                onClick={() => toggleSport(sport)}
-                className="relative flex items-center justify-center py-3 px-2 rounded-xl border-2 transition-all text-center"
-                style={{
-                  borderColor: isSelected ? '#E87722' : 'rgba(0,0,0,0.08)',
-                  background: isSelected ? '#FFF5EE' : 'white',
-                }}
-              >
-                {isSelected && (
-                  <span className="absolute top-1.5 right-1.5 w-4 h-4 bg-[#E87722] rounded-full flex items-center justify-center">
-                    <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                  </span>
-                )}
-                <span style={{
-                  ...SYNE,
-                  fontWeight: isSelected ? 700 : 500,
-                  fontSize: 13,
-                  color: isSelected ? '#111' : '#6B7280',
-                }}>
-                  {sport}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+        <SportSelector
+          value={selectedIds}
+          onChange={handleSportsChange}
+          multiple
+          placeholder="Zoek of voeg een sport toe..."
+        />
 
         <p className="text-xs text-gray-400">
-          {selectedSports.length} sport{selectedSports.length !== 1 ? 'en' : ''} geselecteerd
+          {selectedIds.length} sport{selectedIds.length !== 1 ? 'en' : ''} geselecteerd
         </p>
       </div>
 
-      {/* Stap 2 — Niveau per geselecteerde sport */}
+      {/* Niveau per geselecteerde sport */}
       {selectedSports.length > 0 && (
         <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Niveau per sport</p>
           <div className="space-y-3">
-            {selectedSports.map(entry => (
-              <div key={entry.sport} className="flex items-center justify-between gap-4">
-                <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111', minWidth: 80 }}>
-                  {entry.sport}
-                </span>
-                <div className="flex gap-1.5">
-                  {NIVEAUS.map(n => {
-                    const active = entry.niveau === n.value
-                    return (
-                      <button
-                        key={n.value}
-                        onClick={() => setNiveau(entry.sport, n.value)}
-                        className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
-                        style={{
-                          background: active ? '#E87722' : '#F3F4F6',
-                          color: active ? 'white' : '#6B7280',
-                        }}
-                      >
-                        {n.label}
-                      </button>
-                    )
-                  })}
+            {selectedSports.map(entry => {
+              const sport = getSportById(entry.sportId)
+              return (
+                <div key={entry.sportId} className="flex items-center justify-between gap-4">
+                  <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111', minWidth: 80 }}>
+                    {sport?.emoji} {sport?.label ?? entry.sportId}
+                  </span>
+                  <div className="flex gap-1.5">
+                    {NIVEAUS.map(n => {
+                      const active = entry.niveau === n.value
+                      return (
+                        <button
+                          key={n.value}
+                          onClick={() => setNiveau(entry.sportId, n.value)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
+                          style={{
+                            background: active ? '#E87722' : '#F3F4F6',
+                            color: active ? 'white' : '#6B7280',
+                          }}
+                        >
+                          {n.label}
+                        </button>
+                      )
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       )}

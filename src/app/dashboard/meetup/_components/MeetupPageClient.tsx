@@ -3,9 +3,11 @@
 import { useState, useEffect, useCallback } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
-import { MapPin, List, Plus, ChevronDown, Clock, Users, Zap, Calendar } from 'lucide-react'
+import { MapPin, List, Plus, Clock, Users, Zap, Calendar } from 'lucide-react'
 import { getMeetups, type MeetupListItem } from '@/app/actions/meetups'
 import { createClient } from '@/lib/supabase'
+import { getSportById } from '@/lib/sports'
+import { SportSelector } from '@/components/ui/SportSelector'
 import InterestModal from './InterestModal'
 
 const MeetupMap = dynamic(() => import('./MeetupMap'), { ssr: false, loading: () => (
@@ -16,7 +18,6 @@ const MeetupMap = dynamic(() => import('./MeetupMap'), { ssr: false, loading: ()
 
 const MeetupDetailSheet = dynamic(() => import('./MeetupDetailSheet'), { ssr: false })
 
-const SPORTS = ['Alles', 'Hardlopen', 'Fietsen', 'Gym', 'Yoga', 'Zwemmen', 'Voetbal', 'Padel', 'Tennis', 'Wandelen', 'Boksen', 'Klimmen']
 const DATE_FILTERS = [
   { value: 'alles', label: 'Alle datums' },
   { value: 'vandaag', label: 'Vandaag' },
@@ -58,14 +59,14 @@ type Props = {
 export default function MeetupPageClient({ initialMeetups, center, currentUserId }: Props) {
   const [tab, setTab] = useState<'kaart' | 'lijst'>('kaart')
   const [meetups, setMeetups] = useState(initialMeetups)
-  const [sportFilter, setSportFilter] = useState('Alles')
+  const [sportFilter, setSportFilter] = useState('')
   const [dateFilter, setDateFilter] = useState('alles')
   const [interestMeetup, setInterestMeetup] = useState<MeetupListItem | null>(null)
   const [detailMeetupId, setDetailMeetupId] = useState<string | null>(null)
   const [toast, setToast] = useState<string | null>(null)
 
   const filtered = meetups.filter(m => {
-    if (sportFilter !== 'Alles' && m.sport !== sportFilter) return false
+    if (sportFilter && m.sport !== (getSportById(sportFilter)?.label ?? sportFilter)) return false
     if (dateFilter === 'spontaan' && !m.isSpontaneous) return false
     if (dateFilter === 'vandaag') {
       const today = new Date().toISOString().split('T')[0]
@@ -148,16 +149,13 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
 
       {/* Filters */}
       <div className="flex flex-wrap items-center gap-2">
-        <div className="relative">
-          <select
-            value={sportFilter}
-            onChange={e => setSportFilter(e.target.value)}
-            className="appearance-none bg-white border border-black/10 rounded-xl pl-3 pr-8 py-2 text-sm font-semibold text-gray-700 focus:outline-none focus:ring-2 focus:ring-[#E87722] cursor-pointer"
-          >
-            {SPORTS.map(s => <option key={s}>{s}</option>)}
-          </select>
-          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-gray-400 pointer-events-none" />
-        </div>
+        <SportSelector
+          value={sportFilter}
+          onChange={v => setSportFilter(v as string)}
+          multiple={false}
+          placeholder="Alle sporten"
+          className="w-48"
+        />
 
         <div className="flex gap-1.5 flex-wrap">
           {DATE_FILTERS.map(f => (

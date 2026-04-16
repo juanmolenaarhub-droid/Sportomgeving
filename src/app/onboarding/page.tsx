@@ -7,26 +7,13 @@ import Image from 'next/image'
 import { Camera, Check } from 'lucide-react'
 import { PlacesInput } from '@/components/ui/places-input'
 import { createClient } from '@/lib/supabase'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { getSportById } from '@/lib/sports'
 import { validateImageFile } from '@/lib/validateFile'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
-
-const SPORTS = [
-  { id: 1,  name: 'Hardlopen' },
-  { id: 2,  name: 'Fietsen' },
-  { id: 3,  name: 'Zwemmen' },
-  { id: 4,  name: 'Gym' },
-  { id: 5,  name: 'Voetbal' },
-  { id: 6,  name: 'Tennis' },
-  { id: 7,  name: 'Golf' },
-  { id: 8,  name: 'Yoga' },
-  { id: 9,  name: 'Padel' },
-  { id: 10, name: 'Triathlon' },
-  { id: 11, name: 'Boksen' },
-  { id: 12, name: 'Klimmen' },
-]
 
 const LEVELS = [
   { value: 'beginner',     label: 'Beginner' },
@@ -43,7 +30,7 @@ const BESCHIKBAARHEID_OPTIONS = [
   { value: 'weekend', label: 'Weekend', sub: 'Za & Zo',       emoji: '📅' },
 ]
 
-type SelectedSport = { sport_id: number; level: string }
+type SelectedSport = { sportId: string; level: string }
 
 export default function OnboardingPage() {
   const router = useRouter()
@@ -117,16 +104,19 @@ export default function OnboardingPage() {
     setBannerPreview(URL.createObjectURL(file))
   }
 
-  function toggleSport(id: number) {
+  function handleSportsChange(ids: string | string[]) {
+    const newIds = ids as string[]
     setSelectedSports(prev => {
-      const exists = prev.find(s => s.sport_id === id)
-      if (exists) return prev.filter(s => s.sport_id !== id)
-      return [...prev, { sport_id: id, level: 'beginner' }]
+      const kept  = prev.filter(s => newIds.includes(s.sportId))
+      const added = newIds
+        .filter(id => !prev.some(s => s.sportId === id))
+        .map(id => ({ sportId: id, level: 'beginner' }))
+      return [...kept, ...added]
     })
   }
 
-  function setNiveauForSport(id: number, level: string) {
-    setSelectedSports(prev => prev.map(s => s.sport_id === id ? { ...s, level } : s))
+  function setNiveauForSport(sportId: string, level: string) {
+    setSelectedSports(prev => prev.map(s => s.sportId === sportId ? { ...s, level } : s))
   }
 
   function validateStep1() {
@@ -206,18 +196,34 @@ export default function OnboardingPage() {
       if (profileError) throw new Error(`Profiel opslaan mislukt: ${profileError.message}`)
 
       if (selectedSports.length > 0) {
-        // Verwijder oude sporten eerst zodat verwijderde sporten ook weg zijn
         await supabase.from('user_sports').delete().eq('user_id', user.id)
 
-        const { error: sportsError } = await supabase.from('user_sports').insert(
-          selectedSports.map(s => ({
+        // Resolve each slug → sport label → numeric DB sport_id
+        const sportRows = await Promise.all(
+          selectedSports.map(s => {
+            const label = getSportById(s.sportId)?.label ?? s.sportId
+            return supabase
+              .from('sports')
+              .select('id')
+              .eq('name', label)
+              .maybeSingle()
+              .then(res => ({ level: s.level, dbId: res.data?.id as number | undefined }))
+          })
+        )
+
+        const inserts = sportRows
+          .filter(r => r.dbId != null)
+          .map(r => ({
             user_id: user.id,
-            sport_id: s.sport_id,
-            level: s.level,
+            sport_id: r.dbId,
+            level: r.level,
             looking_for_partner: true,
           }))
-        )
-        if (sportsError) throw new Error(`Sporten opslaan mislukt: ${sportsError.message}`)
+
+        if (inserts.length > 0) {
+          const { error: sportsError } = await supabase.from('user_sports').insert(inserts)
+          if (sportsError) throw new Error(`Sporten opslaan mislukt: ${sportsError.message}`)
+        }
       }
 
       router.push('/dashboard/feed')
@@ -580,34 +586,14 @@ export default function OnboardingPage() {
                     Selecteer alles wat je doet. Je kan meerdere kiezen.
                   </p>
 
-                  {/* Sport grid */}
-                  <div className="grid grid-cols-3 gap-2.5 mb-6">
-                    {SPORTS.map(sport => {
-                      const selected = selectedSports.some(s => s.sport_id === sport.id)
-                      return (
-                        <button
-                          key={sport.id}
-                          onClick={() => toggleSport(sport.id)}
-                          className="relative text-center py-4 px-2 rounded-xl transition-all"
-                          style={{
-                            border: `1.5px solid ${selected ? '#E87722' : '#E5E5E5'}`,
-                            background: selected ? '#FFF5EE' : 'white',
-                            cursor: 'pointer',
-                            fontSize: 13,
-                            fontWeight: 600,
-                            color: selected ? '#E87722' : '#333',
-                            boxShadow: selected ? 'none' : '0 1px 3px rgba(0,0,0,0.04)',
-                          }}
-                        >
-                          {selected && (
-                            <span className="absolute top-1.5 right-1.5 w-4 h-4 rounded-full flex items-center justify-center" style={{ background: '#E87722' }}>
-                              <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
-                            </span>
-                          )}
-                          {sport.name}
-                        </button>
-                      )
-                    })}
+                  {/* Sport selector */}
+                  <div className="mb-6">
+                    <SportSelector
+                      value={selectedSports.map(s => s.sportId)}
+                      onChange={handleSportsChange}
+                      multiple
+                      placeholder="Zoek of kies een sport..."
+                    />
                   </div>
 
                   {/* Per sport niveau */}
@@ -615,15 +601,17 @@ export default function OnboardingPage() {
                     <div className="mb-8 space-y-3">
                       <p style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>Niveau per sport:</p>
                       {selectedSports.map(s => {
-                        const sportName = SPORTS.find(sp => sp.id === s.sport_id)?.name ?? ''
+                        const sport = getSportById(s.sportId)
                         return (
-                          <div key={s.sport_id} className="p-3 rounded-xl" style={{ background: '#F9F9F9', border: '1px solid #F0F0F0' }}>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: '#E87722', marginBottom: 8 }}>{sportName}</p>
+                          <div key={s.sportId} className="p-3 rounded-xl" style={{ background: '#F9F9F9', border: '1px solid #F0F0F0' }}>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: '#E87722', marginBottom: 8 }}>
+                              {sport?.emoji} {sport?.label ?? s.sportId}
+                            </p>
                             <div className="flex gap-2">
                               {LEVELS.map(l => (
                                 <button
                                   key={l.value}
-                                  onClick={() => setNiveauForSport(s.sport_id, l.value)}
+                                  onClick={() => setNiveauForSport(s.sportId, l.value)}
                                   className="flex-1 py-2 rounded-xl transition-all"
                                   style={{
                                     fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',

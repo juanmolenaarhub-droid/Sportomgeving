@@ -6,24 +6,10 @@ import { Search, MapPin, Filter, X, UserPlus, Check, MessageCircle, ChevronDown,
 import { StoryAvatar, type StoryPost } from '@/components/StoryAvatar'
 import { ProfileHeader } from '@/components/ProfileHeader'
 import { createClient } from '@/lib/supabase'
+import { SportSelector } from '@/components/ui/SportSelector'
+import { POPULAR_SPORTS, getSportById } from '@/lib/sports'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
-
-const SPORTS = [
-  { value: 'all', label: 'Alle sporten' },
-  { value: 'run', label: 'Hardlopen' },
-  { value: 'cycle', label: 'Fietsen' },
-  { value: 'swim', label: 'Zwemmen' },
-  { value: 'gym', label: 'Gym' },
-  { value: 'tennis', label: 'Tennis' },
-  { value: 'football', label: 'Voetbal' },
-  { value: 'yoga', label: 'Yoga' },
-  { value: 'hiking', label: 'Wandelen' },
-  { value: 'padel', label: 'Padel' },
-  { value: 'golf', label: 'Golf' },
-  { value: 'basketball', label: 'Basketbal' },
-  { value: 'volleyball', label: 'Volleybal' },
-]
 
 const LEVELS = ['Alle niveaus', 'Beginner', 'Gemiddeld', 'Gevorderd']
 
@@ -387,7 +373,7 @@ function FollowButton({ buddy, onRequest, size = 'sm' }: { buddy: Buddy; onReque
 export default function FindPage() {
   const [buddies, setBuddies] = useState<Buddy[]>(ALL_BUDDIES)
   const [search, setSearch] = useState('')
-  const [selectedSport, setSelectedSport] = useState('all')
+  const [selectedSport, setSelectedSport] = useState('')
   const [selectedLevel, setSelectedLevel] = useState('Alle niveaus')
   const [selectedRegion, setSelectedRegion] = useState('')
   const [showFilters, setShowFilters] = useState(false)
@@ -525,7 +511,7 @@ export default function FindPage() {
 
   const filtered = buddies.filter(b => {
     const matchSearch = b.name.toLowerCase().includes(search.toLowerCase()) || b.region.toLowerCase().includes(search.toLowerCase())
-    const matchSport = selectedSport === 'all' || b.sports.some(s => s.label.toLowerCase() === (SPORTS.find(sp => sp.value === selectedSport)?.label.toLowerCase() ?? ''))
+    const matchSport = !selectedSport || b.sports.some(s => s.label.toLowerCase() === (getSportById(selectedSport)?.label.toLowerCase() ?? selectedSport.toLowerCase()))
     const matchLevel = selectedLevel === 'Alle niveaus' || b.sports.some(s => s.level === selectedLevel)
     const matchRegion = !selectedRegion || b.region.toLowerCase().includes(selectedRegion.toLowerCase())
     return matchSearch && matchSport && matchLevel && matchRegion
@@ -574,15 +560,13 @@ export default function FindPage() {
       {showFilters && (
         <div className="bg-white rounded-2xl border border-gray-100 p-5 space-y-5">
           <div>
-            <label className="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Sport</label>
-            <div className="flex flex-wrap gap-2">
-              {SPORTS.map(sport => (
-                <button key={sport.value} onClick={() => setSelectedSport(sport.value)}
-                  className={`px-3 py-1.5 rounded-xl text-sm font-semibold border-2 transition-all ${selectedSport === sport.value ? 'border-[#E87722] bg-orange-50 text-[#E87722]' : 'border-gray-100 text-gray-500 hover:border-gray-200'}`}>
-                  {sport.label}
-                </button>
-              ))}
-            </div>
+            <SportSelector
+              value={selectedSport}
+              onChange={v => setSelectedSport(v as string)}
+              multiple={false}
+              label="Sport"
+              placeholder="Alle sporten"
+            />
           </div>
           <div className="grid sm:grid-cols-2 gap-4">
             <div>
@@ -599,8 +583,8 @@ export default function FindPage() {
               <input type="text" value={selectedRegion} onChange={e => setSelectedRegion(e.target.value)} placeholder="bv. Amsterdam" className="w-full bg-gray-50 border border-gray-200 rounded-xl px-4 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]" />
             </div>
           </div>
-          {(selectedSport !== 'all' || selectedLevel !== 'Alle niveaus' || selectedRegion) && (
-            <button onClick={() => { setSelectedSport('all'); setSelectedLevel('Alle niveaus'); setSelectedRegion('') }} className="text-sm text-[#E87722] font-semibold hover:underline">Filters wissen</button>
+          {(selectedSport || selectedLevel !== 'Alle niveaus' || selectedRegion) && (
+            <button onClick={() => { setSelectedSport(''); setSelectedLevel('Alle niveaus'); setSelectedRegion('') }} className="text-sm text-[#E87722] font-semibold hover:underline">Filters wissen</button>
           )}
         </div>
       )}
@@ -608,10 +592,16 @@ export default function FindPage() {
       {/* Sport snelfilter */}
       {!showFilters && (
         <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {SPORTS.map(sport => (
-            <button key={sport.value} onClick={() => setSelectedSport(sport.value)}
-              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border-2 transition-all shrink-0 ${selectedSport === sport.value ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'}`}>
-              {sport.label}
+          <button
+            onClick={() => setSelectedSport('')}
+            className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border-2 transition-all shrink-0 ${!selectedSport ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'}`}
+          >
+            Alle
+          </button>
+          {POPULAR_SPORTS.map(sport => (
+            <button key={sport.id} onClick={() => setSelectedSport(selectedSport === sport.id ? '' : sport.id)}
+              className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border-2 transition-all shrink-0 ${selectedSport === sport.id ? 'bg-[#111111] text-white border-[#111111]' : 'bg-white border-gray-100 text-gray-500 hover:border-gray-300'}`}>
+              {sport.emoji} {sport.label}
             </button>
           ))}
         </div>
