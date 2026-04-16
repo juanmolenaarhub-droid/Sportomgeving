@@ -1,11 +1,13 @@
 'use client'
 
-import { useState, useEffect, useRef, useTransition } from 'react'
+import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Camera, Check } from 'lucide-react'
+import { ArrowLeft, Camera, Check, Lock } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { updateProfile } from '@/app/actions/settings'
+import { checkUsernameAvailability, setInitialUsername } from '@/app/actions/profile'
+import { CheckCircle, XCircle, Loader2 as SpinIcon } from 'lucide-react'
 import { sanitizeText, limitLength } from '@/lib/sanitize'
 import { SportSelector } from '@/components/ui/SportSelector'
 import { getSportById, getSportByLabel } from '@/lib/sports'
@@ -81,6 +83,49 @@ export default function ProfielInstellingenPage() {
     avatar_url: null, banner_url: null, beschikbaarheid: [],
   })
   const [selectedSports, setSelectedSports] = useState<SportEntry[]>([])
+
+  // ── Username banner state (shown when profile has no username yet) ──
+  const [bannerUsername, setBannerUsername]       = useState('')
+  const [bannerState, setBannerState]             = useState<'neutral' | 'checking' | 'available' | 'unavailable'>('neutral')
+  const [bannerMsg, setBannerMsg]                 = useState('')
+  const [bannerSaving, setBannerSaving]           = useState(false)
+  const bannerDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleBannerUsernameChange = useCallback((raw: string) => {
+    const val = raw.toLowerCase().replace(/\s/g, '')
+    setBannerUsername(val)
+    setBannerMsg('')
+    if (bannerDebounceRef.current) clearTimeout(bannerDebounceRef.current)
+    if (!val || val.length < 3) { setBannerState('neutral'); return }
+    setBannerState('checking')
+    bannerDebounceRef.current = setTimeout(async () => {
+      const result = await checkUsernameAvailability(val)
+      if (result.available) {
+        setBannerState('available')
+        setBannerMsg('')
+      } else {
+        setBannerState('unavailable')
+        const msgs: Record<string, string> = {
+          taken: 'Al in gebruik.', invalid: 'Alleen letters, cijfers, _ en .', too_short: 'Min. 3 tekens.', too_long: 'Max. 30 tekens.', reserved: 'Gereserveerde naam.',
+        }
+        setBannerMsg(msgs[(result as { available: false; reason: string }).reason] ?? 'Niet beschikbaar.')
+      }
+    }, 600)
+  }, [])
+
+  async function handleSetUsername() {
+    if (bannerState !== 'available') return
+    setBannerSaving(true)
+    const res = await setInitialUsername(bannerUsername)
+    if (res.success) {
+      setForm(prev => ({ ...prev, username: bannerUsername }))
+      setToast('Gebruikersnaam ingesteld!')
+    } else {
+      setBannerMsg(res.error)
+      setBannerState('unavailable')
+    }
+    setBannerSaving(false)
+  }
 
   const avatarInputRef = useRef<HTMLInputElement>(null)
   const bannerInputRef = useRef<HTMLInputElement>(null)
@@ -210,14 +255,13 @@ export default function ProfielInstellingenPage() {
   function handleSubmit() {
     setError(null)
     if (!form.full_name.trim()) return setError('Naam is verplicht')
-    if (!form.username.trim()) return setError('Gebruikersnaam is verplicht')
 
     startTransition(async () => {
       const { data: { user } } = await supabase.auth.getUser()
       const [res] = await Promise.all([
         updateProfile({
           full_name: sanitizeText(limitLength(form.full_name, 80)),
-          username: sanitizeText(limitLength(form.username, 40)),
+          username: form.username, // read-only, pass as-is
           bio: sanitizeText(limitLength(form.bio, 160)),
           region: sanitizeText(limitLength(form.region, 80)),
           website: form.website.trim(),
@@ -256,6 +300,50 @@ export default function ProfielInstellingenPage() {
 
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-xl px-4 py-3 text-sm font-semibold text-red-600">{error}</div>
+      )}
+
+      {/* Username setup banner — shown when no username is set yet */}
+      {!form.username && (
+        <div className="bg-[#E87722]/10 border border-[#E87722]/30 rounded-xl p-4 space-y-3">
+          <div>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#E87722' }}>Kies je gebruikersnaam</p>
+            <p className="text-xs text-gray-500 mt-0.5">Je gebruikersnaam is permanent. Kies hem zorgvuldig.</p>
+          </div>
+
+          {bannerUsername.length >= 3 && (
+            <p className="text-[11px] text-gray-400">
+              buddys.nl/@<span className="text-gray-700 font-semibold">{bannerUsername}</span>
+            </p>
+          )}
+
+          <div className="relative">
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
+            <input
+              value={bannerUsername}
+              onChange={e => handleBannerUsernameChange(e.target.value)}
+              placeholder="jouwusername"
+              className="w-full pl-7 pr-9 py-2.5 bg-white border border-black/10 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#E87722] transition-colors"
+              style={SYNE}
+            />
+            <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
+              {bannerState === 'checking'    && <SpinIcon size={15} className="animate-spin text-gray-400" />}
+              {bannerState === 'available'   && <CheckCircle size={15} className="text-green-500" />}
+              {bannerState === 'unavailable' && <XCircle size={15} className="text-red-400" />}
+            </span>
+          </div>
+
+          {bannerMsg && <p className="text-[11px] text-red-500">{bannerMsg}</p>}
+
+          <button
+            type="button"
+            onClick={handleSetUsername}
+            disabled={bannerState !== 'available' || bannerSaving}
+            className="w-full py-2.5 rounded-lg text-white text-sm font-bold disabled:opacity-40 transition-opacity"
+            style={{ backgroundColor: '#E87722', ...SYNE }}
+          >
+            {bannerSaving ? 'Opslaan...' : 'Gebruikersnaam instellen'}
+          </button>
+        </div>
       )}
 
       {/* Banner */}
@@ -308,11 +396,13 @@ export default function ProfielInstellingenPage() {
           <input value={form.full_name} onChange={e => set('full_name', e.target.value)} placeholder="Jouw naam" className={INPUT} />
         </Field>
 
-        <Field label="Gebruikersnaam" required>
-          <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">@</span>
-            <input value={form.username} onChange={e => set('username', e.target.value.replace(/[^a-z0-9_]/gi, '').toLowerCase())} placeholder="gebruikersnaam" className={`${INPUT} pl-7`} />
+        <Field label="Gebruikersnaam">
+          <div className="flex items-center gap-2 bg-black/5 border border-black/10 rounded-lg px-3 py-2.5 cursor-not-allowed select-none">
+            <span className="text-gray-400 text-sm">@</span>
+            <span className="flex-1 text-sm text-black/50 font-medium">{form.username || '—'}</span>
+            <Lock className="w-3.5 h-3.5 text-black/30 shrink-0" />
           </div>
+          <p className="text-[11px] text-gray-400 mt-1">Je gebruikersnaam is permanent en kan niet worden aangepast.</p>
         </Field>
 
         <Field label={`Bio (${form.bio.length}/160)`}>

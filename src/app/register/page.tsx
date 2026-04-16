@@ -1,13 +1,25 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { CheckCircle, XCircle, Loader2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { checkUsernameAvailability } from '@/app/actions/profile'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
+
+type UsernameState = 'neutral' | 'checking' | 'available' | 'unavailable'
+
+const UNAVAILABLE_MSGS: Record<string, string> = {
+  taken:     'Al in gebruik.',
+  invalid:   'Alleen letters, cijfers, _ en . toegestaan.',
+  too_short: 'Minimaal 3 tekens.',
+  too_long:  'Maximaal 30 tekens.',
+  reserved:  'Gereserveerde naam.',
+}
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -16,6 +28,39 @@ export default function RegisterPage() {
   const [username, setUsername] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+
+  const [usernameState, setUsernameState] = useState<UsernameState>('neutral')
+  const [usernameMsg, setUsernameMsg] = useState('')
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  const handleUsernameChange = useCallback((raw: string) => {
+    const val = raw.toLowerCase().replace(/\s/g, '')
+    setUsername(val)
+    setUsernameMsg('')
+
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+
+    if (!val || val.length < 3) {
+      setUsernameState('neutral')
+      return
+    }
+
+    setUsernameState('checking')
+    debounceRef.current = setTimeout(async () => {
+      const result = await checkUsernameAvailability(val)
+      if (result.available) {
+        setUsernameState('available')
+        setUsernameMsg('')
+      } else {
+        setUsernameState('unavailable')
+        setUsernameMsg(UNAVAILABLE_MSGS[(result as { available: false; reason: string }).reason] ?? 'Niet beschikbaar.')
+      }
+    }, 600)
+  }, [])
+
+  useEffect(() => {
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current) }
+  }, [])
 
   async function handleRegister(e: React.SyntheticEvent) {
     e.preventDefault()
@@ -110,6 +155,10 @@ export default function RegisterPage() {
         @keyframes rfadein {
           from { opacity: 0; transform: translateY(6px); }
           to { opacity: 1; transform: translateY(0); }
+        }
+        @keyframes spin {
+          from { transform: translateY(-50%) rotate(0deg); }
+          to   { transform: translateY(-50%) rotate(360deg); }
         }
       `}</style>
 
@@ -263,15 +312,37 @@ export default function RegisterPage() {
                   <label style={{ ...SYNE, display: 'block', fontSize: 10, fontWeight: 800, letterSpacing: '0.17em', textTransform: 'uppercase', color: '#999', marginBottom: 10 }}>
                     Gebruikersnaam
                   </label>
-                  <input
-                    className="ri"
-                    type="text"
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value.toLowerCase().replace(/\s/g, ''))}
-                    required
-                    minLength={3}
-                    placeholder="jouwusername"
-                  />
+
+                  {/* Preview */}
+                  {username.length >= 3 && (
+                    <p style={{ ...DM, fontSize: 11, color: '#bbb', marginBottom: 8 }}>
+                      buddys.nl/@<span style={{ color: '#111', fontWeight: 600 }}>{username}</span>
+                    </p>
+                  )}
+
+                  <div style={{ position: 'relative' }}>
+                    <input
+                      className="ri"
+                      type="text"
+                      value={username}
+                      onChange={(e) => handleUsernameChange(e.target.value)}
+                      required
+                      minLength={3}
+                      placeholder="jouwusername"
+                      style={{ paddingRight: 32 }}
+                    />
+                    {/* State indicator */}
+                    <span style={{ position: 'absolute', right: 0, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }}>
+                      {usernameState === 'checking'   && <Loader2 size={16} color="#aaa" style={{ animation: 'spin 1s linear infinite' }} />}
+                      {usernameState === 'available'  && <CheckCircle size={16} color="#22c55e" />}
+                      {usernameState === 'unavailable' && <XCircle size={16} color="#ef4444" />}
+                    </span>
+                  </div>
+
+                  {/* Feedback message */}
+                  {usernameMsg && (
+                    <p style={{ ...DM, fontSize: 11, color: '#ef4444', marginTop: 5 }}>{usernameMsg}</p>
+                  )}
                 </div>
 
                 <div className="r3 mb-7">
@@ -310,7 +381,7 @@ export default function RegisterPage() {
                 )}
 
                 <div className="r5">
-                  <button type="submit" disabled={loading} className="rb">
+                  <button type="submit" disabled={loading || usernameState === 'checking' || usernameState === 'unavailable'} className="rb">
                     {loading ? 'Bezig...' : (
                       <>
                         Maak gratis account aan
