@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, TrendingUp, GitMerge, Zap, Users, Server, Menu, X, LogOut, ShieldAlert, MapPin,
-  Repeat2, Activity, CheckSquare, Building2, Filter,
+  Repeat2, Activity, CheckSquare, Building2, Filter, Shield,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
@@ -20,6 +20,7 @@ const NAV = [
   { href: '/admin/platform', label: 'Platform', icon: Server },
   { href: '/admin/meetups', label: 'Meetups', icon: MapPin },
   { href: '/admin/issues', label: 'Meldingen', icon: ShieldAlert },
+  { href: '/admin/veiligheid', label: 'Veiligheid', icon: Shield },
   { href: '/admin/retentie', label: 'Retentie', icon: Repeat2 },
   { href: '/admin/sporten', label: 'Sporten & Regio\'s', icon: Activity },
   { href: '/admin/sessies', label: 'Sessie Succes', icon: CheckSquare },
