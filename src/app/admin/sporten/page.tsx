@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { BarChart } from '../_components/BarChart'
+import { InfoButton } from '../_components/InfoButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -102,6 +103,13 @@ export default async function SportenPage() {
       </div>
 
       {/* KPI row */}
+      <div className="flex items-center gap-2 mb-3">
+        <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Kerncijfers</p>
+        <InfoButton
+          title="Sporten & Regio's — kerncijfers"
+          body={`Unieke sporten → hoeveel verschillende sporten er door gebruikers ingevuld zijn.\n\nPopulairste sport → het sport met de meeste users.\n\nUnieke regio's → hoeveel verschillende regio's vertegenwoordigd zijn.\n\nPopulairste regio → de regio met de meeste users.`}
+        />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Unieke sporten', value: Object.keys(sportCount).length, sub: 'actief in gebruik' },
@@ -119,7 +127,13 @@ export default async function SportenPage() {
 
       {/* Sports bar chart */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Gebruikers per sport</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Gebruikers per sport</p>
+          <InfoButton
+            title="Gebruikers per sport"
+            body={`Hoeveel gebruikers elk sport in hun profiel hebben staan.\n\nDe hoogte van de balk = het aantal users met dat sport.\n\nHandig om te zien waar de meeste vraag naar is bij het vinden van een buddy.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-6">Op basis van sport in profielen</p>
         {sportChartData.length === 0
           ? <p className="text-sm text-gray-300 text-center py-8">Geen sportdata beschikbaar</p>
@@ -138,7 +152,13 @@ export default async function SportenPage() {
 
       {/* Region bar chart */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Gebruikers per regio</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Gebruikers per regio</p>
+          <InfoButton
+            title="Gebruikers per regio"
+            body={`Hoe je users geografisch verspreid zijn over Nederland (of andere regio's).\n\nHandig voor:\n- Beslissen waar je lokale marketing doet\n- Zien of bepaalde regio's ondervertegenwoordigd zijn\n- Potentie voor regionale events of meetups`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-6">Top 10 regio&apos;s op basis van profielen</p>
         {regionChartData.length === 0
           ? <p className="text-sm text-gray-300 text-center py-8">Geen regiodata beschikbaar</p>

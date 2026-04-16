@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Send, Download } from 'lucide-react'
+import { InfoButton } from '../_components/InfoButton'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -73,7 +74,13 @@ export default function PlatformPage() {
       {/* Database statistieken */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-6 py-4 border-b border-black/8">
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Database statistieken</p>
+          <div className="flex items-center gap-2">
+            <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Database statistieken</p>
+            <InfoButton
+              title="Database statistieken"
+              body={`Hoeveel rijen er in elke tabel van de database zitten.\n\nprofiles → accounts\nmatches → buddy-aanvragen\nmessages → verstuurde berichten\nposts → berichten in de feed\ncreator_profiles → creator-accounts\ncreator_challenges → uitdagingen van creators\nchallenge_participants → deelnemers aan uitdagingen\nfollow_requests → volg-aanvragen\nactivity_log → acties die users uitvoerden\nsystem_notifications → systeemmeldingen die jij verstuurd hebt`}
+            />
+          </div>
           <p className="text-xs text-gray-400 mt-0.5">Totaal rijen per tabel</p>
         </div>
         {statsLoading ? (
@@ -94,7 +101,13 @@ export default function PlatformPage() {
 
       {/* Systeemmelding */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Systeemmelding sturen</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Systeemmelding sturen</p>
+          <InfoButton
+            title="Systeemmelding sturen"
+            body={`Stuur een melding naar alle gebruikers. De melding verschijnt als een banner bovenaan hun dashboard.\n\nHandig voor:\n- Aankondiging van een nieuwe feature\n- Gepland onderhoud\n- Een wedstrijd of evenement\n\nDe melding blijft staan totdat je hem verwijdert.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-5">Wordt als banner getoond in het dashboard voor alle users</p>
         <div className="flex gap-3">
           <input
@@ -123,7 +136,13 @@ export default function PlatformPage() {
 
       {/* Email export */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Exporteer user emails</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Exporteer user emails</p>
+          <InfoButton
+            title="Exporteer user emails"
+            body={`Download een CSV-bestand met alle emailadressen, namen en usernames van je gebruikers.\n\nHandig voor:\n- Nieuwsbrief versturen\n- Outreach naar inactieve users\n- Back-up van je gebruikerslijst\n\nHet bestand heet buddys-users-[datum].csv.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-5">Download een CSV met alle email adressen, namen en usernames. Voor nieuwsbrief of outreach.</p>
         <button
           onClick={exportEmails}

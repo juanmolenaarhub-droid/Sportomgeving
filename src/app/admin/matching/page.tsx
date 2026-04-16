@@ -1,5 +1,8 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { BarChart } from '../_components/BarChart'
+import { InfoButton } from '../_components/InfoButton'
+
+export const dynamic = 'force-dynamic'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -27,7 +30,6 @@ export default async function MatchingPage() {
   const pending = matches?.filter(m => m.status === 'pending').length ?? 0
   const acceptRatio = total > 0 ? Math.round(accepted / total * 100) : 0
 
-  // Gem. wachttijd (uren)
   const withTimes = matches?.filter(m => m.accepted_at && m.requested_at) ?? []
   const avgWait = withTimes.length > 0
     ? Math.round(
@@ -38,7 +40,6 @@ export default async function MatchingPage() {
       )
     : null
 
-  // Per sport
   const sportStats: Record<string, { total: number; accepted: number; waitHours: number[] }> = {}
   matches?.forEach(m => {
     const sport = m.sport ?? 'Onbekend'
@@ -61,7 +62,6 @@ export default async function MatchingPage() {
       s.waitHours.length > 0 ? `${Math.round(s.waitHours.reduce((a, b) => a + b, 0) / s.waitHours.length)}u` : '—',
     ])
 
-  // Top 10 matchers
   const userMatchCount: Record<string, number> = {}
   matches?.filter(m => m.status === 'accepted').forEach(m => {
     if (m.from_user_id) userMatchCount[m.from_user_id] = (userMatchCount[m.from_user_id] ?? 0) + 1
@@ -72,7 +72,6 @@ export default async function MatchingPage() {
     .slice(0, 10)
     .map(([uid, count]) => [uid.slice(0, 12) + '…', count])
 
-  // Matches per dag (30 dagen)
   const { data: recentMatches } = await supabase
     .from('matches')
     .select('created_at')
@@ -96,23 +95,44 @@ export default async function MatchingPage() {
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Matching</h1>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard label="Totaal verzoeken" value={total} />
-        <StatCard label="Geaccepteerd" value={accepted} color="#22c55e" />
-        <StatCard label="Geweigerd" value={declined} color="#ef4444" />
-        <StatCard label="Pending" value={pending} color="#f59e0b" />
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Buddy-aanvragen overzicht</p>
+          <InfoButton
+            title="Buddy-aanvragen overzicht"
+            body={`Totaal verzoeken → alle buddy-aanvragen die ooit verstuurd zijn.\n\nGeaccepteerd → de andere persoon heeft 'ja' gezegd. Dit zijn echte buddy-koppels.\n\nGeweigerd → de andere persoon heeft 'nee' gezegd of genegeerd.\n\nPending → aanvraag is verstuurd maar nog niet beantwoord.`}
+          />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <StatCard label="Totaal verzoeken" value={total} />
+          <StatCard label="Geaccepteerd" value={accepted} color="#22c55e" />
+          <StatCard label="Geweigerd" value={declined} color="#ef4444" />
+          <StatCard label="Pending" value={pending} color="#f59e0b" />
+        </div>
       </div>
 
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white rounded-2xl border border-black/8 p-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Accept ratio</p>
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Accept ratio</p>
+            <InfoButton
+              title="Accept ratio"
+              body={`Van alle verstuurde buddy-aanvragen: hoeveel procent wordt geaccepteerd?\n\n50%+ is gezond → de helft van alle aanvragen leidt tot een echte buddy.\nOnder 50% → mensen sturen aanvragen maar worden vaak afgewezen. Misschien zijn de profielen te vaag of te weinig overeenkomst.`}
+            />
+          </div>
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 48, lineHeight: 1, color: acceptRatio >= 50 ? '#22c55e' : '#E87722' }}>
             {acceptRatio}%
           </p>
           <p className="text-xs text-gray-400 mt-2">{acceptRatio >= 50 ? '✓ Gezond' : '⚠ Lager dan gemiddeld'}</p>
         </div>
         <div className="bg-white rounded-2xl border border-black/8 p-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Gem. wachttijd</p>
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Gem. wachttijd</p>
+            <InfoButton
+              title="Gemiddelde wachttijd"
+              body={`Hoeveel uur het gemiddeld duurt voordat iemand een buddy-aanvraag beantwoordt.\n\nKort (< 24u) → mensen reageren snel, goede betrokkenheid.\nLang (> 48u) → aanvragen blijven hangen. Misschien push notificaties verbeteren.`}
+            />
+          </div>
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 48, lineHeight: 1, color: '#E87722' }}>
             {avgWait !== null ? `${avgWait}u` : '—'}
           </p>
@@ -122,7 +142,13 @@ export default async function MatchingPage() {
 
       {/* Grafiek */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Matches per dag</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Matches per dag</p>
+          <InfoButton
+            title="Matches per dag"
+            body={`Hoeveel nieuwe buddy-aanvragen er elke dag aangemaakt worden, afgelopen 30 dagen.\n\nDit zijn alle aanvragen (pending + accepted + declined), niet alleen geaccepteerde.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-6">Afgelopen 30 dagen</p>
         <BarChart data={matchChartData} color="#111111" />
       </div>
@@ -130,8 +156,12 @@ export default async function MatchingPage() {
       <div className="grid md:grid-cols-2 gap-6">
         {/* Per sport */}
         <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-          <div className="px-5 py-4 border-b border-black/8">
+          <div className="px-5 py-4 border-b border-black/8 flex items-center gap-2">
             <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Per sport</p>
+            <InfoButton
+              title="Matching per sport"
+              body={`Verzoeken → totaal aanvragen voor dit sport.\nRatio → percentage dat geaccepteerd werd.\nGem. wacht → hoe lang het duurt voordat iemand reageert.\n\nZo zie je welke sporten het makkelijkst matchen en welke het langst duren.`}
+            />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
@@ -157,8 +187,12 @@ export default async function MatchingPage() {
 
         {/* Top matchers */}
         <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-          <div className="px-5 py-4 border-b border-black/8">
+          <div className="px-5 py-4 border-b border-black/8 flex items-center gap-2">
             <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Top 10 matchers</p>
+            <InfoButton
+              title="Top 10 matchers"
+              body={`De 10 users met de meeste geaccepteerde buddy-matches.\n\nDit zijn je meest actieve community-leden — mensen die veel buddies hebben gevonden. Handig om te weten wie de kern van je community vormt.`}
+            />
           </div>
           <div className="overflow-x-auto">
             <table className="w-full text-sm">

@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { BarChart } from '../_components/BarChart'
+import { InfoButton } from '../_components/InfoButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -56,7 +57,6 @@ export default async function RetentiePage() {
     if (diffDays >= 7) day7++
     if (diffDays >= 30) day30++
 
-    // Weekly cohort key (ISO week)
     const monday = new Date(created)
     monday.setDate(created.getDate() - ((created.getDay() + 6) % 7))
     const weekKey = monday.toISOString().split('T')[0]
@@ -69,10 +69,9 @@ export default async function RetentiePage() {
 
   const pct = (n: number) => total > 0 ? Math.round((n / total) * 100) : 0
 
-  // Weekly cohort chart: day-1 retention per signup week
   const cohortEntries = Object.entries(cohortMap)
     .sort(([a], [b]) => a.localeCompare(b))
-    .slice(-12) // last 12 weeks
+    .slice(-12)
   const cohortChart = cohortEntries.map(([week, c]) => ({
     label: week.slice(5),
     value: c.signups > 0 ? Math.round((c.d1 / c.signups) * 100) : 0,
@@ -92,13 +91,21 @@ export default async function RetentiePage() {
       </div>
 
       {/* Retention rings */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <RetentieRing label="Dag 1 retentie" pct={pct(day1)} sub={`${day1} van ${total} gebruikers`} />
-        <RetentieRing label="Dag 7 retentie" pct={pct(day7)} sub={`${day7} van ${total} gebruikers`} />
-        <RetentieRing label="Dag 30 retentie" pct={pct(day30)} sub={`${day30} van ${total} gebruikers`} />
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Retentie per periode</p>
+          <InfoButton
+            title="Retentie — wat betekent dit?"
+            body={`Retentie = het percentage users dat na de aanmelding op een later moment nog actief was.\n\nDag 1 retentie → was de user 1+ dag na aanmelding nog terug? Zo ja, telt mee.\nDag 7 retentie → 7+ dagen na aanmelding nog actief.\nDag 30 retentie → 30+ dagen na aanmelding.\n\nBerekend op basis van 'laatste actief'-datum vs aanmelddatum.\n\nGoede benchmarks:\nDag 1: 40%+\nDag 7: 20%+\nDag 30: 10%+\n\nHoe hoger, hoe beter je gebruikers vasthoudt.`}
+          />
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <RetentieRing label="Dag 1 retentie" pct={pct(day1)} sub={`${day1} van ${total} gebruikers`} />
+          <RetentieRing label="Dag 7 retentie" pct={pct(day7)} sub={`${day7} van ${total} gebruikers`} />
+          <RetentieRing label="Dag 30 retentie" pct={pct(day30)} sub={`${day30} van ${total} gebruikers`} />
+        </div>
       </div>
 
-      {/* Context */}
       <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4">
         <p className="text-xs text-amber-700 font-semibold">ℹ️ Berekeningswijze</p>
         <p className="text-xs text-amber-600 mt-1">Retentie wordt berekend op basis van <code>last_seen_at</code> vs <code>created_at</code> in de profiles tabel. Dag 1 = gebruiker was minimaal 1 dag na aanmelding nog actief.</p>
@@ -106,7 +113,13 @@ export default async function RetentiePage() {
 
       {/* Weekly cohort — d1 retention */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Dag-1 retentie per aanmeldweek</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Dag-1 retentie per aanmeldweek</p>
+          <InfoButton
+            title="Dag-1 retentie per aanmeldweek"
+            body={`Per week wordt getoond hoeveel procent van de nieuwe users die week ook de dag erna nog actief was.\n\nDit helpt je zien of nieuwere gebruikers beter of slechter worden vastgehouden dan oudere.\n\nStijgende trend → je verbeteringen werken.\nDalende trend → recentere users haken sneller af.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-6">Percentage terugkerend per inschrijvingscohort · afgelopen 12 weken</p>
         {cohortChart.length === 0 ? (
           <p className="text-sm text-gray-300 text-center py-8">Nog geen data</p>
@@ -117,7 +130,13 @@ export default async function RetentiePage() {
 
       {/* Weekly signups */}
       <div className="bg-white rounded-2xl border border-black/8 p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Aanmeldingen per week</p>
+        <div className="flex items-center gap-2 mb-1">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Aanmeldingen per week</p>
+          <InfoButton
+            title="Aanmeldingen per week"
+            body={`Hoeveel nieuwe accounts er elke week aangemaakt werden, afgelopen 12 weken.\n\nHandig om te zien of je groei wekelijks stabiel is of schommelt.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-6">Nieuw geregistreerde gebruikers · afgelopen 12 weken</p>
         {signupsChart.length === 0 ? (
           <p className="text-sm text-gray-300 text-center py-8">Nog geen data</p>
@@ -128,8 +147,12 @@ export default async function RetentiePage() {
 
       {/* Cohort table */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-        <div className="px-6 py-4 border-b border-black/8">
+        <div className="px-6 py-4 border-b border-black/8 flex items-center gap-2">
           <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Cohort overzicht per week</p>
+          <InfoButton
+            title="Cohort overzicht per week"
+            body={`Een cohort = een groep gebruikers die zich in dezelfde week aanmeldden.\n\nDe tabel toont per week:\n- Aanmeldingen → hoeveel nieuwe users die week\n- Dag 1 % → hoeveel procent was dag erna terug\n- Dag 7 % → hoeveel procent was week later terug\n- Dag 30 % → hoeveel procent was maand later terug\n\nZo zie je precies bij welke groep de retentie het beste werkt.`}
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">

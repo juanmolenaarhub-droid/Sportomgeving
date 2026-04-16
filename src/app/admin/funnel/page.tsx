@@ -1,4 +1,5 @@
 import { createAdminClient } from '@/lib/supabase-admin'
+import { InfoButton } from '../_components/InfoButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -8,9 +9,9 @@ type FunnelStep = {
   label: string
   description: string
   count: number
-  pct: number       // pct vs previous step
-  pctTotal: number  // pct vs top step
-  dropoff: number   // drop-off pct vs previous
+  pct: number
+  pctTotal: number
+  dropoff: number
   color: string
 }
 
@@ -25,14 +26,9 @@ function FunnelBar({ step, isFirst }: { step: FunnelStep; isFirst: boolean }) {
         </div>
       )}
       <div className="flex items-center gap-4">
-        {/* Bar */}
         <div
           className="rounded-xl flex items-center px-4 py-4 transition-all"
-          style={{
-            width: `${barWidth}%`,
-            minWidth: 120,
-            background: step.color,
-          }}
+          style={{ width: `${barWidth}%`, minWidth: 120, background: step.color }}
         >
           <div>
             <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: 'white', lineHeight: 1 }}>
@@ -41,11 +37,8 @@ function FunnelBar({ step, isFirst }: { step: FunnelStep; isFirst: boolean }) {
             <p className="text-white/70 text-xs mt-0.5 font-medium">{step.label}</p>
           </div>
         </div>
-        {/* Meta */}
         <div className="shrink-0">
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#111' }}>
-            {step.pctTotal}%
-          </p>
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#111' }}>{step.pctTotal}%</p>
           <p className="text-xs text-gray-400">{step.description}</p>
         </div>
       </div>
@@ -63,36 +56,21 @@ export default async function FunnelPage() {
     { data: meetupParticipants },
     { data: buddyMatches },
   ] = await Promise.all([
-    // 1. Alle registraties
     admin.from('profiles').select('*', { count: 'exact', head: true }),
-
-    // 2. Profielen met sportdata (= profiel ingevuld)
     admin.from('profiles').select('id, sport, avatar_url, region'),
-
-    // 3. Meetup aanmakers (uniek)
     admin.from('meetups').select('created_by').limit(10000),
-
-    // 4. Meetup deelnemers (via group_members, als proxy)
     admin.from('group_members').select('user_id').limit(10000),
-
-    // 5. Buddy-matches (accepted)
     admin.from('follow_requests').select('from_user_id, to_user_id').eq('status', 'accepted').limit(10000),
   ])
 
   const step1 = totalRegistrations ?? 0
-
-  // Profiel "compleet" = heeft sport ingevuld
   const step2 = (profiles ?? []).filter(p => p.sport).length
-
-  // Profiel compleet met foto + regio
   const step2full = (profiles ?? []).filter(p => p.sport && p.avatar_url && p.region).length
 
-  // Eerste meetup aangemaakt of deelgenomen
   const creatorIds = new Set((meetupCreators ?? []).map(m => m.created_by))
   const participantIds = new Set((meetupParticipants ?? []).map(m => m.user_id))
   const step3 = new Set([...creatorIds, ...participantIds]).size
 
-  // Eerste buddy gematcht
   const matchedIds = new Set<string>()
   for (const m of buddyMatches ?? []) {
     matchedIds.add(m.from_user_id)
@@ -152,7 +130,6 @@ export default async function FunnelPage() {
     },
   ]
 
-  // Overall conversion
   const overallConversion = pct(step4, step1)
 
   return (
@@ -164,23 +141,38 @@ export default async function FunnelPage() {
       </div>
 
       {/* Summary KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: 'Registraties', value: step1 },
-          { label: 'Profiel compleet', value: `${pct(step2full, step1)}%` },
-          { label: 'Actief in sessie', value: `${pct(step3, step1)}%` },
-          { label: 'Buddy gematcht', value: `${pct(step4, step1)}%` },
-        ].map(({ label, value }, i) => (
-          <div key={label} className="bg-white rounded-2xl border border-black/8 p-6">
-            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, lineHeight: 1, color: i === 0 ? '#111' : '#E87722' }}>{value}</p>
-          </div>
-        ))}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Samenvatting</p>
+          <InfoButton
+            title="Conversie Funnel — wat is dit?"
+            body={`De funnel toont de reis van een nieuwe user naar een actieve buddy-gebruiker.\n\nElke stap is een mijlpaal:\n1. Registratie → aangemeld\n2. Sport ingevuld → profiel gestart\n3. Volledig profiel → sport + foto + regio\n4. Eerste sessie → meedoen of aanmaken van een meetup\n5. Eerste buddy → buddy-aanvraag geaccepteerd\n\nDe percentages laten zien hoeveel van alle aangemelde users elke stap bereikt.\n\nTotale conversie = het percentage dat stap 1 tot én met stap 5 doorloopt.`}
+          />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {[
+            { label: 'Registraties', value: step1 },
+            { label: 'Profiel compleet', value: `${pct(step2full, step1)}%` },
+            { label: 'Actief in sessie', value: `${pct(step3, step1)}%` },
+            { label: 'Buddy gematcht', value: `${pct(step4, step1)}%` },
+          ].map(({ label, value }, i) => (
+            <div key={label} className="bg-white rounded-2xl border border-black/8 p-6">
+              <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
+              <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, lineHeight: 1, color: i === 0 ? '#111' : '#E87722' }}>{value}</p>
+            </div>
+          ))}
+        </div>
       </div>
 
       {/* Funnel visualization */}
       <div className="bg-white rounded-2xl border border-black/8 p-6 md:p-8">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-2">Funnel visualisatie</p>
+        <div className="flex items-center gap-2 mb-2">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Funnel visualisatie</p>
+          <InfoButton
+            title="Funnel visualisatie"
+            body={`Elke balk wordt smaller naarmate mensen afhaken.\n\nDe breedte = percentage van alle registraties.\nHet rode cijfer (↓ x% uitgevallen) = hoeveel mensen de stap ervoor níet doorkwamen.\n\nGrote uitval tussen twee stappen = daar zit een probleem dat je kunt verbeteren.`}
+          />
+        </div>
         <p className="text-xs text-gray-400 mb-8">Breedte van de balk = % van totale registraties</p>
         <div className="space-y-0">
           {steps.map((step, i) => (
@@ -191,8 +183,12 @@ export default async function FunnelPage() {
 
       {/* Step detail table */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-        <div className="px-6 py-4 border-b border-black/8">
+        <div className="px-6 py-4 border-b border-black/8 flex items-center gap-2">
           <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Stap detail</p>
+          <InfoButton
+            title="Stap detail tabel"
+            body={`Per stap zie je:\n\nGebruikers → hoeveel mensen deze stap bereikt hebben.\n% van totaal → percentage van alle registraties.\n% van vorige stap → hoeveel procent van de mensen die de vorige stap haalden ook deze stap haalden.\nUitval → hoeveel procent haakt af bij deze stap.\n\nRood getal = meer dan 50% uitval. Oranje = 25–50%. Groen = minder dan 25%.`}
+          />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
@@ -240,7 +236,13 @@ export default async function FunnelPage() {
 
       {/* Improvement tips */}
       <div className="bg-[#F5F0E8] rounded-2xl p-6">
-        <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black mb-4">Verbeterpunten</p>
+        <div className="flex items-center gap-2 mb-4">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Verbeterpunten</p>
+          <InfoButton
+            title="Verbeterpunten"
+            body={`Stappen met meer dan 30% uitval worden hier automatisch uitgelicht.\n\nDit zijn de plekken in de gebruikersreis waar de meeste mensen afhaken. Hier liggen de grootste kansen om de conversie te verbeteren.\n\nAls er niks staat: top! Alle stappen hebben minder dan 30% uitval.`}
+          />
+        </div>
         <div className="space-y-2">
           {steps.slice(1).filter(s => s.dropoff > 30).map(s => (
             <div key={s.label} className="flex items-start gap-2">

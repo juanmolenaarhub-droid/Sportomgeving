@@ -1,6 +1,9 @@
 import Link from 'next/link'
 import { Shield, AlertTriangle, FileText, Zap, Upload, CheckCircle, XCircle } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase-admin'
+import { InfoButton } from '../_components/InfoButton'
+
+export const dynamic = 'force-dynamic'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -37,21 +40,18 @@ async function getHealthChecks() {
   const day7  = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
   const day1  = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
-  // Rapporten ouder dan 7 dagen die nog open zijn
   const { count: oudeRapporten } = await admin
     .from('reports')
     .select('*', { count: 'exact', head: true })
     .eq('status', 'open')
     .lt('created_at', day7)
 
-  // Rate limit events afgelopen 24u
   const { count: recentRateLimits } = await admin
     .from('security_events')
     .select('*', { count: 'exact', head: true })
     .eq('event_type', 'rate_limit_exceeded')
     .gte('created_at', day1)
 
-  // Geblokkeerde uploads afgelopen 24u
   const { count: blockedUploads } = await admin
     .from('upload_log')
     .select('*', { count: 'exact', head: true })
@@ -96,20 +96,29 @@ export default async function VeiligheidPage() {
       </div>
 
       {/* KPI kaarten */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {KPI_CARDS.map(card => (
-          <Link key={card.label} href={card.href}
-            className="bg-white rounded-2xl border border-black/8 p-5 hover:border-[#E87722]/40 transition-colors relative overflow-hidden"
-          >
-            {card.urgent && (
-              <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-red-500" />
-            )}
-            <p className="text-3xl font-black text-[#111]" style={SYNE}>
-              {card.value}
-            </p>
-            <p className="text-xs text-gray-400 mt-1 font-semibold">{card.label}</p>
-          </Link>
-        ))}
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Actie vereist</p>
+          <InfoButton
+            title="Veiligheid kerncijfers"
+            body={`Open rapporten → gebruikers die iemand gemeld hebben voor misbruik. Rood bolletje = actie vereist. Klik om te behandelen.\n\nOpen AVG-verzoeken → wettelijke verplichting (GDPR). Iemand wil data inzien, corrigeren of verwijderen. Je hebt 30 dagen om te reageren. Rood bolletje = nog open.\n\nRate limits 24u → hoe vaak het systeem iemand geblokkeerd heeft omdat ze te snel te veel acties deden. 5+ = mogelijk geautomatiseerde aanval.\n\nUploads vandaag → bestanden die vandaag geüpload zijn. Klik voor details en geblokkeerde uploads.`}
+          />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          {KPI_CARDS.map(card => (
+            <Link key={card.label} href={card.href}
+              className="bg-white rounded-2xl border border-black/8 p-5 hover:border-[#E87722]/40 transition-colors relative overflow-hidden"
+            >
+              {card.urgent && (
+                <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-red-500" />
+              )}
+              <p className="text-3xl font-black text-[#111]" style={SYNE}>
+                {card.value}
+              </p>
+              <p className="text-xs text-gray-400 mt-1 font-semibold">{card.label}</p>
+            </Link>
+          ))}
+        </div>
       </div>
 
       {/* Subpagina links */}
@@ -134,6 +143,10 @@ export default async function VeiligheidPage() {
         <div className="px-5 py-4 border-b border-black/5 flex items-center gap-2">
           <Shield className="w-4 h-4 text-[#E87722]" />
           <h2 style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#111' }}>Security Health Check</h2>
+          <InfoButton
+            title="Security Health Check"
+            body={`Een automatische checklist van beveiligingsinstellingen.\n\nGroen vinkje → alles is in orde.\nRood kruis → actie vereist.\n\nRLS → Row Level Security, zorgt dat users alleen hun eigen data kunnen zien.\nAdmin route → alleen jij kunt het admin-panel bereiken.\nE-mailverificatie → nieuwe accounts moeten hun e-mail bevestigen.\nRapporten ouder dan 7 dagen → als er meldingen zijn die al een week onbehandeld liggen.\nRate limit events → tekenen van misbruik of geautomatiseerde aanvallen.\nGeblokkeerde uploads → bestanden die geweigerd zijn vanwege verkeerd type of te groot.\nAdmin account → je ADMIN_USER_ID is ingesteld in de omgevingsvariabelen.\nService role key → je SUPABASE_SERVICE_ROLE_KEY is aanwezig (nooit committen naar git!).`}
+          />
         </div>
         <div className="divide-y divide-black/5">
           {HEALTH.map((item, i) => (

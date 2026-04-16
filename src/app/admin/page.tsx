@@ -1,4 +1,7 @@
 import { createAdminClient } from '@/lib/supabase-admin'
+import { InfoButton } from './_components/InfoButton'
+
+export const dynamic = 'force-dynamic'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -39,7 +42,6 @@ export default async function AdminOverzichtPage() {
       .limit(20),
   ])
 
-  // DAU: unieke user_ids in activity_log vandaag
   const { data: dauData } = await supabase
     .from('activity_log')
     .select('user_id')
@@ -58,6 +60,13 @@ export default async function AdminOverzichtPage() {
       </div>
 
       {/* KPI kaarten */}
+      <div className="mb-3 flex items-center gap-2">
+        <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Kerncijfers</p>
+        <InfoButton
+          title="Kerncijfers — wat betekenen deze getallen?"
+          body={`Totaal users → iedereen die zich ooit aangemeld heeft.\n\nNieuw vandaag → mensen die zich vandaag aangemeld hebben.\n\nActieve matches → buddy-koppels die elkaar geaccepteerd hebben (beide kanten 'ja').\n\nDAU (Daily Active Users) → hoeveel verschillende mensen er vandaag iets gedaan hebben op het platform. Dit wordt gemeten via de activity log.`}
+        />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-10">
         <KpiCard label="Totaal users" value={totalUsers ?? 0} sub="geregistreerd" />
         <KpiCard label="Nieuw vandaag" value={newToday ?? 0} sub="registraties" />
@@ -67,11 +76,19 @@ export default async function AdminOverzichtPage() {
 
       {/* Activiteiten feed */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-        <div className="px-6 py-4 border-b border-black/8">
-          <h2 style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">
-            Recente activiteit
-          </h2>
-          <p className="text-xs text-gray-400 mt-0.5">Laatste 20 events</p>
+        <div className="px-6 py-4 border-b border-black/8 flex items-center gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <h2 style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">
+                Recente activiteit
+              </h2>
+              <InfoButton
+                title="Recente activiteit"
+                body={`De laatste 20 acties die users uitvoerden, in volgorde van nieuw naar oud.\n\nZo zie je in één oogopslag of het platform actief is en wat mensen doen.\n\nDe user ID is afgekort — klik in Gebruikers om de volledige naam te zien.`}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5">Laatste 20 events</p>
+          </div>
         </div>
         {!activityLog || activityLog.length === 0 ? (
           <div className="px-6 py-12 text-center">

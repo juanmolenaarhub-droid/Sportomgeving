@@ -1,4 +1,7 @@
 import { createAdminClient } from '@/lib/supabase-admin'
+import { InfoButton } from '../_components/InfoButton'
+
+export const dynamic = 'force-dynamic'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -20,21 +23,18 @@ export default async function EngagementPage() {
   const sevenDaysAgo = new Date(now); sevenDaysAgo.setDate(now.getDate() - 7)
   const thirtyDaysAgo = new Date(now); thirtyDaysAgo.setDate(now.getDate() - 30)
 
-  // DAU: unieke users vandaag
   const { data: dauRaw } = await supabase
     .from('activity_log')
     .select('user_id')
     .gte('created_at', today)
   const dau = new Set(dauRaw?.map(r => r.user_id) ?? []).size
 
-  // WAU: unieke users afgelopen 7 dagen
   const { data: wauRaw } = await supabase
     .from('activity_log')
     .select('user_id')
     .gte('created_at', sevenDaysAgo.toISOString())
   const wau = new Set(wauRaw?.map(r => r.user_id) ?? []).size
 
-  // MAU: unieke users afgelopen 30 dagen
   const { data: mauRaw } = await supabase
     .from('activity_log')
     .select('user_id')
@@ -43,7 +43,6 @@ export default async function EngagementPage() {
 
   const stickiness = mau > 0 ? Math.round(dau / mau * 100) : 0
 
-  // Gemiddeld berichten per match
   const { count: totalMessages } = await supabase
     .from('messages')
     .select('*', { count: 'exact', head: true })
@@ -55,7 +54,6 @@ export default async function EngagementPage() {
     ? Math.round(totalMessages / totalAcceptedMatches * 10) / 10
     : 0
 
-  // Posts vandaag vs gisteren
   const { count: postsToday } = await supabase
     .from('posts')
     .select('*', { count: 'exact', head: true })
@@ -66,14 +64,12 @@ export default async function EngagementPage() {
     .gte('created_at', yesterday.toISOString().split('T')[0])
     .lt('created_at', today)
 
-  // Sessie activiteit vandaag (laatste events per user)
   const { data: todayActivity } = await supabase
     .from('activity_log')
     .select('user_id, event_type, created_at')
     .gte('created_at', today)
     .order('created_at', { ascending: false })
 
-  // Deduplicate: laatste actie per user
   const seenUsers = new Set<string>()
   const sessionList: { userId: string; eventType: string; time: string }[] = []
   todayActivity?.forEach(e => {
@@ -95,23 +91,48 @@ export default async function EngagementPage() {
       </div>
 
       {/* DAU / WAU / MAU */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <BigStat label="DAU" value={dau} sub="Unieke actieve users vandaag" />
-        <BigStat label="WAU" value={wau} sub="Afgelopen 7 dagen" color="#111111" />
-        <BigStat label="MAU" value={mau} sub="Afgelopen 30 dagen" color="#111111" />
-        <div className="bg-white rounded-2xl border border-black/8 p-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Stickiness</p>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, lineHeight: 1, color: stickiness >= 20 ? '#22c55e' : '#E87722' }}>
-            {stickiness}%
-          </p>
-          <p className="text-xs text-gray-400 mt-2">DAU/MAU ratio</p>
+      <div>
+        <div className="flex items-center gap-2 mb-3">
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Actieve gebruikers</p>
+          <InfoButton
+            title="DAU / WAU / MAU — actieve gebruikers"
+            body={`DAU (Daily Active Users) → hoeveel verschillende mensen er vandaag iets gedaan hebben.\n\nWAU (Weekly Active Users) → afgelopen 7 dagen.\n\nMAU (Monthly Active Users) → afgelopen 30 dagen.\n\nStickiness → DAU gedeeld door MAU als percentage. Dit laat zien hoe "verslavend" de app is. 20%+ is gezond: van alle maandelijkse gebruikers komt dagelijks 1 op de 5 terug. Hoe hoger, hoe beter.`}
+          />
+        </div>
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <BigStat label="DAU" value={dau} sub="Unieke actieve users vandaag" />
+          <BigStat label="WAU" value={wau} sub="Afgelopen 7 dagen" color="#111111" />
+          <BigStat label="MAU" value={mau} sub="Afgelopen 30 dagen" color="#111111" />
+          <div className="bg-white rounded-2xl border border-black/8 p-6">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Stickiness</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, lineHeight: 1, color: stickiness >= 20 ? '#22c55e' : '#E87722' }}>
+              {stickiness}%
+            </p>
+            <p className="text-xs text-gray-400 mt-2">DAU/MAU ratio · {stickiness >= 20 ? '✓ Gezond' : 'Onder 20% streefwaarde'}</p>
+          </div>
         </div>
       </div>
 
       <div className="grid md:grid-cols-3 gap-4">
-        <BigStat label="Gem. berichten / match" value={avgMsgPerMatch} sub="Per geaccepteerde match" />
         <div className="bg-white rounded-2xl border border-black/8 p-6">
-          <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Posts vandaag</p>
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Gem. berichten / match</p>
+            <InfoButton
+              title="Gemiddeld berichten per match"
+              body={`Hoeveel berichten twee gebuddyde users gemiddeld met elkaar sturen.\n\nHoge waarde = mensen voeren echt gesprekken na het matchen. Dat is goed.\nLage waarde = mensen matchen maar praten nauwelijks met elkaar.\n\nBerekening: totaal berichten gedeeld door totaal actieve matches.`}
+            />
+          </div>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#E87722', lineHeight: 1 }}>{avgMsgPerMatch}</p>
+          <p className="text-xs text-gray-400 mt-2">Per geaccepteerde match</p>
+        </div>
+        <div className="bg-white rounded-2xl border border-black/8 p-6">
+          <div className="flex items-center gap-2 mb-3">
+            <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest">Posts vandaag</p>
+            <InfoButton
+              title="Posts vandaag vs gisteren"
+              body={`Hoeveel nieuwe posts er vandaag aangemaakt zijn.\n\nGisteren staat er ook bij zodat je direct kan vergelijken.\nGroen pijltje omhoog → meer dan gisteren.\nRood pijltje omlaag → minder dan gisteren.`}
+            />
+          </div>
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#E87722', lineHeight: 1 }}>{postsToday ?? 0}</p>
           <p className="text-xs text-gray-400 mt-2">
             Gisteren: {postsYesterday ?? 0}
@@ -131,9 +152,17 @@ export default async function EngagementPage() {
 
       {/* Sessie activiteit vandaag */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
-        <div className="px-6 py-4 border-b border-black/8">
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Sessie activiteit vandaag</p>
-          <p className="text-xs text-gray-400 mt-0.5">Laatste actie per user</p>
+        <div className="px-6 py-4 border-b border-black/8 flex items-center gap-2">
+          <div>
+            <div className="flex items-center gap-2">
+              <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black">Sessie activiteit vandaag</p>
+              <InfoButton
+                title="Sessie activiteit vandaag"
+                body={`Per user wordt de laatste actie van vandaag getoond.\n\nZo zie je wie er vandaag actief is geweest en wat ze als laatste deden.\n\nDe user ID is afgekort — ga naar Gebruikers om iemand op te zoeken.`}
+              />
+            </div>
+            <p className="text-xs text-gray-400 mt-0.5">Laatste actie per user</p>
+          </div>
         </div>
         {sessionList.length === 0 ? (
           <div className="px-6 py-12 text-center">

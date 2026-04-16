@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createClient } from '@/lib/supabase'
 import { Search, X, Mail, Ban, ChevronRight } from 'lucide-react'
+import { InfoButton } from '../_components/InfoButton'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -115,6 +116,13 @@ export default function GebruikersPage() {
       </div>
 
       {/* Snelle stats */}
+      <div className="flex items-center gap-2 mb-3">
+        <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Profielkwaliteit</p>
+        <InfoButton
+          title="Profielkwaliteit — wat betekent dit?"
+          body={`Zonder sport → users die nog geen sport ingevuld hebben in hun profiel. Die kunnen minder goed gematcht worden.\n\nZonder foto → users zonder profielfoto. Profielen zonder foto worden minder snel geaccepteerd bij buddy-aanvragen.\n\n30+ dagen inactief → users die al meer dan een maand niet meer ingelogd zijn. Dit zijn slapende accounts.\n\nKlik op een gebruiker in de tabel om meer details te zien of actie te ondernemen.`}
+        />
+      </div>
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: 'Zonder sport', value: stats.noSport, color: '#f59e0b' },

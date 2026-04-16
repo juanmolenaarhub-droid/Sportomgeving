@@ -1,4 +1,4 @@
--- ── Admin schema wijzigingen — Buddys ────────────────────────────────────────
+11-- ── Admin schema wijzigingen — Buddys ────────────────────────────────────────
 
 -- 1. Uitbreid profiles
 ALTER TABLE profiles

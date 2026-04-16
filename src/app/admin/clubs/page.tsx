@@ -1,5 +1,6 @@
 import { createAdminClient } from '@/lib/supabase-admin'
 import { BarChart } from '../_components/BarChart'
+import { InfoButton } from '../_components/InfoButton'
 
 export const dynamic = 'force-dynamic'
 
@@ -10,10 +11,8 @@ export default async function ClubsPage() {
 
   const [
     { data: groups },
-    { data: members },
   ] = await Promise.all([
     admin.from('groups').select('id, name, sport, region, member_count, created_by, created_at, private').order('member_count', { ascending: false }),
-    admin.from('group_members').select('group_id, joined_at'),
   ])
 
   const total = groups?.length ?? 0
@@ -69,6 +68,13 @@ export default async function ClubsPage() {
       </div>
 
       {/* KPI grid */}
+      <div className="flex items-center gap-2 mb-3">
+        <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Clubs overzicht</p>
+        <InfoButton
+          title="Clubs — wat zie ik hier?"
+          body={`Totaal clubs → alle groepen/clubs die aangemaakt zijn op het platform.\n\nGem. leden → gemiddeld hoeveel leden een club heeft. Hogere waarde = clubs zijn actiever.\n\nPubliek → openbare clubs, iedereen kan meedoen.\nPrivé → besloten clubs, alleen op uitnodiging.\n\nHieronder zie je de top 10 grootste clubs op basis van ledenaantal.`}
+        />
+      </div>
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         {[
           { label: 'Totaal clubs', value: total, sub: 'aangemaakt' },
