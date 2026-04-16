@@ -7,9 +7,11 @@ import {
   Send, X, ChevronDown, Camera, Pencil, Heart,
   Image as ImageIcon, Video as VideoIcon, Bookmark, Activity,
   ArrowLeft, ShieldCheck, List, Plus,
-  CalendarDays, Users, LayoutGrid,
+  CalendarDays, Users, LayoutGrid, MoreHorizontal, Flag,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { submitReport } from '@/app/actions/security'
+import type { ReportReason } from '@/app/actions/security'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -1053,6 +1055,23 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
   const [followStatus, setFollowStatus] = useState<FollowStatus>(initialStatus)
   const [showRequest, setShowRequest]   = useState(false)
   const [activeTab, setActiveTab]       = useState<Tab>('posts')
+  const [menuOpen, setMenuOpen]         = useState(false)
+  const [reportModal, setReportModal]   = useState(false)
+  const [reportReason, setReportReason] = useState<ReportReason>('overig')
+  const [reportDesc, setReportDesc]     = useState('')
+  const [reportSending, setReportSending] = useState(false)
+  const [reportDone, setReportDone]     = useState(false)
+
+  async function handleReport() {
+    setReportSending(true)
+    const res = await submitReport(profile.id, reportReason, reportDesc)
+    if (res.success) {
+      setReportDone(true)
+      setReportModal(false)
+      setReportDesc('')
+    }
+    setReportSending(false)
+  }
   const [bioExpanded, setBioExpanded]   = useState(false)
   const [statsModal, setStatsModal]     = useState<'Volgers' | 'Buddies' | null>(null)
 
@@ -1211,6 +1230,29 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
                       : <><UserPlus className="w-3.5 h-3.5" /> Buddy verzoek</>
                     }
                   </button>
+
+                  {/* Drie-punt menu */}
+                  <div className="relative">
+                    <button
+                      onClick={() => setMenuOpen(v => !v)}
+                      className="w-9 h-9 flex items-center justify-center rounded-xl border border-black/10 hover:bg-black/5 transition-colors"
+                    >
+                      <MoreHorizontal className="w-4 h-4 text-gray-500" />
+                    </button>
+                    {menuOpen && (
+                      <>
+                        <div className="fixed inset-0 z-30" onClick={() => setMenuOpen(false)} />
+                        <div className="absolute right-0 top-11 z-40 bg-white rounded-xl shadow-lg border border-black/8 py-1 min-w-44">
+                          <button
+                            onClick={() => { setMenuOpen(false); setReportModal(true) }}
+                            className="w-full flex items-center gap-2.5 px-4 py-2.5 text-sm font-semibold text-red-600 hover:bg-red-50 transition-colors"
+                          >
+                            <Flag className="w-4 h-4" /> Rapporteer gebruiker
+                          </button>
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </>
               )}
             </div>
@@ -1366,6 +1408,65 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
           profileId={profile.id}
           onClose={() => setStatsModal(null)}
         />
+      )}
+
+      {/* Rapport modal */}
+      {reportModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>Rapporteer gebruiker</h2>
+              <button onClick={() => setReportModal(false)} className="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+            </div>
+
+            <div className="space-y-2">
+              {([
+                ['spam',            'Spam'],
+                ['nep_profiel',     'Nep profiel'],
+                ['ongepast_gedrag', 'Ongepast gedrag'],
+                ['intimidatie',     'Intimidatie'],
+                ['ongepaste_foto',  'Ongepaste foto'],
+                ['overig',          'Overig'],
+              ] as [ReportReason, string][]).map(([val, label]) => (
+                <button
+                  key={val}
+                  onClick={() => setReportReason(val)}
+                  className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 text-left transition-all"
+                  style={{ borderColor: reportReason === val ? '#E87722' : '#F3F4F6', background: reportReason === val ? '#FFF5EE' : 'white' }}
+                >
+                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${reportReason === val ? 'border-[#E87722]' : 'border-gray-300'}`}>
+                    {reportReason === val && <span className="w-2 h-2 rounded-full bg-[#E87722]" />}
+                  </span>
+                  <span className="text-sm font-semibold text-gray-800">{label}</span>
+                </button>
+              ))}
+            </div>
+
+            <textarea
+              value={reportDesc}
+              onChange={e => setReportDesc(e.target.value.slice(0, 500))}
+              rows={3}
+              className="w-full px-3 py-2.5 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722] resize-none"
+              placeholder="Optionele toelichting (max 500 tekens)..."
+            />
+
+            <button
+              onClick={handleReport}
+              disabled={reportSending}
+              className="w-full py-3 rounded-xl bg-red-600 text-white text-sm font-black disabled:opacity-40 transition-opacity"
+              style={SYNE}
+            >
+              {reportSending ? 'Verzenden...' : 'Verzend rapport'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Bevestiging na rapport */}
+      {reportDone && (
+        <div className="fixed bottom-24 left-1/2 -translate-x-1/2 z-50 bg-[#111] text-white text-sm font-semibold px-5 py-3 rounded-2xl shadow-xl">
+          Je rapport is ontvangen. We bekijken dit zo snel mogelijk.
+        </div>
       )}
     </div>
   )

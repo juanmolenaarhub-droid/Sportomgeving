@@ -2,11 +2,14 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
-import { ArrowLeft, Check, Shield, Globe, Lock } from 'lucide-react'
+import { ArrowLeft, Check, Shield, Globe, Lock, Download, FileText, Trash2, LogOut } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
+import { useRouter } from 'next/navigation'
 import { updatePrivacySettings, unblockUser } from '@/app/actions/settings'
 import type { PrivacySettingsInput } from '@/app/actions/settings'
+import { submitAvgRequest, exportUserData, revokeAllSessions, deleteAccount } from '@/app/actions/security'
+import type { AvgRequestType } from '@/app/actions/security'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -40,12 +43,23 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 export default function PrivacyInstellingenPage() {
   const supabase = createClient()
+  const router   = useRouter()
   const [isPending, startTransition] = useTransition()
   const [loading, setLoading] = useState(true)
   const [toast, setToast] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [blockedUsers, setBlockedUsers] = useState<BlockedUser[]>([])
   const [unblocking, setUnblocking] = useState<string | null>(null)
+
+  // AVG state
+  const [avgModal, setAvgModal]         = useState(false)
+  const [avgType, setAvgType]           = useState<AvgRequestType>('inzage')
+  const [avgDetails, setAvgDetails]     = useState('')
+  const [avgSending, setAvgSending]     = useState(false)
+  const [exportLoading, setExportLoading] = useState(false)
+  const [revokeLoading, setRevokeLoading] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [deleteLoading, setDeleteLoading] = useState(false)
 
   const [settings, setSettings] = useState<PrivacySettingsInput>({
     show_city: true,
@@ -125,6 +139,57 @@ export default function PrivacyInstellingenPage() {
       setToast('Gebruiker gedeblokkeerd')
     }
     setUnblocking(null)
+  }
+
+  async function handleExport() {
+    setExportLoading(true)
+    const res = await exportUserData()
+    if (res.success) {
+      const blob = new Blob([JSON.stringify(res.data, null, 2)], { type: 'application/json' })
+      const url  = URL.createObjectURL(blob)
+      const a    = document.createElement('a')
+      a.href     = url
+      a.download = `buddys-data-${new Date().toISOString().slice(0, 10)}.json`
+      a.click()
+      URL.revokeObjectURL(url)
+      setToast('Data gedownload')
+    } else {
+      setError(res.error)
+    }
+    setExportLoading(false)
+  }
+
+  async function handleAvgSubmit() {
+    setAvgSending(true)
+    const res = await submitAvgRequest(avgType, avgDetails)
+    if (res.success) {
+      setAvgModal(false)
+      setAvgDetails('')
+      setToast('AVG-verzoek ingediend. We nemen binnen 30 dagen contact op.')
+    } else {
+      setError(res.error)
+    }
+    setAvgSending(false)
+  }
+
+  async function handleRevokeSessions() {
+    setRevokeLoading(true)
+    const res = await revokeAllSessions()
+    if (res.success) setToast('Alle andere sessies zijn uitgelogd')
+    else setError(res.error ?? 'Er ging iets mis')
+    setRevokeLoading(false)
+  }
+
+  async function handleDeleteAccount() {
+    setDeleteLoading(true)
+    const res = await deleteAccount()
+    if (res.success) {
+      router.push('/login')
+    } else {
+      setError(res.error)
+      setDeleteLoading(false)
+      setDeleteConfirm(false)
+    }
   }
 
   if (loading) return (
@@ -247,6 +312,155 @@ export default function PrivacyInstellingenPage() {
           </div>
         )}
       </div>
+
+      {/* Jouw gegevens */}
+      <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
+        <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
+          <FileText className="w-4 h-4 text-[#E87722]" />
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>Jouw gegevens (AVG)</p>
+        </div>
+        <div className="divide-y divide-black/5">
+
+          {/* Download data */}
+          <div className="flex items-center justify-between px-5 py-4 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Download mijn data</p>
+              <p className="text-xs text-gray-400 mt-0.5">Exporteer al je profieldata, berichten en posts als JSON</p>
+            </div>
+            <button
+              onClick={handleExport}
+              disabled={exportLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/5 text-sm font-bold text-gray-700 hover:bg-black/10 transition-colors disabled:opacity-40 shrink-0"
+              style={SYNE}
+            >
+              <Download className="w-3.5 h-3.5" />
+              {exportLoading ? '...' : 'Download'}
+            </button>
+          </div>
+
+          {/* AVG-verzoek */}
+          <div className="flex items-center justify-between px-5 py-4 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Dien AVG-verzoek in</p>
+              <p className="text-xs text-gray-400 mt-0.5">Inzage, correctie, verwijdering of bezwaar — wettelijk recht</p>
+            </div>
+            <button
+              onClick={() => setAvgModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/5 text-sm font-bold text-gray-700 hover:bg-black/10 transition-colors shrink-0"
+              style={SYNE}
+            >
+              <FileText className="w-3.5 h-3.5" />
+              Indienen
+            </button>
+          </div>
+
+          {/* Sessies intrekken */}
+          <div className="flex items-center justify-between px-5 py-4 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-gray-800">Uitloggen op alle apparaten</p>
+              <p className="text-xs text-gray-400 mt-0.5">Verwijder alle andere actieve sessies</p>
+            </div>
+            <button
+              onClick={handleRevokeSessions}
+              disabled={revokeLoading}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-black/5 text-sm font-bold text-gray-700 hover:bg-black/10 transition-colors disabled:opacity-40 shrink-0"
+              style={SYNE}
+            >
+              <LogOut className="w-3.5 h-3.5" />
+              {revokeLoading ? '...' : 'Uitloggen'}
+            </button>
+          </div>
+
+          {/* Account verwijderen */}
+          <div className="flex items-center justify-between px-5 py-4 gap-4">
+            <div>
+              <p className="text-sm font-semibold text-red-600">Verwijder account</p>
+              <p className="text-xs text-gray-400 mt-0.5">Permanent — al je data wordt gewist</p>
+            </div>
+            <button
+              onClick={() => setDeleteConfirm(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-xl bg-red-50 text-sm font-bold text-red-600 border border-red-200 hover:bg-red-100 transition-colors shrink-0"
+              style={SYNE}
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+              Verwijder
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* AVG modal */}
+      {avgModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
+            <div className="flex items-center justify-between">
+              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>AVG-verzoek indienen</h2>
+              <button onClick={() => setAvgModal(false)} className="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block" style={SYNE}>Type verzoek</label>
+                <select
+                  value={avgType}
+                  onChange={e => setAvgType(e.target.value as AvgRequestType)}
+                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722]"
+                >
+                  <option value="inzage">Inzage — mijn data bekijken</option>
+                  <option value="correctie">Correctie — onjuiste data aanpassen</option>
+                  <option value="verwijdering">Verwijdering — recht om vergeten te worden</option>
+                  <option value="overdracht">Overdracht — data exporteren</option>
+                  <option value="bezwaar">Bezwaar — bezwaar tegen verwerking</option>
+                </select>
+              </div>
+              <div>
+                <label className="text-xs font-bold text-gray-500 uppercase mb-1.5 block" style={SYNE}>Toelichting (optioneel)</label>
+                <textarea
+                  value={avgDetails}
+                  onChange={e => setAvgDetails(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722] resize-none"
+                  placeholder="Beschrijf je verzoek..."
+                />
+              </div>
+            </div>
+            <button
+              onClick={handleAvgSubmit}
+              disabled={avgSending}
+              className="w-full py-2.5 rounded-xl bg-[#111] text-white text-sm font-bold disabled:opacity-40"
+              style={SYNE}
+            >
+              {avgSending ? 'Verzenden...' : 'Verzoek indienen'}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Verwijder account bevestiging */}
+      {deleteConfirm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
+          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
+            <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>Account verwijderen?</h2>
+            <p className="text-sm text-gray-500">Dit is permanent. Al je posts, berichten, matches en profieldata worden gewist. Dit kan niet ongedaan worden gemaakt.</p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteConfirm(false)}
+                className="flex-1 py-2.5 rounded-xl border border-black/10 text-sm font-bold text-gray-600"
+                style={SYNE}
+              >
+                Annuleren
+              </button>
+              <button
+                onClick={handleDeleteAccount}
+                disabled={deleteLoading}
+                className="flex-1 py-2.5 rounded-xl bg-red-600 text-white text-sm font-bold disabled:opacity-40"
+                style={SYNE}
+              >
+                {deleteLoading ? 'Verwijderen...' : 'Ja, verwijder'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {toast && <Toast msg={toast} onDone={() => setToast(null)} />}
     </div>
