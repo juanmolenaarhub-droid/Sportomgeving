@@ -359,29 +359,6 @@ function CurvedBlock({ post, gradient }: { post: Post; gradient: SportGradient }
         />
       </svg>
 
-      {/* Photo background (if photo post) */}
-      {post.image_url && !isActivity && (
-        <>
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src={post.image_url}
-            alt=""
-            className="absolute inset-0 w-full h-full object-cover"
-          />
-          {/* Re-draw curve as white tint so shape stays visible */}
-          <svg
-            className="absolute inset-0 w-full h-full"
-            viewBox="0 0 400 400"
-            preserveAspectRatio="none"
-            xmlns="http://www.w3.org/2000/svg"
-          >
-            <path
-              d="M0,0 L260,0 Q400,0 400,140 L400,400 L0,400 Z"
-              fill="rgba(255,255,255,0.12)"
-            />
-          </svg>
-        </>
-      )}
 
       {/* Content layer */}
       <div className="absolute inset-0 flex flex-col justify-between p-[22px]">
@@ -547,10 +524,17 @@ function PostCard({ post, onLike, onSave, isNew }: {
         </button>
       </div>
 
-      {/* Media block */}
-      <div className="mt-3">
-        {post.media_type === 'video' ? <VideoBlock post={post} /> : <CurvedBlock post={post} gradient={gradient} />}
-      </div>
+      {/* Media block — als er een foto is: schone foto zonder tekst erop */}
+      {post.media_type === 'video' ? (
+        <div className="mt-3"><VideoBlock post={post} /></div>
+      ) : post.image_url ? (
+        <div className="mx-3 mt-3 rounded-2xl overflow-hidden">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src={post.image_url} alt="" className="w-full object-cover" />
+        </div>
+      ) : (
+        <div className="mt-3"><CurvedBlock post={post} gradient={gradient} /></div>
+      )}
 
       {/* Caption */}
       {post.content && (
