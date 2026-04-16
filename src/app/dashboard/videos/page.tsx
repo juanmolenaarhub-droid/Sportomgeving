@@ -259,38 +259,47 @@ export default function PlayPage() {
           )}
         </div>
 
-        {/* ── Content area — flex-1 min-h-0 ensures each tab fills remaining height ── */}
+        {/*
+          ── Content panels — ALL THREE always in DOM ──────────────────
+          CSS display controls visibility. No mount/unmount = no
+          lifecycle side-effects that could interfere with navigation.
+        */}
 
-        {tab === 'ontdekken' && (
-          <div className="flex-1 min-h-0 overflow-y-auto">
-            <div className="px-3 pt-3">
-              <GridView
-                posts={explorePosts}
-                loading={exploreLoading}
-                hasMore={exploreHasMore}
-                onCardClick={i => { setViewerPosts(explorePosts); setViewerIndex(i); setViewerOpen(true) }}
-                onLoadMore={() => loadExplorePosts(false)}
-              />
-            </div>
+        {/* Ontdekken */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto"
+          style={{ display: tab === 'ontdekken' ? 'block' : 'none' }}
+        >
+          <div className="px-3 pt-3">
+            <GridView
+              posts={explorePosts}
+              loading={exploreLoading}
+              hasMore={exploreHasMore}
+              onCardClick={i => { setViewerPosts(explorePosts); setViewerIndex(i); setViewerOpen(true) }}
+              onLoadMore={() => loadExplorePosts(false)}
+            />
           </div>
-        )}
+        </div>
 
-        {tab === 'volgend' && (
-          <VerticalFeed
-            posts={followPosts}
-            loading={followLoading}
-            hasMore={followHasMore}
-            onLoadMore={() => loadFollowPosts(false)}
-            isMuted={isMuted}
-            onMuteToggle={() => setIsMuted(v => !v)}
-            activeIdx={followActiveIdx}
-            onActiveIdx={setFollowActiveIdx}
-          />
-        )}
+        {/* Volgend — always mounted, isVisible controls play + display */}
+        <VerticalFeed
+          posts={followPosts}
+          loading={followLoading}
+          hasMore={followHasMore}
+          onLoadMore={() => loadFollowPosts(false)}
+          isMuted={isMuted}
+          onMuteToggle={() => setIsMuted(v => !v)}
+          activeIdx={followActiveIdx}
+          onActiveIdx={setFollowActiveIdx}
+          isVisible={tab === 'volgend'}
+        />
 
-        {tab === 'voorjou' && (
-          <VoorJouFeed isMuted={isMuted} onMuteToggle={() => setIsMuted(v => !v)} />
-        )}
+        {/* Voor jou — always mounted, isVisible controls play + display */}
+        <VoorJouFeed
+          isMuted={isMuted}
+          onMuteToggle={() => setIsMuted(v => !v)}
+          isVisible={tab === 'voorjou'}
+        />
       </div>
     </>
   )
