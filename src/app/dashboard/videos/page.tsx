@@ -5,6 +5,7 @@ import { Search, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { GridView } from './_components/GridView'
 import { VoorJouFeed } from './_components/VoorJouFeed'
+import { VerticalFeed } from './_components/VerticalFeed'
 import { FullScreenViewer } from './_components/FullScreenViewer'
 import { normalizePost } from './_components/types'
 import type { PlayPost } from './_components/types'
@@ -37,13 +38,14 @@ export default function PlayPage() {
   const exploreCursorRef = useRef<string | null>(null)
 
   // Volgend (following) state
-  const [followPosts,   setFollowPosts]   = useState<PlayPost[]>([])
-  const [followLoading, setFollowLoading] = useState(false)
-  const [followHasMore, setFollowHasMore] = useState(true)
-  const followCursorRef = useRef<string | null>(null)
-  const buddyIdsRef     = useRef<string[]>([])
+  const [followPosts,    setFollowPosts]    = useState<PlayPost[]>([])
+  const [followLoading,  setFollowLoading]  = useState(false)
+  const [followHasMore,  setFollowHasMore]  = useState(true)
+  const [followActiveIdx, setFollowActiveIdx] = useState(0)
+  const followCursorRef  = useRef<string | null>(null)
+  const buddyIdsRef      = useRef<string[]>([])
 
-  // Viewer state
+  // Viewer state (for Verkennen grid tap)
   const [viewerPosts, setViewerPosts] = useState<PlayPost[]>([])
   const [viewerIndex, setViewerIndex] = useState(0)
   const [viewerOpen,  setViewerOpen]  = useState(false)
@@ -89,13 +91,8 @@ export default function PlayPage() {
       .limit(PAGE_SIZE)
 
     if (exploreCursorRef.current) query = query.lt('created_at', exploreCursorRef.current)
-
-    // Sport filter
-    const sportFilter = activePill
-    if (sportFilter) query = query.contains('sport_tags', [sportFilter])
-
-    // Search query on content
-    if (searchQuery.trim()) query = query.ilike('content', `%${searchQuery.trim()}%`)
+    if (activePill)               query = query.contains('sport_tags', [activePill])
+    if (searchQuery.trim())       query = query.ilike('content', `%${searchQuery.trim()}%`)
 
     const { data } = await query
     if (!data || data.length === 0) {
@@ -115,7 +112,6 @@ export default function PlayPage() {
     for (const p of profiles ?? []) profileMap[p.id] = p
 
     const newPosts = data.map(row => normalizePost(row, profileMap[row.user_id]))
-
     if (reset) setExplorePosts(newPosts)
     else       setExplorePosts(prev => [...prev, ...newPosts])
 
@@ -167,7 +163,6 @@ export default function PlayPage() {
     for (const p of profiles ?? []) profileMap[p.id] = p
 
     const newPosts = data.map(row => normalizePost(row, profileMap[row.user_id]))
-
     if (reset) setFollowPosts(newPosts)
     else       setFollowPosts(prev => [...prev, ...newPosts])
 
@@ -187,23 +182,22 @@ export default function PlayPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
-  // ── Open viewer ──────────────────────────────────────────────────────────
   function openViewer(posts: PlayPost[], index: number) {
     setViewerPosts(posts)
     setViewerIndex(index)
     setViewerOpen(true)
   }
 
-  // ── Pill toggle ──────────────────────────────────────────────────────────
   function togglePill(pill: string) {
     setActivePill(prev => prev === pill ? null : pill)
   }
 
-  const isVoorJou = tab === 'voorjou'
+  const isDark = tab !== 'verkennen'
+  const isFullscreen = tab === 'volgend' || tab === 'voorjou'
 
   return (
     <>
-      {/* FullScreen Viewer overlay */}
+      {/* FullScreen Viewer overlay (Verkennen grid tap) */}
       {viewerOpen && (
         <FullScreenViewer
           posts={viewerPosts}
@@ -214,27 +208,27 @@ export default function PlayPage() {
         />
       )}
 
-      {/* Page wrapper */}
+      {/* Page wrapper — full height when in vertical feed mode */}
       <div
         className="flex flex-col"
         style={{
-          minHeight: isVoorJou ? '100%' : undefined,
-          background: isVoorJou ? '#000' : undefined,
+          height:     isFullscreen ? '100%' : undefined,
+          background: isDark ? '#000' : undefined,
         }}
       >
-        {/* ── Top bar ──────────────────────────────────────────────────── */}
+        {/* ── Top bar ────────────────────────────────────────────────── */}
         <div
-          className="sticky top-0 z-20 border-b"
+          className="shrink-0 sticky top-0 z-20 border-b"
           style={{
-            background:   isVoorJou ? 'rgba(0,0,0,0.85)' : '#fff',
-            borderColor:  isVoorJou ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
+            background:          isDark ? 'rgba(0,0,0,0.85)' : '#fff',
+            borderColor:         isDark ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)',
+            backdropFilter:      'blur(12px)',
+            WebkitBackdropFilter:'blur(12px)',
           }}
         >
-          {/* Tab switcher */}
+          {/* Tabs */}
           <div className="flex items-center px-4 pt-3 pb-0 gap-1">
-            {([ 'verkennen', 'volgend', 'voorjou'] as Tab[]).map(t => {
+            {(['verkennen', 'volgend', 'voorjou'] as Tab[]).map(t => {
               const labels: Record<Tab, string> = {
                 verkennen: 'Verkennen',
                 volgend:   'Volgend',
@@ -248,8 +242,8 @@ export default function PlayPage() {
                   className="relative pb-3 px-3 text-sm font-bold transition-colors"
                   style={{
                     color: active
-                      ? (isVoorJou ? '#fff' : '#111')
-                      : (isVoorJou ? 'rgba(255,255,255,0.4)' : '#9ca3af'),
+                      ? (isDark ? '#fff' : '#111')
+                      : (isDark ? 'rgba(255,255,255,0.4)' : '#9ca3af'),
                   }}
                 >
                   {labels[t]}
@@ -264,10 +258,9 @@ export default function PlayPage() {
             })}
           </div>
 
-          {/* Search + pills (only Verkennen/Volgend) */}
-          {tab !== 'voorjou' && (
+          {/* Search + pills — only on Verkennen */}
+          {tab === 'verkennen' && (
             <div className="px-4 pb-3 space-y-2 mt-2">
-              {/* Search bar */}
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
                 <input
@@ -278,16 +271,11 @@ export default function PlayPage() {
                   className="w-full pl-9 pr-9 py-2.5 text-sm bg-gray-100 rounded-xl border-none outline-none placeholder:text-gray-400 font-medium"
                 />
                 {searchQuery && (
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="absolute right-3 top-1/2 -translate-y-1/2"
-                  >
+                  <button onClick={() => setSearchQuery('')} className="absolute right-3 top-1/2 -translate-y-1/2">
                     <X className="w-4 h-4 text-gray-400" />
                   </button>
                 )}
               </div>
-
-              {/* Sport pills */}
               <div className="flex gap-2 overflow-x-auto scrollbar-none pb-0.5">
                 {SPORT_PILLS.map(pill => {
                   const active = activePill === pill
@@ -310,7 +298,8 @@ export default function PlayPage() {
           )}
         </div>
 
-        {/* ── Tab content ──────────────────────────────────────────────── */}
+        {/* ── Tab content ────────────────────────────────────────────── */}
+
         {tab === 'verkennen' && (
           <div className="px-3 pt-3">
             <GridView
@@ -324,28 +313,20 @@ export default function PlayPage() {
         )}
 
         {tab === 'volgend' && (
-          <div className="px-3 pt-3">
-            {followPosts.length === 0 && !followLoading ? (
-              <div className="py-16 text-center space-y-2">
-                <p className="text-gray-500 font-semibold text-sm">Nog niks hier</p>
-                <p className="text-gray-400 text-xs">Volg buddies om hun posts te zien</p>
-              </div>
-            ) : (
-              <GridView
-                posts={followPosts}
-                loading={followLoading}
-                hasMore={followHasMore}
-                onCardClick={i => openViewer(followPosts, i)}
-                onLoadMore={() => loadFollowPosts(false)}
-              />
-            )}
-          </div>
+          <VerticalFeed
+            posts={followPosts}
+            loading={followLoading}
+            hasMore={followHasMore}
+            onLoadMore={() => loadFollowPosts(false)}
+            isMuted={isMuted}
+            onMuteToggle={() => setIsMuted(v => !v)}
+            activeIdx={followActiveIdx}
+            onActiveIdx={setFollowActiveIdx}
+          />
         )}
 
         {tab === 'voorjou' && (
-          <div className="flex flex-col" style={{ height: 'calc(100vh - 112px)' }}>
-            <VoorJouFeed isMuted={isMuted} onMuteToggle={() => setIsMuted(v => !v)} />
-          </div>
+          <VoorJouFeed isMuted={isMuted} onMuteToggle={() => setIsMuted(v => !v)} />
         )}
       </div>
     </>
