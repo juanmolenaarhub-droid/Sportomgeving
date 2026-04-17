@@ -2,8 +2,6 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { Bell } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
 import { FeedCard, FeedCardSkeleton, type FeedPostData } from '@/components/feed/FeedCard'
 import { StoriesRow, type StoryBuddy } from '@/components/feed/StoriesRow'
 import { createClient } from '@/lib/supabase'
@@ -44,7 +42,6 @@ export default function FeedPage() {
   const [userId,         setUserId]         = useState<string | null>(null)
   const [userName,       setUserName]       = useState('')
   const [userAvatarUrl,  setUserAvatarUrl]  = useState<string | null>(null)
-  const [hasNotifDot,    setHasNotifDot]    = useState(false)
   const [posts,          setPosts]          = useState<FeedPostData[]>([])
   const [buddies,        setBuddies]        = useState<StoryBuddy[]>([])
   const [loading,        setLoading]        = useState(true)
@@ -134,14 +131,6 @@ export default function FeedPage() {
       setUserName(profile?.full_name ?? profile?.username ?? 'Gebruiker')
       setUserAvatarUrl(profile?.avatar_url ?? null)
 
-      // Ongelezen notificaties dot
-      const { count } = await supabase
-        .from('system_notifications')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id)
-        .eq('read', false)
-      setHasNotifDot((count ?? 0) > 0)
-
       // Buddy-IDs ophalen voor stories row
       const { data: buddyData } = await supabase
         .from('follow_requests')
@@ -229,51 +218,6 @@ export default function FeedPage() {
 
   return (
     <div style={{ background: '#F5F0E8', minHeight: '100vh' }}>
-
-      {/* ── Sticky topbar ────────────────────────────────────────────────── */}
-      <div style={{
-        position: 'sticky', top: 0, zIndex: 30,
-        background: 'rgba(245,240,232,0.92)',
-        backdropFilter: 'blur(16px)',
-        WebkitBackdropFilter: 'blur(16px)',
-        padding: '12px 20px',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-      }}>
-        {/* Profielfoto — link naar profiel */}
-        <Link href="/dashboard/profile/me">
-          <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden' }}>
-            <Avatar name={userName || 'G'} imageUrl={userAvatarUrl} size="sm" />
-          </div>
-        </Link>
-
-        {/* Inbox pill */}
-        <Link href="/dashboard/notifications">
-          <div style={{
-            display: 'inline-flex', alignItems: 'center', gap: 8,
-            background: '#E8E1D3',
-            borderRadius: 999,
-            padding: '8px 14px',
-            position: 'relative',
-          }}>
-            <Bell style={{ width: 16, height: 16, color: '#1A1714' }} />
-            <span style={{
-              ...DM,
-              fontSize: 13, fontWeight: 500, color: '#1A1714',
-            }}>
-              Inbox
-            </span>
-            {hasNotifDot && (
-              <span style={{
-                position: 'absolute', top: 6, right: 6,
-                width: 7, height: 7,
-                borderRadius: '50%',
-                background: '#E87722',
-                border: '1.5px solid #E8E1D3',
-              }} />
-            )}
-          </div>
-        </Link>
-      </div>
 
       {/* ── Editorial titelsectie ─────────────────────────────────────────── */}
       <div style={{ padding: '16px 20px 24px' }}>

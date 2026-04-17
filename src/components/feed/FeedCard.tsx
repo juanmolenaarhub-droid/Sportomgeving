@@ -66,9 +66,7 @@ function GlassPill({ children }: { children: React.ReactNode }) {
     <div style={{
       ...DM,
       display: 'inline-flex', alignItems: 'center', gap: 5,
-      background: 'rgba(255,255,255,0.78)',
-      backdropFilter: 'blur(10px)',
-      WebkitBackdropFilter: 'blur(10px)',
+      background: 'rgba(255,255,255,0.93)',
       borderRadius: 999,
       padding: '5px 10px',
       fontSize: 11, fontWeight: 500, color: '#1A1714',
