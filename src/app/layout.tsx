@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Buddys – Vind je sportbuddy",
   description: "Match met sporters bij jou in de buurt",
+  icons: {
+    icon: '/favicon.png',
+    apple: '/favicon.png',
+  },
 };
 
 export const viewport: Viewport = {
