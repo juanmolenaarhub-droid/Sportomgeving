@@ -24,14 +24,16 @@ const NAV_ITEMS = [
   { href: '/dashboard/groups',   label: 'Groepen',   icon: Users,         exact: false },
 ] as const
 
-// ─── Nieuwe mobile nav items (4 + center plus) ─────────────────────────────────
+// ─── Nieuwe mobile nav items (2 links + center plus + 2 rechts) ───────────────
 
-const MOBILE_NAV = [
-  { href: '/dashboard/feed',       icon: Home,          exact: true  },
-  { href: '/dashboard/find',       icon: Search,        exact: false },
-  // center slot is de + knop
-  { href: '/dashboard/messages',   icon: MessageCircle, exact: false },
-  { href: '/dashboard/profile/me', icon: User,          exact: false },
+const MOBILE_NAV_LEFT = [
+  { href: '/dashboard/feed',    icon: Home,          label: 'Home',    exact: true  },
+  { href: '/dashboard/videos',  icon: Play,          label: 'Play',    exact: false },
+] as const
+
+const MOBILE_NAV_RIGHT = [
+  { href: '/dashboard/messages',   icon: MessageCircle, label: 'Berichten', exact: false },
+  { href: '/dashboard/profile/me', icon: User,          label: 'Profiel',   exact: false },
 ] as const
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -297,33 +299,24 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* ── Floating mobile nav ─────────────────────────────────────────── */}
-      <style>{`
-        @keyframes float-up {
-          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        .floating-nav { animation: float-up 0.35s cubic-bezier(.16,1,.3,1) both; }
-      `}</style>
-
-      {/* Wrapper: positioneert de nav + de uitstekende plus-knop */}
+      {/* ── Bottom nav — vast aan onderkant, wit, ronde bovenhoeken ──────── */}
       <div
-        className="floating-nav md:hidden fixed z-50"
+        className="md:hidden fixed z-50 left-0 right-0"
         style={{
-          bottom: 'calc(16px + env(safe-area-inset-bottom))',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: 'calc(100vw - 32px)',
-          maxWidth: 390,
+          bottom: 0,
+          background: '#FFFFFF',
+          borderRadius: '20px 20px 0 0',
+          boxShadow: '0 -4px 24px rgba(26,23,20,0.10)',
+          paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* ── Plus-knop (steekt boven de pill uit) ──────────────────────── */}
+        {/* Uitstekende center-knop — staat boven de balk */}
         <div style={{
           position: 'absolute',
           bottom: '100%',
           left: '50%',
           transform: 'translateX(-50%)',
-          marginBottom: -14,
+          marginBottom: -20,
           zIndex: 1,
         }}>
           <button
@@ -332,51 +325,58 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               width: 56, height: 56,
               borderRadius: '50%',
               background: '#E87722',
-              border: 'none',
+              border: '3px solid #FFFFFF',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 6px 16px rgba(232,119,34,0.40)',
+              boxShadow: '0 4px 16px rgba(232,119,34,0.45)',
               cursor: 'pointer',
-              transition: 'transform 150ms',
               WebkitTapHighlightColor: 'transparent',
             }}
-            onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)' }}
-            onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
-            onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)' }}
+            onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.92)' }}
             onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
           >
             <Plus style={{ width: 24, height: 24, color: 'white' }} strokeWidth={2.5} />
           </button>
         </div>
 
-        {/* ── Nav pill ──────────────────────────────────────────────────── */}
+        {/* Nav items */}
         <nav style={{
-          background: '#2A2420',
-          borderRadius: 999,
-          boxShadow: '0 8px 32px rgba(26,23,20,0.20)',
-          padding: '8px 12px',
           display: 'flex',
           alignItems: 'center',
+          padding: '10px 8px 6px',
         }}>
-          {/* Links: Home + Search */}
-          {MOBILE_NAV.slice(0, 2).map(({ href, icon: Icon, exact }) => (
-            <MobileNavItem
+          {/* Links: Home + Play */}
+          {MOBILE_NAV_LEFT.map(({ href, icon: Icon, label, exact }) => (
+            <BottomNavItem
               key={href}
               href={href}
               icon={<Icon style={{ width: 22, height: 22 }} />}
+              label={label}
               active={isActive(href, exact)}
-              badge={href === '/dashboard/messages' ? unreadMessages : 0}
+              badge={0}
             />
           ))}
 
           {/* Lege ruimte voor de + knop */}
-          <div style={{ flex: '0 0 64px' }} />
+          <div style={{ flex: '0 0 72px' }}>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 10,
+              fontWeight: 500,
+              color: '#9CA3AF',
+              textAlign: 'center',
+              marginTop: 32,
+            }}>
+              Zoek
+            </p>
+          </div>
 
-          {/* Rechts: Messages + Profile */}
-          {MOBILE_NAV.slice(2).map(({ href, icon: Icon, exact }) => (
-            <MobileNavItem
+          {/* Rechts: Berichten + Profiel */}
+          {MOBILE_NAV_RIGHT.map(({ href, icon: Icon, label, exact }) => (
+            <BottomNavItem
               key={href}
               href={href}
               icon={<Icon style={{ width: 22, height: 22 }} />}
+              label={label}
               active={isActive(href, exact)}
               badge={href === '/dashboard/messages' ? unreadMessages : 0}
             />
@@ -401,16 +401,18 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   )
 }
 
-// ─── Mobile nav item ───────────────────────────────────────────────────────────
+// ─── Bottom nav item ───────────────────────────────────────────────────────────
 
-function MobileNavItem({
+function BottomNavItem({
   href,
   icon,
+  label,
   active,
   badge,
 }: {
   href: string
   icon: React.ReactNode
+  label: string
   active: boolean
   badge?: number
 }) {
@@ -420,31 +422,40 @@ function MobileNavItem({
       style={{
         flex: 1,
         display: 'flex',
+        flexDirection: 'column',
         alignItems: 'center',
-        justifyContent: 'center',
-        padding: '4px 0',
+        gap: 3,
+        padding: '2px 4px',
         position: 'relative',
-        minWidth: 44,
+        WebkitTapHighlightColor: 'transparent',
       }}
     >
-      {/* Actieve staat: crème pill */}
-      {active ? (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          background: '#F5F0E8',
-          borderRadius: 999,
-          padding: '8px 14px',
-        }}>
-          <span style={{ color: '#E87722' }}>{icon}</span>
-        </div>
-      ) : (
-        <span style={{ color: 'rgba(255,255,255,0.55)' }}>{icon}</span>
-      )}
+      {/* Icoon — actief: oranje bg pill */}
+      <div style={{
+        width: 44, height: 34,
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        borderRadius: 12,
+        background: active ? 'rgba(232,119,34,0.12)' : 'transparent',
+        transition: 'background 150ms',
+      }}>
+        <span style={{ color: active ? '#E87722' : '#9CA3AF' }}>{icon}</span>
+      </div>
+
+      {/* Label */}
+      <span style={{
+        fontFamily: "'DM Sans', sans-serif",
+        fontSize: 10,
+        fontWeight: active ? 700 : 500,
+        color: active ? '#E87722' : '#9CA3AF',
+        lineHeight: 1,
+      }}>
+        {label}
+      </span>
 
       {/* Badge */}
       {(badge ?? 0) > 0 && (
         <span style={{
-          position: 'absolute', top: 0, right: 4,
+          position: 'absolute', top: 2, right: '20%',
           minWidth: 16, height: 16,
           background: '#E87722',
           color: 'white',
@@ -455,7 +466,7 @@ function MobileNavItem({
           padding: '0 3px',
           fontFamily: "'DM Sans', sans-serif",
         }}>
-          {badge! > 9 ? '9+' : badge}
+          {(badge ?? 0) > 9 ? '9+' : badge}
         </span>
       )}
     </Link>

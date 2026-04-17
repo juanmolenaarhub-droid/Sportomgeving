@@ -56,9 +56,9 @@ body {
   display: none;
 }
 
-/* Bottom nav content padding accounting for safe area + nav height */
+/* Bottom nav content padding accounting for safe area + nav height (nav ~80px) */
 .pb-safe-nav {
-  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
 @media (min-width: 768px) {
   .pb-safe-nav {
