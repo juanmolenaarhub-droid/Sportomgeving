@@ -89,7 +89,7 @@ export function FeedCardSkeleton() {
       <div style={{
         position: 'absolute', top: 0, left: 0,
         width: 140, height: 40,
-        background: '#FFFFFF',
+        background: '#F5F0E8',
         borderRadius: '14px 14px 0 0',
         display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px',
       }}>
@@ -164,7 +164,7 @@ export function FeedCard({ post, onLikeToggle }: {
       }}>
         {/* Tab content */}
         <div style={{
-          background: '#FFFFFF',
+          background: '#F5F0E8',
           borderRadius: '14px 14px 0 0',
           padding: '0 12px',
           height: 40,
@@ -172,7 +172,6 @@ export function FeedCard({ post, onLikeToggle }: {
           minWidth: 120, maxWidth: 200,
           flexShrink: 0,
           pointerEvents: 'auto',
-          boxShadow: '-2px -2px 8px rgba(26,23,20,0.06)',
         }}>
           <MiniAvatar url={post.userAvatarUrl} name={post.userName} />
           <span style={{
@@ -187,7 +186,7 @@ export function FeedCard({ post, onLikeToggle }: {
         {/* Concave corner — radial-gradient trick */}
         <div style={{
           width: 20, height: 20, flexShrink: 0,
-          background: 'radial-gradient(circle at 0% 100%, transparent 19px, #FFFFFF 20px)',
+          background: 'radial-gradient(circle at 0% 100%, transparent 19px, #F5F0E8 20px)',
         }} />
       </div>
 
