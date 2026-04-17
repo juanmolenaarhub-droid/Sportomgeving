@@ -7,7 +7,7 @@ const config: CapacitorConfig = {
   // De app laadt je live Vercel-deployment in een native WebView.
   // Vervang de URL hieronder met jouw eigen Vercel URL.
   server: {
-    url: 'https://JOUW-VERCEL-URL.vercel.app',
+    url: 'https://sportomgeving.vercel.app',
     cleartext: false,
   },
 
