@@ -7,14 +7,12 @@ import Image from 'next/image'
 import {
   Home, Users, MessageCircle, Bell, User,
   LogOut, Search, MapPin, Settings, Play,
-  Plus,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Avatar } from '@/components/Avatar'
 import { ProfileCardProvider } from '@/components/ProfileCardModal'
 import { CreateActionSheet } from '@/components/feed/CreateActionSheet'
 import PostComposer from './_components/PostComposer'
-import { logCreateActionOpened } from './feed/actions'
 
 const NAV_ITEMS = [
   { href: '/dashboard',          label: 'Home',      icon: Home,          exact: true  },
@@ -24,16 +22,15 @@ const NAV_ITEMS = [
   { href: '/dashboard/groups',   label: 'Groepen',   icon: Users,         exact: false },
 ] as const
 
-// ─── Nieuwe mobile nav items (2 links + center plus + 2 rechts) ───────────────
+// ─── Mobile nav items (6 items, geen center plus) ─────────────────────────────
 
-const MOBILE_NAV_LEFT = [
-  { href: '/dashboard/feed',    icon: Home,          label: 'Home',    exact: true  },
-  { href: '/dashboard/videos',  icon: Play,          label: 'Play',    exact: false },
-] as const
-
-const MOBILE_NAV_RIGHT = [
-  { href: '/dashboard/messages',   icon: MessageCircle, label: 'Berichten', exact: false },
-  { href: '/dashboard/profile/me', icon: User,          label: 'Profiel',   exact: false },
+const MOBILE_NAV_ITEMS = [
+  { href: '/dashboard/feed',        icon: Home,          label: 'Home',    exact: true  },
+  { href: '/dashboard/videos',      icon: Play,          label: 'Play',    exact: false },
+  { href: '/dashboard/find',        icon: Search,        label: 'Zoek',    exact: false },
+  { href: '/dashboard/meetup',      icon: MapPin,        label: 'Meetups', exact: false },
+  { href: '/dashboard/messages',    icon: MessageCircle, label: 'Berichten', exact: false },
+  { href: '/dashboard/profile/me',  icon: User,          label: 'Profiel', exact: false },
 ] as const
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -49,7 +46,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showDropdown,    setShowDropdown]    = useState(false)
   const [currentUserId,   setCurrentUserId]   = useState('')
 
-  // Create-sheet + PostComposer state
+  // Create-sheet + PostComposer state (beschikbaar via desktop nav)
   const [showCreateSheet, setShowCreateSheet] = useState(false)
   const [composerOpen,    setComposerOpen]    = useState(false)
 
@@ -171,11 +168,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   function isActive(href: string, exact: boolean) {
     if (exact) return pathname === href
     return pathname === href || pathname.startsWith(href + '/')
-  }
-
-  async function handlePlusClick() {
-    setShowCreateSheet(true)
-    await logCreateActionOpened()
   }
 
   return (
@@ -312,72 +304,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* Uitstekende center-knop — staat boven de balk */}
-        <div style={{
-          position: 'absolute',
-          bottom: '100%',
-          left: '50%',
-          transform: 'translateX(-50%)',
-          marginBottom: -20,
-          zIndex: 1,
-        }}>
-          <button
-            onClick={handlePlusClick}
-            style={{
-              width: 56, height: 56,
-              borderRadius: '50%',
-              background: '#E87722',
-              border: '3px solid #FFFFFF',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 4px 16px rgba(232,119,34,0.45)',
-              cursor: 'pointer',
-              WebkitTapHighlightColor: 'transparent',
-            }}
-            onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.92)' }}
-            onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
-          >
-            <Plus style={{ width: 24, height: 24, color: 'white' }} strokeWidth={2.5} />
-          </button>
-        </div>
-
-        {/* Nav items */}
+        {/* Nav items — 6 gelijke items */}
         <nav style={{
           display: 'flex',
           alignItems: 'center',
-          padding: '10px 8px 6px',
+          padding: '8px 4px 6px',
         }}>
-          {/* Links: Home + Play */}
-          {MOBILE_NAV_LEFT.map(({ href, icon: Icon, label, exact }) => (
+          {MOBILE_NAV_ITEMS.map(({ href, icon: Icon, label, exact }) => (
             <BottomNavItem
               key={href}
               href={href}
-              icon={<Icon style={{ width: 22, height: 22 }} />}
-              label={label}
-              active={isActive(href, exact)}
-              badge={0}
-            />
-          ))}
-
-          {/* Lege ruimte voor de + knop */}
-          <div style={{ flex: '0 0 72px' }}>
-            <p style={{
-              fontFamily: "'DM Sans', sans-serif",
-              fontSize: 10,
-              fontWeight: 500,
-              color: '#9CA3AF',
-              textAlign: 'center',
-              marginTop: 32,
-            }}>
-              Zoek
-            </p>
-          </div>
-
-          {/* Rechts: Berichten + Profiel */}
-          {MOBILE_NAV_RIGHT.map(({ href, icon: Icon, label, exact }) => (
-            <BottomNavItem
-              key={href}
-              href={href}
-              icon={<Icon style={{ width: 22, height: 22 }} />}
+              icon={<Icon style={{ width: 20, height: 20 }} />}
               label={label}
               active={isActive(href, exact)}
               badge={href === '/dashboard/messages' ? unreadMessages : 0}
