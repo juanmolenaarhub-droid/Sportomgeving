@@ -39,3 +39,29 @@ body {
   .curved-stat-unit    { font-size: 14px; }
   .curved-text-content { font-size: 1rem; }
 }
+
+/* ── Mobile native feel ─────────────────────────────────────────── */
+
+/* No blue flash on tap */
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hide scrollbars everywhere (still scrollable) */
+* {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+*::-webkit-scrollbar {
+  display: none;
+}
+
+/* Bottom nav content padding accounting for safe area + nav height */
+.pb-safe-nav {
+  padding-bottom: calc(7rem + env(safe-area-inset-bottom));
+}
+@media (min-width: 768px) {
+  .pb-safe-nav {
+    padding-bottom: 2rem;
+  }
+}

@@ -7,10 +7,14 @@ import Image from 'next/image'
 import {
   Home, Users, MessageCircle, Bell, User,
   LogOut, Search, MapPin, Settings, Play,
+  Plus,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Avatar } from '@/components/Avatar'
 import { ProfileCardProvider } from '@/components/ProfileCardModal'
+import { CreateActionSheet } from '@/components/feed/CreateActionSheet'
+import PostComposer from './_components/PostComposer'
+import { logCreateActionOpened } from './feed/actions'
 
 const NAV_ITEMS = [
   { href: '/dashboard',          label: 'Home',      icon: Home,          exact: true  },
@@ -20,12 +24,14 @@ const NAV_ITEMS = [
   { href: '/dashboard/groups',   label: 'Groepen',   icon: Users,         exact: false },
 ] as const
 
-const MOBILE_ITEMS = [
-  { href: '/dashboard',           icon: Home,          label: 'Home',      exact: true  },
-  { href: '/dashboard/videos',    icon: Play,          label: 'Play',      exact: false },
-  { href: '/dashboard/meetup',    icon: MapPin,        label: 'Meetups',   exact: false },
-  { href: '/dashboard/messages',  icon: MessageCircle, label: 'Chat',      exact: false },
-  { href: '/dashboard/find',      icon: Search,        label: 'Zoek buddy', exact: false },
+// ─── Nieuwe mobile nav items (4 + center plus) ─────────────────────────────────
+
+const MOBILE_NAV = [
+  { href: '/dashboard/feed',       icon: Home,          exact: true  },
+  { href: '/dashboard/find',       icon: Search,        exact: false },
+  // center slot is de + knop
+  { href: '/dashboard/messages',   icon: MessageCircle, exact: false },
+  { href: '/dashboard/profile/me', icon: User,          exact: false },
 ] as const
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
@@ -41,12 +47,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [showDropdown,    setShowDropdown]    = useState(false)
   const [currentUserId,   setCurrentUserId]   = useState('')
 
+  // Create-sheet + PostComposer state
+  const [showCreateSheet, setShowCreateSheet] = useState(false)
+  const [composerOpen,    setComposerOpen]    = useState(false)
+
   const dropdownRef = useRef<HTMLDivElement>(null)
   const userIdRef   = useRef<string>('')
-  const regionRef     = useRef<string>('')
+  const regionRef   = useRef<string>('')
+
+  const isFeedPage = pathname === '/dashboard/feed'
 
   const loadBadges = useCallback(async (uid: string, region: string) => {
-    // Accepted conversation IDs
     const { data: convs } = await supabase
       .from('follow_requests')
       .select('id')
@@ -101,7 +112,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         .eq('id', user.id)
         .single()
 
-      const name = profile?.full_name ?? profile?.username ?? 'Gebruiker'
+      const name   = profile?.full_name ?? profile?.username ?? 'Gebruiker'
       const region = profile?.region ?? ''
       setProfileName(name)
       const rawUrl = profile?.avatar_url ?? null
@@ -110,7 +121,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       await loadBadges(user.id, region)
 
-      // Realtime subscriptions for badge refresh + profiel updates
       const channel = supabase
         .channel('layout-badges')
         .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `id=eq.${user.id}` },
@@ -139,7 +149,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Close dropdown on outside click
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -160,18 +169,25 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return pathname === href || pathname.startsWith(href + '/')
   }
 
+  async function handlePlusClick() {
+    setShowCreateSheet(true)
+    await logCreateActionOpened()
+  }
+
   return (
     <div className={`bg-[#F5F0E8] flex flex-col ${pathname === '/dashboard/videos' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
-      {/* ── Topbar ─────────────────────────────────────────────────────── */}
-      <header className="bg-white border-b border-black/8 sticky top-0 z-30">
+
+      {/* ── Topbar — verborgen op mobile feed pagina ────────────────────── */}
+      <header
+        className={`${isFeedPage ? 'hidden md:block' : 'block'} bg-white border-b border-black/8 sticky top-0 z-30`}
+        style={{ paddingTop: 'env(safe-area-inset-top)' }}
+      >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
 
-          {/* Logo */}
           <Link href="/dashboard">
             <Image src="/logo.png" alt="Buddys" height={36} width={120} className="object-contain" />
           </Link>
 
-          {/* Desktop nav */}
           <nav className="hidden md:flex items-center gap-1 flex-1 justify-center">
             {NAV_ITEMS.map(({ href, label, icon: Icon, exact }) => {
               const active = isActive(href, exact)
@@ -186,14 +202,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Icon className="w-4 h-4" />
                   {label}
 
-                  {/* Unread messages badge */}
                   {href === '/dashboard/messages' && unreadMessages > 0 && (
                     <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   )}
 
-                  {/* New meetups dot */}
                   {href === '/dashboard/meetup' && hasMeetupDot && !active && (
                     <span className="absolute top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
                   )}
@@ -202,7 +216,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             })}
           </nav>
 
-          {/* Right: Vind buddy CTA + Bell + Avatar */}
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard/find"
@@ -223,7 +236,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               )}
             </Link>
 
-            {/* Profile dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowDropdown(v => !v)}
@@ -234,7 +246,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
               {showDropdown && (
                 <div className="absolute right-0 top-12 z-50 bg-white rounded-2xl shadow-xl border border-black/8 overflow-hidden w-52">
-                  {/* Name header */}
                   <div className="px-4 py-3 border-b border-black/5">
                     <p className="text-xs text-gray-400 font-medium">Ingelogd als</p>
                     <p className="text-sm font-bold text-black truncate">{profileName}</p>
@@ -272,84 +283,181 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* ── Page content ───────────────────────────────────────────────── */}
-      {pathname === '/dashboard/videos' ? (
+      {(pathname === '/dashboard/videos' || isFeedPage) ? (
         <div className="flex-1 flex flex-col overflow-hidden">
-          {children}
+          <ProfileCardProvider currentUserId={currentUserId}>
+            {children}
+          </ProfileCardProvider>
         </div>
       ) : (
-        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-28 md:pb-8">
+        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-safe-nav md:pb-8">
           <ProfileCardProvider currentUserId={currentUserId}>
             {children}
           </ProfileCardProvider>
         </div>
       )}
 
-      {/* ── Floating mobile pill ────────────────────────────────────────── */}
+      {/* ── Floating mobile nav ─────────────────────────────────────────── */}
       <style>{`
         @keyframes float-up {
-          from { oparegion: 0; transform: translateX(-50%) translateY(16px); }
-          to   { oparegion: 1; transform: translateX(-50%) translateY(0); }
+          from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
         }
         .floating-nav { animation: float-up 0.35s cubic-bezier(.16,1,.3,1) both; }
       `}</style>
 
-      <nav
+      {/* Wrapper: positioneert de nav + de uitstekende plus-knop */}
+      <div
         className="floating-nav md:hidden fixed z-50"
         style={{
-          bottom: 16,
+          bottom: 'calc(16px + env(safe-area-inset-bottom))',
           left: '50%',
           transform: 'translateX(-50%)',
           width: 'calc(100vw - 32px)',
           maxWidth: 390,
-          background: 'rgba(17,17,17,0.97)',
-          backdropFilter: 'blur(16px)',
-          WebkitBackdropFilter: 'blur(16px)',
-          borderRadius: 999,
-          boxShadow: '0 8px 32px rgba(0,0,0,0.35)',
-          padding: '8px 16px',
         }}
       >
-        <div className="flex items-center justify-around">
-          {MOBILE_ITEMS.map(({ href, icon: Icon, label, exact }) => {
-            const active = isActive(href, exact)
-            return (
-              <Link
-                key={href}
-                href={href}
-                className="relative flex flex-col items-center gap-0.5 py-1 px-2 min-w-[44px]"
-              >
-                <Icon
-                  className="w-5 h-5 transition-colors duration-200"
-                  style={{ color: active ? 'white' : 'rgba(255,255,255,0.5)' }}
-                />
-                <span
-                  className="font-bold transition-all duration-200"
-                  style={{
-                    fontSize: 9,
-                    lineHeight: '1.2',
-                    color: active ? 'white' : 'transparent',
-                  }}
-                >
-                  {label}
-                </span>
-                {active && (
-                  <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-white rounded-full" />
-                )}
-                {/* Berichten badge */}
-                {href === '/dashboard/messages' && unreadMessages > 0 && (
-                  <span className="absolute -top-1 right-0.5 min-w-[14px] h-[14px] bg-[#E87722] text-white text-[9px] font-black rounded-full flex items-center justify-center px-0.5">
-                    {unreadMessages > 9 ? '9+' : unreadMessages}
-                  </span>
-                )}
-                {/* Meetup dot */}
-                {href === '/dashboard/meetup' && hasMeetupDot && !active && (
-                  <span className="absolute -top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
-                )}
-              </Link>
-            )
-          })}
+        {/* ── Plus-knop (steekt boven de pill uit) ──────────────────────── */}
+        <div style={{
+          position: 'absolute',
+          bottom: '100%',
+          left: '50%',
+          transform: 'translateX(-50%)',
+          marginBottom: -14,
+          zIndex: 1,
+        }}>
+          <button
+            onClick={handlePlusClick}
+            style={{
+              width: 56, height: 56,
+              borderRadius: '50%',
+              background: '#E87722',
+              border: 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              boxShadow: '0 6px 16px rgba(232,119,34,0.40)',
+              cursor: 'pointer',
+              transition: 'transform 150ms',
+              WebkitTapHighlightColor: 'transparent',
+            }}
+            onMouseDown={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)' }}
+            onMouseUp={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
+            onTouchStart={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(0.94)' }}
+            onTouchEnd={e => { (e.currentTarget as HTMLButtonElement).style.transform = 'scale(1)' }}
+          >
+            <Plus style={{ width: 24, height: 24, color: 'white' }} strokeWidth={2.5} />
+          </button>
         </div>
-      </nav>
+
+        {/* ── Nav pill ──────────────────────────────────────────────────── */}
+        <nav style={{
+          background: '#2A2420',
+          borderRadius: 999,
+          boxShadow: '0 8px 32px rgba(26,23,20,0.20)',
+          padding: '8px 12px',
+          display: 'flex',
+          alignItems: 'center',
+        }}>
+          {/* Links: Home + Search */}
+          {MOBILE_NAV.slice(0, 2).map(({ href, icon: Icon, exact }) => (
+            <MobileNavItem
+              key={href}
+              href={href}
+              icon={<Icon style={{ width: 22, height: 22 }} />}
+              active={isActive(href, exact)}
+              badge={href === '/dashboard/messages' ? unreadMessages : 0}
+            />
+          ))}
+
+          {/* Lege ruimte voor de + knop */}
+          <div style={{ flex: '0 0 64px' }} />
+
+          {/* Rechts: Messages + Profile */}
+          {MOBILE_NAV.slice(2).map(({ href, icon: Icon, exact }) => (
+            <MobileNavItem
+              key={href}
+              href={href}
+              icon={<Icon style={{ width: 22, height: 22 }} />}
+              active={isActive(href, exact)}
+              badge={href === '/dashboard/messages' ? unreadMessages : 0}
+            />
+          ))}
+        </nav>
+      </div>
+
+      {/* ── CreateActionSheet ───────────────────────────────────────────── */}
+      <CreateActionSheet
+        open={showCreateSheet}
+        onClose={() => setShowCreateSheet(false)}
+        onNewPost={() => setComposerOpen(true)}
+      />
+
+      {/* ── PostComposer (vanuit layout — beschikbaar op alle routes) ────── */}
+      <PostComposer
+        isOpen={composerOpen}
+        onClose={() => setComposerOpen(false)}
+        onPosted={async () => { router.refresh() }}
+      />
     </div>
+  )
+}
+
+// ─── Mobile nav item ───────────────────────────────────────────────────────────
+
+function MobileNavItem({
+  href,
+  icon,
+  active,
+  badge,
+}: {
+  href: string
+  icon: React.ReactNode
+  active: boolean
+  badge?: number
+}) {
+  return (
+    <Link
+      href={href}
+      style={{
+        flex: 1,
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: '4px 0',
+        position: 'relative',
+        minWidth: 44,
+      }}
+    >
+      {/* Actieve staat: crème pill */}
+      {active ? (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          background: '#F5F0E8',
+          borderRadius: 999,
+          padding: '8px 14px',
+        }}>
+          <span style={{ color: '#E87722' }}>{icon}</span>
+        </div>
+      ) : (
+        <span style={{ color: 'rgba(255,255,255,0.55)' }}>{icon}</span>
+      )}
+
+      {/* Badge */}
+      {(badge ?? 0) > 0 && (
+        <span style={{
+          position: 'absolute', top: 0, right: 4,
+          minWidth: 16, height: 16,
+          background: '#E87722',
+          color: 'white',
+          fontSize: 9,
+          fontWeight: 900,
+          borderRadius: 999,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          padding: '0 3px',
+          fontFamily: "'DM Sans', sans-serif",
+        }}>
+          {badge! > 9 ? '9+' : badge}
+        </span>
+      )}
+    </Link>
   )
 }
