@@ -186,7 +186,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
 
-          <Link href="/dashboard">
+          <Link href="/dashboard/feed">
             <Image src="/logo.png" alt="Buddys" height={36} width={120} className="object-contain" />
           </Link>
 
