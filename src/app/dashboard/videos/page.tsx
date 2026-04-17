@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Home } from 'lucide-react'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase'
 import { VerticalFeed } from './_components/VerticalFeed'
 import { VoorJouFeed } from './_components/VoorJouFeed'
@@ -206,6 +207,27 @@ export default function PlayPage() {
           onMuteToggle={() => setIsMuted(v => !v)}
           isVisible={tab === 'voorjou'}
         />
+      </div>
+
+      {/* ── Home knop — altijd zichtbaar linksboven ────────────────────────── */}
+      <div style={{
+        position: 'absolute', left: 16, zIndex: 31,
+        top: 0,
+        paddingTop: 'max(14px, env(safe-area-inset-top))',
+      }}>
+        <Link href="/dashboard/feed" style={{ textDecoration: 'none' }}>
+          <div style={{
+            background: 'rgba(0,0,0,0.28)',
+            backdropFilter: 'blur(16px)',
+            WebkitBackdropFilter: 'blur(16px)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            borderRadius: 999,
+            width: 38, height: 38,
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Home size={16} color="white" strokeWidth={2} />
+          </div>
+        </Link>
       </div>
 
       {/* ── Floating dropdown — alleen zichtbaar als showDropdownUI ────────── */}
