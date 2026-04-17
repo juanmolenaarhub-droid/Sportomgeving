@@ -142,7 +142,7 @@ export default function FeedPage() {
         .eq('read', false)
       setHasNotifDot((count ?? 0) > 0)
 
-      // Buddy-IDs ophalen
+      // Buddy-IDs ophalen voor stories row
       const { data: buddyData } = await supabase
         .from('follow_requests')
         .select('from_user_id, to_user_id')
@@ -152,7 +152,6 @@ export default function FeedPage() {
       const buddyIds = (buddyData ?? []).map((b: { from_user_id: string; to_user_id: string }) =>
         b.from_user_id === user.id ? b.to_user_id : b.from_user_id
       )
-      const allIds = [user.id, ...buddyIds]
 
       // Buddy-profielen voor stories
       if (buddyIds.length > 0) {
@@ -169,11 +168,10 @@ export default function FeedPage() {
         })))
       }
 
-      // Eerste batch posts
+      // Eerste batch posts — alle posts van alle gebruikers
       const { data: raw } = await supabase
         .from('posts')
         .select(POST_SELECT)
-        .in('user_id', allIds)
         .order('created_at', { ascending: false })
         .limit(PAGE_SIZE)
 
@@ -199,20 +197,9 @@ export default function FeedPage() {
     if (!userId || loadingMore || !hasMore || !cursorRef.current) return
     setLoadingMore(true)
 
-    const { data: buddyData } = await supabase
-      .from('follow_requests')
-      .select('from_user_id, to_user_id')
-      .or(`from_user_id.eq.${userId},to_user_id.eq.${userId}`)
-      .eq('status', 'accepted')
-    const buddyIds = (buddyData ?? []).map((b: { from_user_id: string; to_user_id: string }) =>
-      b.from_user_id === userId ? b.to_user_id : b.from_user_id
-    )
-    const allIds = [userId, ...buddyIds]
-
     const { data: raw } = await supabase
       .from('posts')
       .select(POST_SELECT)
-      .in('user_id', allIds)
       .lt('created_at', cursorRef.current)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
