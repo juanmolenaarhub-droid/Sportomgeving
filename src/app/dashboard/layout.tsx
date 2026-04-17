@@ -57,7 +57,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const userIdRef   = useRef<string>('')
   const regionRef   = useRef<string>('')
 
-  const isFeedPage = pathname === '/dashboard/feed'
+  const isFeedPage   = pathname === '/dashboard/feed'
+  const isVideosPage = pathname === '/dashboard/videos'
+  const isImmersive  = isFeedPage || isVideosPage
 
   const loadBadges = useCallback(async (uid: string, region: string) => {
     const { data: convs } = await supabase
@@ -181,7 +183,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ── Topbar — verborgen op mobile feed pagina ────────────────────── */}
       <header
-        className={`${isFeedPage ? 'hidden md:block' : 'block'} bg-white border-b border-black/8 sticky top-0 z-30`}
+        className={`${isImmersive ? 'hidden md:block' : 'block'} bg-white border-b border-black/8 sticky top-0 z-30`}
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">

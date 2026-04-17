@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef, useCallback } from 'react'
-import { ChevronDown, Camera } from 'lucide-react'
+import { ChevronDown } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { VerticalFeed } from './_components/VerticalFeed'
 import { VoorJouFeed } from './_components/VoorJouFeed'
@@ -21,10 +21,12 @@ const PAGE_SIZE = 20
 export default function PlayPage() {
   const supabase = createClient()
 
-  const [tab,          setTab]          = useState<Tab>('ontdekken')
-  const [dropdownOpen, setDropdownOpen] = useState(false)
-  const [isMuted,      setIsMuted]      = useState(true)
-  const dropdownRef = useRef<HTMLDivElement>(null)
+  const [tab,            setTab]            = useState<Tab>('ontdekken')
+  const [dropdownOpen,   setDropdownOpen]   = useState(false)
+  const [showDropdownUI, setShowDropdownUI] = useState(true)
+  const [isMuted,        setIsMuted]        = useState(true)
+  const dropdownRef         = useRef<HTMLDivElement>(null)
+  const hasUserSwitchedFeed = useRef(false)
 
   // ── Ontdekken ────────────────────────────────────────────────────────────────
   const [explorePosts,   setExplorePosts]   = useState<PlayPost[]>([])
@@ -41,7 +43,15 @@ export default function PlayPage() {
   const [buddyIds,      setBuddyIds]      = useState<string[]>([])
   const followCursorRef = useRef<string | null>(null)
 
-  // ── Close dropdown on outside click ──────────────────────────────────────────
+  // ── Auto-hide dropdown na 3 video's zonder tab-switch ─────────────────────────
+  useEffect(() => {
+    const activeIdx = tab === 'ontdekken' ? exploreIdx : followIdx
+    if (activeIdx >= 3 && !hasUserSwitchedFeed.current) {
+      setShowDropdownUI(false)
+    }
+  }, [exploreIdx, followIdx, tab])
+
+  // ── Sluit dropdown bij klik buiten ───────────────────────────────────────────
   useEffect(() => {
     function handler(e: MouseEvent) {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
@@ -52,7 +62,7 @@ export default function PlayPage() {
     return () => document.removeEventListener('mousedown', handler)
   }, [])
 
-  // ── Init: buddy IDs ───────────────────────────────────────────────────────────
+  // ── Buddy IDs ─────────────────────────────────────────────────────────────────
   useEffect(() => {
     async function init() {
       const { data: { user } } = await supabase.auth.getUser()
@@ -151,111 +161,20 @@ export default function PlayPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab])
 
+  // ── Tab switch — markeert als "actief gebruikt" ────────────────────────────────
+  function handleTabSwitch(t: Tab) {
+    hasUserSwitchedFeed.current = true
+    setShowDropdownUI(true)
+    setTab(t)
+    setDropdownOpen(false)
+  }
+
   return (
     <div
-      className="relative w-full bg-black"
-      style={{ height: '100dvh' }}
+      style={{ position: 'fixed', inset: 0, background: '#000', overflow: 'hidden' }}
     >
-      {/* ── Floating header ────────────────────────────────────────────────── */}
-      <div
-        className="absolute left-0 right-0 z-30 flex items-center justify-between px-4"
-        style={{ top: 0, paddingTop: 'max(12px, env(safe-area-inset-top))' }}
-      >
-        {/* Spacer — same width as camera button for centering */}
-        <div style={{ width: 44 }} />
-
-        {/* Dropdown ref wraps only the pill + menu */}
-        <div ref={dropdownRef} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
-          {/* Trigger pill */}
-          <button
-            onClick={() => setDropdownOpen(v => !v)}
-            style={{
-              background: 'rgba(245,240,232,0.95)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              borderRadius: 999,
-              padding: '8px 16px',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 6,
-              boxShadow: '0 2px 12px rgba(0,0,0,0.18)',
-              border: 'none',
-              cursor: 'pointer',
-            }}
-          >
-            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 14, color: '#111111' }}>
-              {TAB_LABELS[tab]}
-            </span>
-            <ChevronDown
-              size={14}
-              color="#111111"
-              strokeWidth={2.5}
-              style={{
-                transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
-                transition: 'transform 200ms',
-              }}
-            />
-          </button>
-
-          {/* Dropdown menu */}
-          {dropdownOpen && (
-            <div
-              style={{
-                position: 'absolute',
-                top: 'calc(100% + 6px)',
-                background: 'rgba(245,240,232,0.97)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                borderRadius: 18,
-                padding: '6px 0',
-                minWidth: 148,
-                boxShadow: '0 8px 32px rgba(0,0,0,0.22)',
-              }}
-            >
-              {(['ontdekken', 'volgend', 'voorjou'] as Tab[]).map(t => (
-                <button
-                  key={t}
-                  onClick={() => { setTab(t); setDropdownOpen(false) }}
-                  style={{
-                    width: '100%',
-                    padding: '10px 20px',
-                    textAlign: 'left',
-                    fontFamily: "'Syne', sans-serif",
-                    fontWeight: 700,
-                    fontSize: 14,
-                    color: tab === t ? '#E87722' : '#111111',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                  }}
-                >
-                  {TAB_LABELS[t]}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Camera button */}
-        <button
-          style={{
-            width: 44, height: 44, borderRadius: '50%',
-            background: 'rgba(245,240,232,0.92)',
-            backdropFilter: 'blur(12px)',
-            WebkitBackdropFilter: 'blur(12px)',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 10px rgba(0,0,0,0.18)',
-          }}
-        >
-          <Camera size={20} color="#111111" strokeWidth={2} />
-        </button>
-      </div>
-
       {/* ── Feeds — all three always in DOM ────────────────────────────────── */}
-      <div className="absolute inset-0 flex flex-col">
-
-        {/* Ontdekken */}
+      <div style={{ position: 'absolute', inset: 0, display: 'flex', flexDirection: 'column' }}>
         <VerticalFeed
           posts={explorePosts}
           loading={exploreLoading}
@@ -269,8 +188,6 @@ export default function PlayPage() {
           emptyTitle="Nog geen video's hier"
           emptyBody="Kom later terug voor sportcontent"
         />
-
-        {/* Volgend */}
         <VerticalFeed
           posts={followPosts}
           loading={followLoading}
@@ -284,13 +201,86 @@ export default function PlayPage() {
           emptyTitle="Nog geen video's hier"
           emptyBody="Volg meer buddies om hun content te zien"
         />
-
-        {/* Voor jou */}
         <VoorJouFeed
           isMuted={isMuted}
           onMuteToggle={() => setIsMuted(v => !v)}
           isVisible={tab === 'voorjou'}
         />
+      </div>
+
+      {/* ── Floating dropdown — alleen zichtbaar als showDropdownUI ────────── */}
+      <div
+        style={{
+          position: 'absolute', left: 0, right: 0, zIndex: 30,
+          top: 0,
+          paddingTop: 'max(14px, env(safe-area-inset-top))',
+          display: 'flex', justifyContent: 'center',
+          transition: 'opacity 500ms',
+          opacity: showDropdownUI ? 1 : 0,
+          pointerEvents: showDropdownUI ? 'auto' : 'none',
+        }}
+      >
+        <div ref={dropdownRef} style={{ position: 'relative', display: 'flex', justifyContent: 'center' }}>
+          {/* Trigger pill — glass */}
+          <button
+            onClick={() => setDropdownOpen(v => !v)}
+            style={{
+              background: 'rgba(0,0,0,0.28)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 999,
+              padding: '8px 16px',
+              display: 'flex', alignItems: 'center', gap: 6,
+              cursor: 'pointer',
+            }}
+          >
+            <span style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 14, color: 'white' }}>
+              {TAB_LABELS[tab]}
+            </span>
+            <ChevronDown
+              size={14} color="white" strokeWidth={2.5}
+              style={{
+                transform: dropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)',
+                transition: 'transform 200ms',
+              }}
+            />
+          </button>
+
+          {/* Dropdown menu — dark glass */}
+          {dropdownOpen && (
+            <div style={{
+              position: 'absolute',
+              top: 'calc(100% + 8px)',
+              background: 'rgba(0,0,0,0.45)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.10)',
+              borderRadius: 18,
+              padding: '6px 0',
+              minWidth: 160,
+              boxShadow: '0 8px 32px rgba(0,0,0,0.40)',
+            }}>
+              {(['ontdekken', 'volgend', 'voorjou'] as Tab[]).map(t => (
+                <button
+                  key={t}
+                  onClick={() => handleTabSwitch(t)}
+                  style={{
+                    width: '100%',
+                    padding: '10px 20px',
+                    textAlign: 'left',
+                    fontFamily: "'Syne', sans-serif",
+                    fontWeight: 700, fontSize: 14,
+                    color: tab === t ? '#E87722' : 'white',
+                    background: 'none', border: 'none', cursor: 'pointer',
+                  }}
+                >
+                  {TAB_LABELS[t]}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )
