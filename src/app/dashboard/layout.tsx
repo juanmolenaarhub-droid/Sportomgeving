@@ -299,9 +299,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </div>
       )}
 
-      {/* ── Bottom nav — vast aan onderkant, wit, ronde bovenhoeken ──────── */}
+      {/* ── Bottom nav — verborgen op videos pagina ──────────────────────── */}
       <div
-        className="md:hidden fixed z-50 left-0 right-0"
+        className={`md:hidden fixed z-50 left-0 right-0${pathname === '/dashboard/videos' ? ' hidden' : ''}`}
         style={{
           bottom: 0,
           background: '#FFFFFF',

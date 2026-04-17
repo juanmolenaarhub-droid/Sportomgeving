@@ -1,115 +1,205 @@
 'use client'
 
+import { useState, useEffect, useRef, useCallback } from 'react'
 import {
-  useState, useEffect, useRef, useCallback,
-} from 'react'
-import {
-  Heart, MessageCircle, Share2,
-  Volume2, VolumeX, Play, Plus, Music2,
+  Heart, MessageCircle, Send, Bookmark, Plus, Play,
+  MapPin, Trophy, Activity, Bike, Waves, Dumbbell,
+  Flower2, Zap, Volume2, VolumeX,
 } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
 import type { PlayPost } from './types'
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function fmt(n: number) {
-  return n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n)
+  if (n >= 1_000_000) return (n / 1_000_000).toFixed(1) + 'M'
+  if (n >= 1_000)     return (n / 1_000).toFixed(1) + 'k'
+  return String(n)
 }
+
+// ─── Sport icon mapping ────────────────────────────────────────────────────────
+
+const SPORT_ICONS: Record<string, React.ElementType> = {
+  Tennis:    Trophy,
+  Hardlopen: Activity,
+  Fietsen:   Bike,
+  Zwemmen:   Waves,
+  Gym:       Dumbbell,
+  Yoga:      Flower2,
+  Voetbal:   Trophy,
+  Futsal:    Trophy,
+  Triathlon: Zap,
+  Boksen:    Dumbbell,
+  Padel:     Trophy,
+  Klimmen:   Activity,
+}
+
+function SportIcon({ sport, size = 12 }: { sport: string; size?: number }) {
+  const Icon = SPORT_ICONS[sport] ?? Trophy
+  return <Icon size={size} color="white" strokeWidth={2} />
+}
+
+// ─── Small avatar ─────────────────────────────────────────────────────────────
+
+function MiniAvatar({ url, name, size }: { url: string | null; name: string; size: number }) {
+  if (url) {
+    return (
+      // eslint-disable-next-line @next/next/no-img-element
+      <img
+        src={url}
+        alt={name}
+        style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }}
+      />
+    )
+  }
+  return (
+    <div style={{
+      width: size, height: size, borderRadius: '50%', flexShrink: 0,
+      background: '#E87722',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+    }}>
+      <span style={{ fontSize: size * 0.45, fontWeight: 700, color: 'white', lineHeight: 1 }}>
+        {name.charAt(0).toUpperCase()}
+      </span>
+    </div>
+  )
+}
+
+// ─── Action button ────────────────────────────────────────────────────────────
+
+function ActionBtn({
+  children,
+  label,
+  onClick,
+}: {
+  children: React.ReactNode
+  label?: string | number
+  onClick?: (e: React.MouseEvent) => void
+}) {
+  return (
+    <button
+      onClick={onClick}
+      style={{
+        display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4,
+        background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+      }}
+    >
+      <div style={{
+        width: 48, height: 48, borderRadius: '50%',
+        background: 'rgba(245,240,232,0.92)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.18)',
+      }}>
+        {children}
+      </div>
+      {label !== undefined && (
+        <span style={{
+          fontFamily: "'DM Sans', sans-serif",
+          fontSize: 11,
+          fontWeight: 700,
+          color: 'white',
+          textShadow: '0 1px 4px rgba(0,0,0,0.5)',
+          lineHeight: 1,
+        }}>
+          {label}
+        </span>
+      )}
+    </button>
+  )
+}
+
+// ─── Props ────────────────────────────────────────────────────────────────────
 
 interface Props {
   post: PlayPost
   isActive: boolean
   isMuted: boolean
   onMuteToggle: () => void
-  /** called when swiping past the last media item → advance to next post */
   onNextPost?: () => void
-  /** called when swiping before first media item → go to previous post */
   onPrevPost?: () => void
 }
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 export function FullScreenCard({
   post, isActive, isMuted, onMuteToggle, onNextPost, onPrevPost,
 }: Props) {
-  const [mediaIndex, setMediaIndex] = useState(0)
-  const [liked,      setLiked]      = useState(false)
-  const [likes,      setLikes]      = useState(post.likes_count)
-  const [bounce,     setBounce]     = useState(false)
-  const [paused,     setPaused]     = useState(false)
-  const [progress,   setProgress]   = useState(0)
-  const [loaded,     setLoaded]     = useState(false)
-  const [hasError,   setHasError]   = useState(false)
+  const [mediaIndex,   setMediaIndex]   = useState(0)
+  const [liked,        setLiked]        = useState(false)
+  const [likes,        setLikes]        = useState(post.likes_count)
+  const [saved,        setSaved]        = useState(false)
+  const [bounce,       setBounce]       = useState(false)
+  const [paused,       setPaused]       = useState(false)
+  const [loaded,       setLoaded]       = useState(false)
+  const [hasError,     setHasError]     = useState(false)
+  const [expanded,     setExpanded]     = useState(false)
+  const [lastTap,      setLastTap]      = useState(0)
+  const [doubleTapPos, setDoubleTapPos] = useState<{ x: number; y: number } | null>(null)
 
-  const videoRef  = useRef<HTMLVideoElement>(null)
-  const barRef    = useRef<HTMLDivElement>(null)
-  const touchX    = useRef(0)
-  const touchY    = useRef(0)
+  const videoRef = useRef<HTMLVideoElement>(null)
+  const touchX   = useRef(0)
+  const touchY   = useRef(0)
 
-  const media    = post.media_items
-  const current  = media[mediaIndex]
-  const isVideo  = current?.type === 'video'
+  const media   = post.media_items
+  const current = media[mediaIndex]
+  const isVideo = current?.type === 'video'
+  const sport   = post.sport_tags[0]
+  const location = (post as unknown as Record<string, unknown>).location as string | null | undefined
 
-  // Reset to first slide when post changes
-  useEffect(() => { setMediaIndex(0); setLoaded(false); setHasError(false) }, [post.id])
+  // Reset on post change
+  useEffect(() => {
+    setMediaIndex(0)
+    setLoaded(false)
+    setHasError(false)
+    setExpanded(false)
+  }, [post.id])
 
-  // Auto-play / pause video
+  // Auto-play / pause
   useEffect(() => {
     const v = videoRef.current
     if (!v || !isVideo) return
     if (isActive) {
-      v.muted = true
+      v.muted = isMuted
       v.currentTime = 0
       v.play().then(() => setPaused(false)).catch(() => setPaused(true))
     } else {
       v.pause()
       setPaused(false)
-      setProgress(0)
     }
-  }, [isActive, isVideo, mediaIndex])
+  }, [isActive, isVideo, mediaIndex, isMuted])
 
   // Sync mute
   useEffect(() => {
     if (videoRef.current) videoRef.current.muted = isMuted
   }, [isMuted])
 
-  // Progress bar
-  useEffect(() => {
-    const v = videoRef.current
-    if (!v) return
-    function tick() {
-      if (v!.duration) setProgress(v!.currentTime / v!.duration)
-    }
-    v.addEventListener('timeupdate', tick)
-    return () => v.removeEventListener('timeupdate', tick)
-  }, [mediaIndex])
-
-  // Seek
-  const handleSeek = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
-    e.stopPropagation()
-    const v   = videoRef.current
-    const bar = barRef.current
-    if (!v || !bar || !v.duration) return
-    const rect = bar.getBoundingClientRect()
-    v.currentTime = ((e.clientX - rect.left) / rect.width) * v.duration
-  }, [])
-
-  // Tap to play/pause
-  function handleTap() {
-    const v = videoRef.current
-    if (!v || !isVideo) return
-    if (v.paused) {
-      v.muted = isMuted
-      v.play().then(() => setPaused(false)).catch(() => {})
+  const handleTap = useCallback(() => {
+    const now = Date.now()
+    if (now - lastTap < 300) {
+      // double tap — like
+      setLiked(true)
+      setLikes(p => liked ? p : p + 1)
+      setBounce(true)
+      setTimeout(() => setBounce(false), 400)
+      setDoubleTapPos(null) // reset then re-set to trigger animation
+      setTimeout(() => setDoubleTapPos({ x: 50, y: 45 }), 10)
+      setTimeout(() => setDoubleTapPos(null), 900)
     } else {
-      v.pause()
-      setPaused(true)
+      // single tap — play/pause
+      if (isVideo) {
+        const v = videoRef.current
+        if (!v) return
+        if (v.paused) {
+          v.play().then(() => setPaused(false)).catch(() => {})
+        } else {
+          v.pause()
+          setPaused(true)
+        }
+      }
     }
-  }
-
-  function handlePlayBtn(e: React.MouseEvent) {
-    e.stopPropagation()
-    const v = videoRef.current
-    if (!v) return
-    v.muted = true
-    v.play().then(() => { setPaused(false); setHasError(false) }).catch(() => setHasError(true))
-  }
+    setLastTap(now)
+  }, [lastTap, liked, isVideo])
 
   function handleLike(e: React.MouseEvent) {
     e.stopPropagation()
@@ -119,7 +209,7 @@ export function FullScreenCard({
     setTimeout(() => setBounce(false), 300)
   }
 
-  // Horizontal carousel swipe
+  // Horizontal swipe for multi-media posts
   function onTouchStart(e: React.TouchEvent) {
     touchX.current = e.touches[0].clientX
     touchY.current = e.touches[0].clientY
@@ -128,37 +218,24 @@ export function FullScreenCard({
   function onTouchEnd(e: React.TouchEvent) {
     const dx = e.changedTouches[0].clientX - touchX.current
     const dy = e.changedTouches[0].clientY - touchY.current
-    if (Math.abs(dx) < Math.abs(dy) * 0.8 || Math.abs(dx) < 30) return // vertical scroll wins
-
+    if (Math.abs(dx) < Math.abs(dy) * 0.8 || Math.abs(dx) < 30) return
     if (dx < 0) {
-      // swipe left → next media or next post
-      if (mediaIndex < media.length - 1) {
-        setMediaIndex(i => i + 1)
-        setLoaded(false)
-      } else {
-        onNextPost?.()
-      }
+      if (mediaIndex < media.length - 1) { setMediaIndex(i => i + 1); setLoaded(false) }
+      else onNextPost?.()
     } else {
-      // swipe right → prev media or prev post
-      if (mediaIndex > 0) {
-        setMediaIndex(i => i - 1)
-        setLoaded(false)
-      } else {
-        onPrevPost?.()
-      }
+      if (mediaIndex > 0) { setMediaIndex(i => i - 1); setLoaded(false) }
+      else onPrevPost?.()
     }
   }
 
-  const tag = post.sport_tags[0]
-
   return (
     <div
-      className="relative w-full h-full bg-black select-none"
+      style={{ position: 'relative', width: '100%', height: '100%', background: '#111', userSelect: 'none' }}
       onClick={handleTap}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
     >
-      {/* Media */}
+      {/* ── Media ──────────────────────────────────────────────────────────── */}
       {isVideo ? (
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <video
@@ -166,13 +243,16 @@ export function FullScreenCard({
           ref={videoRef}
           src={current?.url}
           poster={current?.thumbnail_url ?? undefined}
-          className="absolute inset-0 w-full h-full object-cover"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           loop
           playsInline
           autoPlay={isActive}
           muted
-          preload={isActive ? 'auto' : 'metadata'}
-          onCanPlay={() => { setLoaded(true); if (isActive && videoRef.current) videoRef.current.play().catch(() => {}) }}
+          preload={isActive ? 'auto' : 'none'}
+          onCanPlay={() => {
+            setLoaded(true)
+            if (isActive && videoRef.current) videoRef.current.play().catch(() => {})
+          }}
           onError={() => { setHasError(true); setLoaded(true) }}
         />
       ) : current?.url ? (
@@ -181,154 +261,277 @@ export function FullScreenCard({
           key={`${post.id}-${mediaIndex}`}
           src={current.url}
           alt={post.content.slice(0, 60)}
-          className="absolute inset-0 w-full h-full object-cover"
+          style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
           onLoad={() => setLoaded(true)}
           onError={() => { setHasError(true); setLoaded(true) }}
         />
       ) : (
-        <div className="absolute inset-0 bg-zinc-900" />
+        <div style={{ position: 'absolute', inset: 0, background: '#1a1a1a' }} />
       )}
 
       {/* Loading spinner */}
       {isActive && !loaded && !hasError && (
-        <div className="absolute inset-0 flex items-center justify-center">
-          <div className="w-10 h-10 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        <div style={{
+          position: 'absolute', inset: 0,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 5,
+        }}>
+          <div style={{
+            width: 36, height: 36, borderRadius: '50%',
+            border: '2px solid rgba(255,255,255,0.2)',
+            borderTopColor: 'white',
+            animation: 'spin 0.8s linear infinite',
+          }} />
         </div>
       )}
 
-      {/* Gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-transparent to-black/80 pointer-events-none" />
+      {/* ── Gradient overlays ──────────────────────────────────────────────── */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0, height: 140,
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.40), transparent)',
+        pointerEvents: 'none', zIndex: 10,
+      }} />
+      <div style={{
+        position: 'absolute', bottom: 0, left: 0, right: 0, height: 260,
+        background: 'linear-gradient(to top, rgba(0,0,0,0.72), transparent)',
+        pointerEvents: 'none', zIndex: 10,
+      }} />
 
-      {/* Play button */}
-      {paused && !hasError && isVideo && (
-        <button
-          className="absolute inset-0 flex items-center justify-center"
-          onClick={handlePlayBtn}
-        >
-          <div className="w-16 h-16 bg-black/50 rounded-full flex items-center justify-center backdrop-blur-sm">
-            <Play className="w-7 h-7 text-white ml-1" />
-          </div>
-        </button>
-      )}
-
-      {/* Carousel dot indicators */}
+      {/* ── Carousel dots ──────────────────────────────────────────────────── */}
       {media.length > 1 && (
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 flex gap-1 z-10">
+        <div style={{
+          position: 'absolute', top: 14, left: '50%', transform: 'translateX(-50%)',
+          display: 'flex', gap: 4, zIndex: 20,
+        }}>
           {media.map((_, i) => (
-            <span
-              key={i}
-              className="h-1 rounded-full transition-all duration-200"
-              style={{
-                width:      i === mediaIndex ? 16 : 6,
-                background: i === mediaIndex ? '#E87722' : 'rgba(255,255,255,0.5)',
-              }}
-            />
+            <span key={i} style={{
+              height: 3, borderRadius: 999,
+              width: i === mediaIndex ? 16 : 6,
+              background: i === mediaIndex ? '#E87722' : 'rgba(255,255,255,0.5)',
+              transition: 'width 200ms',
+            }} />
           ))}
         </div>
       )}
 
-      {/* Right actions */}
-      <div
-        className="absolute right-3 flex flex-col items-center gap-5 z-10"
-        style={{ bottom: 108 }}
-        onClick={e => e.stopPropagation()}
-      >
-        {/* Avatar + follow */}
-        <div className="relative">
-          <div className="w-11 h-11 rounded-full ring-2 ring-white overflow-hidden">
-            <Avatar name={post.displayName} imageUrl={post.avatar_url} size="sm" />
-          </div>
-          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 w-5 h-5 bg-[#E87722] rounded-full flex items-center justify-center ring-2 ring-black">
-            <Plus className="w-3 h-3 text-white" strokeWidth={3} />
+      {/* ── Pause indicator ────────────────────────────────────────────────── */}
+      {paused && isVideo && !hasError && (
+        <div style={{
+          position: 'absolute', inset: 0, zIndex: 15,
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          pointerEvents: 'none',
+        }}>
+          <div style={{
+            width: 64, height: 64, borderRadius: '50%',
+            background: 'rgba(0,0,0,0.45)',
+            backdropFilter: 'blur(6px)',
+            WebkitBackdropFilter: 'blur(6px)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <Play size={28} color="white" style={{ marginLeft: 3 }} />
           </div>
         </div>
+      )}
 
+      {/* ── Double-tap heart animation ──────────────────────────────────────── */}
+      {doubleTapPos && (
+        <div style={{
+          position: 'absolute',
+          left: `${doubleTapPos.x}%`,
+          top: `${doubleTapPos.y}%`,
+          transform: 'translate(-50%, -50%)',
+          zIndex: 25, pointerEvents: 'none',
+          animation: 'heartPop 0.9s ease-out forwards',
+        }}>
+          <Heart size={72} color="#E87722" fill="#E87722" />
+        </div>
+      )}
+
+      {/* ── Action rail — right side ────────────────────────────────────────── */}
+      <div
+        style={{
+          position: 'absolute', right: 12,
+          bottom: 'max(100px, calc(env(safe-area-inset-bottom) + 100px))',
+          zIndex: 20,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16,
+        }}
+        onClick={e => e.stopPropagation()}
+      >
         {/* Like */}
-        <button onClick={handleLike} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm">
-            <Heart
-              className="w-6 h-6 transition-transform duration-150"
-              style={{
-                color:     liked ? '#E87722' : 'white',
-                fill:      liked ? '#E87722' : 'none',
-                transform: bounce ? 'scale(1.4)' : 'scale(1)',
-              }}
-            />
-          </div>
-          <span className="text-white text-[11px] font-bold drop-shadow">{fmt(likes)}</span>
-        </button>
+        <ActionBtn label={fmt(likes)} onClick={handleLike}>
+          <Heart
+            size={22}
+            strokeWidth={2}
+            color={liked ? '#E87722' : '#111111'}
+            fill={liked ? '#E87722' : 'none'}
+            style={{
+              transform: bounce ? 'scale(1.45)' : 'scale(1)',
+              transition: 'transform 150ms',
+            }}
+          />
+        </ActionBtn>
 
         {/* Comment */}
-        <button onClick={e => e.stopPropagation()} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm">
-            <MessageCircle className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-white text-[11px] font-bold drop-shadow">{fmt(post.comments_count)}</span>
-        </button>
+        <ActionBtn label={fmt(post.comments_count)}>
+          <MessageCircle size={22} strokeWidth={2} color="#111111" />
+        </ActionBtn>
 
         {/* Share */}
-        <button onClick={e => e.stopPropagation()} className="flex flex-col items-center gap-1">
-          <div className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm">
-            <Share2 className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-white text-[11px] font-bold drop-shadow">Deel</span>
-        </button>
+        <ActionBtn label="Share">
+          <Send size={20} strokeWidth={2} color="#111111" />
+        </ActionBtn>
 
-        {/* Mute (only for video) */}
+        {/* Save */}
+        <ActionBtn onClick={e => { e.stopPropagation(); setSaved(p => !p) }}>
+          <Bookmark
+            size={20}
+            strokeWidth={2}
+            color="#111111"
+            fill={saved ? '#111111' : 'none'}
+          />
+        </ActionBtn>
+
+        {/* Mute toggle */}
         {isVideo && (
-          <button
-            onClick={e => { e.stopPropagation(); onMuteToggle() }}
-            className="w-11 h-11 rounded-full bg-black/30 flex items-center justify-center backdrop-blur-sm"
-          >
+          <ActionBtn onClick={e => { e.stopPropagation(); onMuteToggle() }}>
             {isMuted
-              ? <VolumeX className="w-5 h-5 text-white" />
-              : <Volume2 className="w-5 h-5 text-white" />
+              ? <VolumeX size={20} strokeWidth={2} color="#111111" />
+              : <Volume2 size={20} strokeWidth={2} color="#111111" />
             }
-          </button>
+          </ActionBtn>
+        )}
+
+        {/* Follow — oranje */}
+        <button
+          onClick={e => e.stopPropagation()}
+          style={{
+            width: 48, height: 48, borderRadius: '50%',
+            background: '#E87722',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(232,119,34,0.40)',
+          }}
+        >
+          <Plus size={22} color="white" strokeWidth={2.5} />
+        </button>
+      </div>
+
+      {/* ── Metadata overlay — bottom left ─────────────────────────────────── */}
+      <div
+        style={{
+          position: 'absolute', left: 16, right: 76,
+          bottom: 'max(88px, calc(env(safe-area-inset-bottom) + 88px))',
+          zIndex: 20,
+          display: 'flex', flexDirection: 'column', gap: 8,
+        }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Username pill */}
+        <div style={{
+          alignSelf: 'flex-start',
+          background: 'rgba(245,240,232,0.92)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+          borderRadius: 999,
+          padding: '5px 12px 5px 6px',
+          display: 'flex', alignItems: 'center', gap: 7,
+          boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        }}>
+          <MiniAvatar url={post.avatar_url} name={post.displayName} size={24} />
+          <span style={{
+            fontFamily: "'DM Sans', sans-serif",
+            fontSize: 13, fontWeight: 700,
+            color: '#111111',
+          }}>
+            @{post.username}
+          </span>
+        </div>
+
+        {/* Sport + location pills */}
+        <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+          {sport && (
+            <div style={{
+              background: '#E87722',
+              borderRadius: 999,
+              padding: '5px 10px',
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+              <SportIcon sport={sport} size={12} />
+              <span style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 11, fontWeight: 700, color: 'white',
+              }}>
+                {sport}
+              </span>
+            </div>
+          )}
+
+          {location && (
+            <div style={{
+              background: 'rgba(40,36,32,0.75)',
+              backdropFilter: 'blur(8px)',
+              WebkitBackdropFilter: 'blur(8px)',
+              borderRadius: 999,
+              padding: '5px 10px',
+              display: 'flex', alignItems: 'center', gap: 5,
+            }}>
+              <MapPin size={12} color="white" strokeWidth={2} />
+              <span style={{
+                fontFamily: "'DM Sans', sans-serif",
+                fontSize: 11, fontWeight: 500, color: 'white',
+              }}>
+                {location}
+              </span>
+            </div>
+          )}
+        </div>
+
+        {/* Title */}
+        {post.content && (
+          <h2 style={{
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 800,
+            fontSize: 17,
+            lineHeight: 1.2,
+            color: 'white',
+            textShadow: '0 1px 6px rgba(0,0,0,0.4)',
+            margin: 0,
+          }}>
+            {post.content.split('\n')[0]}
+          </h2>
+        )}
+
+        {/* Description */}
+        {post.content && post.content.includes('\n') && (
+          <p
+            style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 13,
+              color: 'rgba(255,255,255,0.80)',
+              lineHeight: 1.45,
+              margin: 0,
+              overflow: 'hidden',
+              display: '-webkit-box',
+              WebkitLineClamp: expanded ? 99 : 2,
+              WebkitBoxOrient: 'vertical',
+            }}
+            onClick={() => setExpanded(p => !p)}
+          >
+            {post.content.split('\n').slice(1).join('\n')}
+          </p>
         )}
       </div>
 
-      {/* Bottom info */}
-      <div
-        className="absolute left-4 right-16 space-y-1 z-10"
-        style={{ bottom: 88 }}
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-white font-black text-[14px] drop-shadow">@{post.username}</span>
-          {tag && (
-            <span
-              className="text-white text-[10px] font-bold px-2 py-0.5 rounded-full"
-              style={{ background: '#E87722' }}
-            >
-              {tag}
-            </span>
-          )}
-        </div>
-        <p className="text-white/90 text-[13px] leading-snug drop-shadow line-clamp-2">{post.content}</p>
-        <div className="flex items-center gap-1.5">
-          <Music2 className="w-3 h-3 text-white/60 shrink-0" />
-          <span className="text-white/60 text-xs truncate">{post.displayName}</span>
-        </div>
-      </div>
-
-      {/* Progress bar (video only) */}
-      {isVideo && (
-        <div
-          ref={barRef}
-          className="absolute bottom-0 left-0 right-0 h-1 bg-white/25 cursor-pointer z-10"
-          onClick={handleSeek}
-        >
-          <div
-            className="h-full bg-white"
-            style={{ width: `${progress * 100}%`, transition: 'width 0.1s linear' }}
-          />
-          <div
-            className="absolute top-1/2 -translate-y-1/2 w-3 h-3 bg-white rounded-full shadow-md -translate-x-1/2"
-            style={{ left: `${progress * 100}%` }}
-          />
-        </div>
-      )}
+      {/* ── CSS animations ─────────────────────────────────────────────────── */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg) } }
+        @keyframes heartPop {
+          0%   { opacity: 1; transform: translate(-50%, -50%) scale(0.4) }
+          30%  { opacity: 1; transform: translate(-50%, -50%) scale(1.2) }
+          60%  { opacity: 1; transform: translate(-50%, -50%) scale(1.0) }
+          100% { opacity: 0; transform: translate(-50%, -50%) scale(1.1) }
+        }
+      `}</style>
     </div>
   )
 }

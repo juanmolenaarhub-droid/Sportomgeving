@@ -14,6 +14,8 @@ interface Props {
   activeIdx: number
   onActiveIdx: (i: number) => void
   isVisible: boolean
+  emptyTitle?: string
+  emptyBody?: string
 }
 
 export function VerticalFeed({
@@ -21,6 +23,8 @@ export function VerticalFeed({
   isMuted, onMuteToggle,
   activeIdx, onActiveIdx,
   isVisible,
+  emptyTitle = 'Nog geen video\'s hier',
+  emptyBody  = 'Kom later terug',
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
 
@@ -47,11 +51,29 @@ export function VerticalFeed({
           <div className="w-8 h-8 border-2 border-white/20 border-t-white rounded-full animate-spin" />
         </div>
       ) : posts.length === 0 ? (
-        <div className="flex-1 flex flex-col items-center justify-center gap-3">
-          <p className="text-white/60 text-sm font-semibold">Nog niks hier</p>
-          <p className="text-white/30 text-xs text-center px-8">
-            Volg meer buddies om hun posts hier te zien
-          </p>
+        <div className="flex-1 flex flex-col items-center justify-center gap-3 px-8">
+          <div style={{
+            background: 'rgba(245,240,232,0.12)',
+            backdropFilter: 'blur(12px)',
+            WebkitBackdropFilter: 'blur(12px)',
+            borderRadius: 20,
+            padding: '24px 28px',
+            textAlign: 'center',
+          }}>
+            <p style={{
+              fontFamily: "'Syne', sans-serif",
+              fontWeight: 800,
+              fontSize: 18,
+              color: '#F5F0E8',
+              marginBottom: 8,
+            }}>{emptyTitle}</p>
+            <p style={{
+              fontFamily: "'DM Sans', sans-serif",
+              fontSize: 13,
+              color: 'rgba(245,240,232,0.55)',
+              lineHeight: 1.5,
+            }}>{emptyBody}</p>
+          </div>
         </div>
       ) : (
         <div
