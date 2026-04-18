@@ -91,20 +91,12 @@ export function FeedCardSkeleton() {
       {/* Tab skeleton */}
       <div style={{
         position: 'absolute', top: 0, left: 0, zIndex: 2,
-        display: 'flex', alignItems: 'flex-end', height: 42,
+        height: 42,
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        background: CREAM, borderRadius: '16px 16px 0 0', padding: '0 14px', minWidth: 140,
       }}>
-        <div style={{
-          background: CREAM, borderRadius: '14px 14px 0 0', height: 42,
-          display: 'flex', alignItems: 'center', gap: 8, padding: '0 12px', minWidth: 140,
-        }}>
-          <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#EDE7DD' }} />
-          <div style={{ width: 80, height: 10, borderRadius: 6, background: '#EDE7DD' }} />
-        </div>
-        {/* Inverted corner skeleton */}
-        <div style={{ width: 20, height: 20, flexShrink: 0, position: 'relative' }}>
-          <div style={{ position: 'absolute', inset: 0, background: CREAM, WebkitMaskImage: 'radial-gradient(circle at 100% 100%, transparent 20px, black 20px)', maskImage: 'radial-gradient(circle at 100% 100%, transparent 20px, black 20px)' }} />
-          <div style={{ position: 'absolute', inset: 0, background: '#FFFFFF', borderRadius: '20px 0 0 0' }} />
-        </div>
+        <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#EDE7DD' }} />
+        <div style={{ width: 80, height: 10, borderRadius: 6, background: '#EDE7DD' }} />
       </div>
 
       {/* Card body skeleton */}
@@ -167,44 +159,20 @@ export function FeedCard({ post, onLikeToggle }: {
       {/* ── TAB ──────────────────────────────────────────────────────────── */}
       <div style={{
         position: 'absolute', top: 0, left: 0, zIndex: 2,
-        display: 'flex', alignItems: 'flex-end',
-        height: 42, pointerEvents: 'none',
+        height: 42, pointerEvents: 'auto',
+        display: 'inline-flex', alignItems: 'center', gap: 8,
+        background: CREAM,
+        borderRadius: '16px 16px 0 0',
+        padding: '0 14px',
+        minWidth: 110, maxWidth: 200,
       }}>
-        {/* Tab pill: cream = same as page bg → folder-tab illusion */}
-        <div style={{
-          background: CREAM,
-          borderRadius: '14px 14px 0 0',
-          height: 42,
-          display: 'flex', alignItems: 'center', gap: 8,
-          padding: '0 12px',
-          minWidth: 110, maxWidth: 200,
-          flexShrink: 0, pointerEvents: 'auto',
+        <PostAvatar url={post.userAvatarUrl} name={post.userName} size={24} />
+        <span style={{
+          ...DM, fontSize: 12, fontWeight: 600, color: '#1A1714',
+          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130,
         }}>
-          <PostAvatar url={post.userAvatarUrl} name={post.userName} size={24} />
-          <span style={{
-            ...DM, fontSize: 12, fontWeight: 600, color: '#1A1714',
-            whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130,
-          }}>
-            {displayUsername(post)}
-          </span>
-        </div>
-
-        {/* Inverted corner: cream masked out in quarter-circle + white fill */}
-        <div style={{ width: 20, height: 20, flexShrink: 0, position: 'relative' }}>
-          {/* Cream layer: visible everywhere EXCEPT bottom-right quarter */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: CREAM,
-            WebkitMaskImage: 'radial-gradient(circle at 100% 100%, transparent 20px, black 20px)',
-            maskImage:        'radial-gradient(circle at 100% 100%, transparent 20px, black 20px)',
-          }} />
-          {/* White fill: only bottom-right quarter visible (rounded-tl clips the rest) */}
-          <div style={{
-            position: 'absolute', inset: 0,
-            background: '#FFFFFF',
-            borderRadius: '20px 0 0 0',
-          }} />
-        </div>
+          {displayUsername(post)}
+        </span>
       </div>
 
       {/* ── CARD BODY ─────────────────────────────────────────────────────── */}
