@@ -115,8 +115,8 @@ export function StoriesRow({
               position: 'absolute', inset: 0,
               borderRadius: '50%',
               border: buddy.seen
-                ? '2px solid rgba(26,23,20,0.18)'
-                : '2px solid #1A1714',
+                ? '2.5px solid rgba(26,23,20,0.18)'
+                : '2.5px solid #E87722',
               overflow: 'hidden',
             }}>
               <Avatar name={buddy.name} imageUrl={buddy.avatarUrl} size="lg" />
