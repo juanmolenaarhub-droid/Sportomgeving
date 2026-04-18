@@ -3,8 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import {
   Heart, MessageCircle, Send, Bookmark, Plus, Play,
-  MapPin, Trophy, Activity, Bike, Waves, Dumbbell,
-  Flower2, Zap, Volume2, VolumeX,
+  MapPin,
 } from 'lucide-react'
 import type { PlayPost } from './types'
 
@@ -16,27 +15,6 @@ function fmt(n: number) {
   return String(n)
 }
 
-// ─── Sport icon mapping ────────────────────────────────────────────────────────
-
-const SPORT_ICONS: Record<string, React.ElementType> = {
-  Tennis:    Trophy,
-  Hardlopen: Activity,
-  Fietsen:   Bike,
-  Zwemmen:   Waves,
-  Gym:       Dumbbell,
-  Yoga:      Flower2,
-  Voetbal:   Trophy,
-  Futsal:    Trophy,
-  Triathlon: Zap,
-  Boksen:    Dumbbell,
-  Padel:     Trophy,
-  Klimmen:   Activity,
-}
-
-function SportIcon({ sport, size = 12 }: { sport: string; size?: number }) {
-  const Icon = SPORT_ICONS[sport] ?? Trophy
-  return <Icon size={size} color="white" strokeWidth={2} />
-}
 
 // ─── Mini avatar ──────────────────────────────────────────────────────────────
 
@@ -78,7 +56,7 @@ interface Props {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export function FullScreenCard({
-  post, isActive, isMuted, onMuteToggle, onNextPost, onPrevPost,
+  post, isActive, isMuted, onMuteToggle: _onMuteToggle, onNextPost, onPrevPost,
 }: Props) {
   const [mediaIndex,   setMediaIndex]   = useState(0)
   const [liked,        setLiked]        = useState(false)
@@ -352,18 +330,6 @@ export function FullScreenCard({
             />
           </button>
 
-          {/* Mute (video only) */}
-          {isVideo && (
-            <button
-              onClick={e => { e.stopPropagation(); onMuteToggle() }}
-              style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
-            >
-              {isMuted
-                ? <VolumeX size={24} strokeWidth={2} color="white" />
-                : <Volume2 size={24} strokeWidth={2} color="white" />
-              }
-            </button>
-          )}
         </div>
 
         {/* Follow button — oranje, los onder cluster */}
@@ -416,7 +382,7 @@ export function FullScreenCard({
               padding: '5px 10px',
               display: 'flex', alignItems: 'center', gap: 5,
             }}>
-              <SportIcon sport={sport} size={12} />
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: 'rgba(255,255,255,0.85)', flexShrink: 0, display: 'inline-block' }} />
               <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700, color: 'white' }}>
                 {sport}
               </span>
@@ -451,8 +417,8 @@ export function FullScreenCard({
           </h2>
         )}
 
-        {/* Description — rest van content, max 2 regels, tap = expand */}
-        {post.content && post.content.includes('\n') && (
+        {/* Description — altijd tonen als er content is na de eerste regel */}
+        {post.content && (
           <p
             onClick={() => setExpanded(p => !p)}
             style={{
@@ -466,7 +432,9 @@ export function FullScreenCard({
               WebkitBoxOrient: 'vertical',
             }}
           >
-            {post.content.split('\n').slice(1).join('\n')}
+            {post.content.includes('\n')
+              ? post.content.split('\n').slice(1).join('\n')
+              : post.content}
           </p>
         )}
       </div>
