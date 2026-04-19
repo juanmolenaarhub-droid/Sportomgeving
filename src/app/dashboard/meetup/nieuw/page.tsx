@@ -859,7 +859,7 @@ export default function NewMeetupPage() {
   const props = { draft, update, onNext: goNext, onBack: goBack }
 
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 50, background: '#fff', overflow: 'hidden' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: 100, background: '#fff', overflow: 'hidden' }}>
       <style>{`
         .spin-loader { animation: wizSpin 0.8s linear infinite; }
         @keyframes wizSpin { to { transform: rotate(360deg); } }
