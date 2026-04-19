@@ -21,6 +21,7 @@ CREATE TABLE IF NOT EXISTS meetups (
   max_participants  integer DEFAULT 10,
   status            text DEFAULT 'open' CHECK (status IN ('open', 'vol', 'geannuleerd', 'afgerond', 'verlopen')),
   visibility        text DEFAULT 'publiek' CHECK (visibility IN ('publiek', 'alleen_buddies')),
+  cover_image_url   text,
   reminder_sent     boolean DEFAULT false,
   created_at        timestamptz DEFAULT now()
 );
