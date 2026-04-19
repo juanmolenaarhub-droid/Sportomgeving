@@ -54,9 +54,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const userIdRef   = useRef<string>('')
   const regionRef   = useRef<string>('')
 
-  const isFeedPage   = pathname === '/dashboard/feed'
-  const isVideosPage = pathname === '/dashboard/videos'
-  const isImmersive  = isFeedPage || isVideosPage
+  const isFeedPage    = pathname === '/dashboard/feed'
+  const isVideosPage  = pathname === '/dashboard/videos'
+  const isMeetupPage  = pathname === '/dashboard/meetup'
+  const isImmersive   = isFeedPage || isVideosPage || isMeetupPage
 
   const loadBadges = useCallback(async (uid: string, region: string) => {
     const { data: convs } = await supabase
