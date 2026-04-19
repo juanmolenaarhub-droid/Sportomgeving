@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import Map, { Marker, Popup, NavigationControl } from 'react-map-gl/mapbox'
+import Map, { Marker, Popup } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 import type { MeetupListItem } from '@/app/actions/meetups'
 import MeetupMapPin from './MeetupMapPin'
@@ -44,8 +44,9 @@ export default function MeetupMap({ meetups, center, currentUserId, onInterestSu
         style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         onClick={() => setSelectedId(null)}
+        touchZoomRotate={true}
+        dragRotate={false}
       >
-        <NavigationControl position="top-right" showCompass={false} />
 
         {meetups.filter(m => m.latitude != null && m.longitude != null).map(m => (
           <Marker
