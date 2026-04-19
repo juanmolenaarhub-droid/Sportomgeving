@@ -94,9 +94,9 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
   const pillShadow = { boxShadow: '0 2px 10px rgba(0,0,0,0.18)' }
 
   return (
-    <div className="flex-1 relative overflow-hidden">
+    <div style={{ position: 'fixed', inset: 0, overflow: 'hidden' }}>
       {/* Full-screen map */}
-      <div className="absolute inset-0">
+      <div style={{ position: 'absolute', inset: 0 }}>
         <MeetupMap
           meetups={filtered}
           center={center}

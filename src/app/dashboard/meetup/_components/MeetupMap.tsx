@@ -41,7 +41,7 @@ export default function MeetupMap({ meetups, center, currentUserId, onInterestSu
       <Map
         mapboxAccessToken={process.env.NEXT_PUBLIC_MAPBOX_TOKEN}
         initialViewState={{ longitude: center[1], latitude: center[0], zoom: 13 }}
-        style={{ width: '100%', height: '100%', borderRadius: 16 }}
+        style={{ width: '100%', height: '100%' }}
         mapStyle="mapbox://styles/mapbox/light-v11"
         onClick={() => setSelectedId(null)}
       >
