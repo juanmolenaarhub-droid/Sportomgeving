@@ -172,7 +172,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className={`bg-[#F5F0E8] flex flex-col ${pathname === '/dashboard/videos' ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-[#F5F0E8] flex flex-col ${(pathname === '/dashboard/videos' || isMeetupPage) ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
 
       {/* ── Topbar — verborgen op mobile feed pagina ────────────────────── */}
       <header
