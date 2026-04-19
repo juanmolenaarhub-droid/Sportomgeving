@@ -290,12 +290,12 @@ function Step2({ draft, update, onNext, onBack }: { draft: Draft; update: (p: Pa
   const [query, setQuery] = useState(draft.location?.name ?? '')
   const [results, setResults] = useState<GeoResult[]>([])
   const [searching, setSearching] = useState(false)
-  const timer = useRef<ReturnType<typeof setTimeout>>()
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
   const canNext = draft.location !== null
 
   useEffect(() => {
     if (query.length < 3) { setResults([]); return }
-    clearTimeout(timer.current)
+    if (timer.current) clearTimeout(timer.current)
     timer.current = setTimeout(async () => {
       setSearching(true)
       setResults(await geocode(query))
