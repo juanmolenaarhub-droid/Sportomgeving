@@ -54,10 +54,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const userIdRef   = useRef<string>('')
   const regionRef   = useRef<string>('')
 
-  const isFeedPage    = pathname === '/dashboard/feed'
-  const isVideosPage  = pathname === '/dashboard/videos'
-  const isMeetupPage  = pathname === '/dashboard/meetup'
-  const isImmersive   = isFeedPage || isVideosPage || isMeetupPage
+  const isFeedPage     = pathname === '/dashboard/feed'
+  const isVideosPage   = pathname === '/dashboard/videos'
+  const isMeetupPage   = pathname === '/dashboard/meetup'
+  const isMessagesPage = pathname === '/dashboard/messages' || pathname.startsWith('/dashboard/messages/')
+  const isProfilePage  = pathname === '/dashboard/profile/me' || pathname.startsWith('/dashboard/profile/')
+  const isFindPage     = pathname === '/dashboard/find'
+  const isImmersive    = isFeedPage || isVideosPage || isMeetupPage || isMessagesPage || isProfilePage || isFindPage
 
   const loadBadges = useCallback(async (uid: string, region: string) => {
     const { data: convs } = await supabase
@@ -172,7 +175,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className={`bg-[#F5F0E8] flex flex-col ${(pathname === '/dashboard/videos' || isMeetupPage) ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-[#F5F0E8] flex flex-col ${isImmersive ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
 
       {/* ── Topbar — verborgen op mobile feed pagina ────────────────────── */}
       <header
