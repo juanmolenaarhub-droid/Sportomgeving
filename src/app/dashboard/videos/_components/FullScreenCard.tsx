@@ -15,6 +15,13 @@ function fmt(n: number) {
   return String(n)
 }
 
+function formatTime(s: number) {
+  if (!s || isNaN(s)) return '0:00'
+  const m = Math.floor(s / 60)
+  const sec = Math.floor(s % 60)
+  return `${m}:${sec.toString().padStart(2, '0')}`
+}
+
 
 // ─── Mini avatar ──────────────────────────────────────────────────────────────
 
@@ -69,8 +76,12 @@ export function FullScreenCard({
   const [expanded,     setExpanded]     = useState(false)
   const [lastTap,      setLastTap]      = useState(0)
   const [heartAnim,    setHeartAnim]    = useState(false)
+  const [progress,     setProgress]     = useState(0)
+  const [duration,     setDuration]     = useState(0)
+  const [seeking,      setSeeking]      = useState(false)
 
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const videoRef   = useRef<HTMLVideoElement>(null)
+  const progressRef = useRef<HTMLDivElement>(null)
   const touchX   = useRef(0)
   const touchY   = useRef(0)
 
@@ -157,6 +168,17 @@ export function FullScreenCard({
     }
   }
 
+  function handleSeek(e: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) {
+    const bar = progressRef.current
+    const v = videoRef.current
+    if (!bar || !v || !duration) return
+    const rect = bar.getBoundingClientRect()
+    const clientX = 'touches' in e ? e.touches[0].clientX : e.clientX
+    const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width))
+    v.currentTime = ratio * duration
+    setProgress(ratio)
+  }
+
   return (
     <div
       style={{ position: 'relative', width: '100%', height: '100%', background: '#111', userSelect: 'none' }}
@@ -178,6 +200,11 @@ export function FullScreenCard({
           onCanPlay={() => {
             setLoaded(true)
             if (isActive && videoRef.current) videoRef.current.play().catch(() => {})
+          }}
+          onLoadedMetadata={() => setDuration(videoRef.current?.duration ?? 0)}
+          onTimeUpdate={() => {
+            const v = videoRef.current
+            if (v && v.duration && !seeking) setProgress(v.currentTime / v.duration)
           }}
           onError={() => { setHasError(true); setLoaded(true) }}
         />
@@ -265,10 +292,11 @@ export function FullScreenCard({
         </div>
       )}
 
-      {/* ── Action rail — right side, geclusterd glass blokje ──────────────── */}
+      {/* ── Action rail — rechtsonder, aligned met metadata ──────────────── */}
       <div
         style={{
-          position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
+          position: 'absolute', right: 12,
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
           zIndex: 20,
           display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
         }}
@@ -353,7 +381,7 @@ export function FullScreenCard({
           position: 'absolute',
           left: 16,
           right: 80,   // ← ruimte voor de action rail
-          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)',
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)',
           zIndex: 20,
           display: 'flex', flexDirection: 'column', gap: 8,
         }}
@@ -438,6 +466,52 @@ export function FullScreenCard({
           </p>
         )}
       </div>
+
+      {/* ── Progress / seekbar ─────────────────────────────────────────────── */}
+      {isVideo && (
+        <div
+          ref={progressRef}
+          style={{
+            position: 'absolute', left: 0, right: 0,
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+            zIndex: 25, padding: '10px 16px', cursor: 'pointer',
+          }}
+          onClick={e => { e.stopPropagation(); handleSeek(e) }}
+          onTouchStart={e => { e.stopPropagation(); setSeeking(true) }}
+          onTouchMove={e => { e.stopPropagation(); handleSeek(e) }}
+          onTouchEnd={e => { e.stopPropagation(); setSeeking(false) }}
+        >
+          {/* Track */}
+          <div style={{ position: 'relative', height: 3, borderRadius: 2, background: 'rgba(255,255,255,0.25)' }}>
+            {/* Fill */}
+            <div style={{
+              position: 'absolute', left: 0, top: 0, bottom: 0,
+              width: `${progress * 100}%`,
+              borderRadius: 2, background: '#E87722',
+              transition: seeking ? 'none' : 'width 0.25s linear',
+            }} />
+            {/* Thumb */}
+            <div style={{
+              position: 'absolute', top: '50%',
+              left: `${progress * 100}%`,
+              transform: 'translate(-50%, -50%)',
+              width: 12, height: 12, borderRadius: '50%',
+              background: '#E87722',
+              boxShadow: '0 0 6px rgba(232,119,34,0.7)',
+              transition: seeking ? 'none' : 'left 0.25s linear',
+            }} />
+          </div>
+          {/* Time labels */}
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 4 }}>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>
+              {formatTime(progress * duration)}
+            </span>
+            <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 10, fontWeight: 700, color: 'rgba(255,255,255,0.6)' }}>
+              {formatTime(duration)}
+            </span>
+          </div>
+        </div>
+      )}
 
       {/* ── CSS animations ─────────────────────────────────────────────────── */}
       <style>{`
