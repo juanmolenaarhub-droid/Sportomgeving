@@ -55,7 +55,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const regionRef   = useRef<string>('')
 
   const isFeedPage     = pathname === '/dashboard/feed'
-  const isVideosPage   = pathname === '/dashboard/videos'
+  const isVideosPage   = pathname === '/dashboard/videos' || pathname.startsWith('/dashboard/videos/')
   const isMeetupPage   = pathname === '/dashboard/meetup'
   const isMessagesPage = pathname === '/dashboard/messages' || pathname.startsWith('/dashboard/messages/')
   const isProfilePage  = pathname === '/dashboard/profile/me' || pathname.startsWith('/dashboard/profile/')
@@ -283,7 +283,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* ── Page content ───────────────────────────────────────────────── */}
-      {(pathname === '/dashboard/videos' || isFeedPage || isMeetupPage || isMessagesPage || isProfilePage || isFindPage) ? (
+      {(isVideosPage || isFeedPage || isMeetupPage || isMessagesPage || isProfilePage || isFindPage) ? (
         <div className="flex-1 flex flex-col overflow-hidden">
           <ProfileCardProvider currentUserId={currentUserId}>
             {children}
@@ -299,7 +299,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ── Bottom nav — verborgen op videos pagina ──────────────────────── */}
       <div
-        className={`md:hidden fixed z-50 left-0 right-0${pathname === '/dashboard/videos' ? ' hidden' : ''}`}
+        className={`md:hidden fixed z-50 left-0 right-0${isVideosPage ? ' hidden' : ''}`}
         style={{
           bottom: 0,
           background: '#FFFFFF',
