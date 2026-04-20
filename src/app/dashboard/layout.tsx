@@ -177,9 +177,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className={`bg-[#F5F0E8] flex flex-col ${isImmersive ? 'h-full' : 'min-h-screen'}`}>
 
-      {/* ── Topbar — verborgen op mobile feed pagina ────────────────────── */}
+      {/* ── Topbar — verborgen op mobile, zichtbaar op desktop ─────────── */}
       <header
-        className={`${isImmersive ? 'hidden md:block' : 'block'} bg-white border-b border-black/8 sticky top-0 z-30`}
+        className="hidden md:block bg-white border-b border-black/8 sticky top-0 z-30"
         style={{ paddingTop: 'env(safe-area-inset-top)' }}
       >
         <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between gap-4">
@@ -288,7 +288,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {children}
         </ProfileCardProvider>
       ) : (
-        <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-safe-nav md:pb-8">
+        <div className="flex-1 max-w-7xl mx-auto w-full px-6 pb-safe-nav md:pb-8" style={{ paddingTop: 'max(16px, env(safe-area-inset-top))' }}>
           <ProfileCardProvider currentUserId={currentUserId}>
             {children}
           </ProfileCardProvider>

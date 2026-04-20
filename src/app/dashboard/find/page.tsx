@@ -392,7 +392,7 @@ export default function FindPage() {
   const isSearching = searchQuery.trim().length > 0
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#fff', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#F5F0E8', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <div style={{ paddingTop: 'max(24px, env(safe-area-inset-top))', paddingBottom: 'calc(120px + env(safe-area-inset-bottom))' }}>
 
         {/* Header */}
@@ -410,7 +410,7 @@ export default function FindPage() {
               placeholder="Zoek op naam, gebruikersnaam..."
               style={{
                 width: '100%', height: 44, borderRadius: 14, border: '1.5px solid #E6E3DD',
-                background: '#F8F7F4', paddingLeft: 42, paddingRight: searchQuery ? 42 : 14,
+                background: '#EAE7E0', paddingLeft: 42, paddingRight: searchQuery ? 42 : 14,
                 ...DM, fontSize: 14, color: INK, outline: 'none', boxSizing: 'border-box',
               }}
             />
