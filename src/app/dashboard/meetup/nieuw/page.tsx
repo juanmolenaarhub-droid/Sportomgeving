@@ -27,18 +27,9 @@ const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 
 // ─── Sports ───────────────────────────────────────────────────────────────────
 const SPORTS = [
-  { label: 'Hardlopen', emoji: '🏃' },
-  { label: 'Fietsen',   emoji: '🚴' },
-  { label: 'Yoga',      emoji: '🧘' },
-  { label: 'Gym',       emoji: '🏋️' },
-  { label: 'Tennis',    emoji: '🎾' },
-  { label: 'Voetbal',   emoji: '⚽' },
-  { label: 'Zwemmen',   emoji: '🏊' },
-  { label: 'Klimmen',   emoji: '🧗' },
-  { label: 'Basketbal', emoji: '🏀' },
-  { label: 'Volleybal', emoji: '🏐' },
-  { label: 'Boksen',    emoji: '🥊' },
-  { label: 'Skaten',    emoji: '🛹' },
+  'Hardlopen', 'Fietsen', 'Yoga', 'Gym', 'Tennis', 'Voetbal',
+  'Zwemmen', 'Klimmen', 'Basketbal', 'Volleybal', 'Boksen', 'Skaten',
+  'Padel', 'Golf', 'Crossfit', 'Roeien', 'Surfen', 'Mountainbiken',
 ]
 
 const COVERS: Record<string, string[]> = {
@@ -74,19 +65,19 @@ const COVERS: Record<string, string[]> = {
 
 const INTROS: Record<string, string[]> = {
   Hardlopen: [
-    "Hoi! Ik zoek gezelschap voor een rustig rondje. Tempo ~5'30\"/km, daarna koffie? ☕",
-    'Wekelijkse trainingsmaatje gezocht! Ik loop elke ochtend en zoek gezelschap. 🏃',
+    "Hoi! Ik zoek gezelschap voor een rustig rondje. Tempo ~5'30\"/km, daarna koffie?",
+    'Wekelijkse trainingsmaatje gezocht! Ik loop elke ochtend en zoek gezelschap.',
   ],
   Fietsen: [
-    'Weekend rit door de polder! Rustig tempo, gezelligheid staat voorop. 🚴',
+    'Weekend rit door de polder! Rustig tempo, gezelligheid staat voorop.',
     'Op zoek naar een fietsmaatje voor een mooie tour. Wie gaat er mee?',
   ],
   Yoga: [
-    'Zin in een yoga sessie buiten? Alle niveaus welkom, gezelligheid staat voorop! 🧘',
-    "Outdoor yoga in het park! Breng je mat mee, ik breng de thee. ☕",
+    'Zin in een yoga sessie buiten? Alle niveaus welkom, gezelligheid staat voorop!',
+    'Outdoor yoga in het park! Breng je mat mee, ik breng de thee.',
   ],
   default: [
-    'Hoi! Ik zoek gezelschap voor deze activiteit. Gezelligheid staat voorop! 💪',
+    'Hoi! Ik zoek gezelschap voor deze activiteit. Gezelligheid staat voorop!',
     'Samen sporten is leuker dan alleen! Doe je mee?',
   ],
 }
@@ -218,6 +209,20 @@ function Toggle({ on, onChange }: { on: boolean; onChange: (v: boolean) => void 
 // ─── Step 1: Sport + Title + Description ──────────────────────────────────────
 function Step1({ draft, update, onNext, onBack }: { draft: Draft; update: (p: Partial<Draft>) => void; onNext: () => void; onBack: () => void }) {
   const canNext = draft.title.trim().length >= 4
+  const isCustom = draft.sport !== '' && !SPORTS.includes(draft.sport)
+  const [customInput, setCustomInput] = useState(isCustom ? draft.sport : '')
+  const [showCustom, setShowCustom] = useState(isCustom)
+
+  function selectSport(s: string) {
+    update({ sport: s, sportEmoji: '' })
+    setShowCustom(false)
+    setCustomInput('')
+  }
+
+  function handleCustomChange(val: string) {
+    setCustomInput(val)
+    update({ sport: val, sportEmoji: '' })
+  }
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', height: '100%' }}>
@@ -225,31 +230,45 @@ function Step1({ draft, update, onNext, onBack }: { draft: Draft; update: (p: Pa
       <STitle kicker="Stap 1 / 6" title="Wat ga je doen?" sub="Kies je sport of activiteit." />
 
       <div style={{ flex: 1, overflowY: 'auto' }}>
-        {/* Tabs */}
-        <div style={{ margin: '0 24px 18px', display: 'flex', gap: 22, borderBottom: `1px solid ${C.line}` }}>
-          <div style={{ paddingBottom: 10, borderBottom: `2.5px solid ${C.ink}`, fontSize: 14, fontWeight: 700, color: C.ink, ...DM, marginBottom: -1 }}>Kies sport</div>
-          <div style={{ paddingBottom: 10, fontSize: 14, fontWeight: 600, color: C.mute, ...DM }}>Inspiratie</div>
+        {/* Sport pills */}
+        <div style={{ padding: '0 20px', display: 'flex', flexWrap: 'wrap', gap: 10, marginBottom: 16 }}>
+          {SPORTS.map(s => {
+            const active = draft.sport === s
+            return (
+              <button key={s} onClick={() => selectSport(s)} style={{
+                padding: '9px 18px', borderRadius: 999, border: 'none', cursor: 'pointer',
+                background: active ? C.accent : C.panel,
+                color: active ? '#fff' : C.ink,
+                fontSize: 14, fontWeight: 700, ...DM,
+                boxShadow: active ? `0 4px 12px ${C.accent}44` : 'none',
+                transition: 'all 160ms ease',
+              }}>{s}</button>
+            )
+          })}
+
+          {/* Anders knop */}
+          <button onClick={() => { setShowCustom(true); update({ sport: customInput, sportEmoji: '' }) }} style={{
+            padding: '9px 18px', borderRadius: 999, border: `1.5px dashed ${C.line}`, cursor: 'pointer',
+            background: showCustom ? C.accentLight : 'transparent',
+            color: showCustom ? C.accent : C.mute,
+            fontSize: 14, fontWeight: 700, ...DM,
+            transition: 'all 160ms ease',
+          }}>+ Anders</button>
         </div>
 
-        {/* Sport grid */}
-        <div style={{ padding: '0 20px', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 14, marginBottom: 24 }}>
-          {SPORTS.map(s => (
-            <button key={s.label} onClick={() => update({ sport: s.label, sportEmoji: s.emoji })} style={{
-              display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6,
-              background: 'none', border: 'none', cursor: 'pointer', padding: 0,
-            }}>
-              <div style={{
-                width: 56, height: 56, borderRadius: 18,
-                background: draft.sport === s.label ? C.accent : C.panel,
-                border: `2px solid ${draft.sport === s.label ? C.accent : 'transparent'}`,
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: 26, transition: 'all 180ms ease',
-                boxShadow: draft.sport === s.label ? `0 6px 16px ${C.accent}44` : 'none',
-              }}>{s.emoji}</div>
-              <span style={{ fontSize: 11, fontWeight: 700, color: draft.sport === s.label ? C.accent : C.ink, ...DM }}>{s.label}</span>
-            </button>
-          ))}
-        </div>
+        {/* Custom sport input */}
+        {showCustom && (
+          <div style={{ padding: '0 20px 16px' }}>
+            <input
+              autoFocus
+              type="text"
+              value={customInput}
+              onChange={e => handleCustomChange(e.target.value)}
+              placeholder="Bijv. Padel, Frisbee, Zeilen..."
+              style={{ width: '100%', height: 50, padding: '0 16px', borderRadius: 14, background: C.panel, border: `1.5px solid ${C.accent}`, outline: 'none', fontSize: 15, fontWeight: 600, color: C.ink, boxSizing: 'border-box', ...DM }}
+            />
+          </div>
+        )}
 
         {/* Title */}
         <div style={{ padding: '0 24px 20px' }}>
