@@ -214,7 +214,7 @@ export function CommentsSheet({ postId, onClose, onCountChange }: Props) {
               onChange={e => setText(e.target.value.slice(0, 500))}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && handleSend()}
               placeholder="Schrijf een reactie..."
-              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', ...DM, fontSize: 14, color: INK }}
+              style={{ flex: 1, background: 'none', border: 'none', outline: 'none', ...DM, fontSize: 16, color: INK }}
             />
           </div>
           <button
