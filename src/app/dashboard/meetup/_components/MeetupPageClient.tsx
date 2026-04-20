@@ -29,14 +29,18 @@ const WHITE   = '#ffffff'
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 
-// ─── Sport emojis ─────────────────────────────────────────────────────────────
+// ─── Sport emojis + known list ────────────────────────────────────────────────
 const SPORT_EMOJI: Record<string, string> = {
   Hardlopen: '🏃', Fietsen: '🚴', Yoga: '🧘', Gym: '🏋️',
   Tennis: '🎾', Voetbal: '⚽', Zwemmen: '🏊', Klimmen: '🧗',
   Basketbal: '🏀', Volleybal: '🏐', Boksen: '🥊', Skaten: '🛹',
   Padel: '🏸', Golf: '⛳', Crossfit: '💪', Roeien: '🚣',
-  Surfen: '🏄', Mountainbiken: '🚵',
+  Surfen: '🏄', Mountainbiken: '🚵', Badminton: '🏸', Rugby: '🏉',
+  Hockey: '🏑', Handbal: '🤾', Dansen: '💃', Wandelen: '🥾',
+  Squash: '🎾', Bootcamp: '🏕️', Zwaard: '🤺',
 }
+
+const KNOWN_SPORTS = Object.keys(SPORT_EMOJI)
 
 function getDatePills() {
   const today = new Date()
@@ -65,6 +69,8 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
   const [niveauFilters, setNiveauFilters]   = useState<Set<string>>(new Set())
   const [statusFilters, setStatusFilters]   = useState<Set<string>>(new Set())
   const [filterOpen, setFilterOpen]         = useState(false)
+  const [customSportInput, setCustomSportInput] = useState('')
+  const [showCustomSport, setShowCustomSport]   = useState(false)
   const [interestMeetup, setInterestMeetup] = useState<MeetupListItem | null>(null)
   const [detailMeetupId, setDetailMeetupId] = useState<string | null>(null)
   const [toast, setToast]                   = useState<string | null>(null)
@@ -133,6 +139,7 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
     setSportFilter(''); setShowSpontaan(false); setShowGepland(false)
     setWanneerFilter(''); setAfstandKm(30)
     setNiveauFilters(new Set()); setStatusFilters(new Set())
+    setCustomSportInput(''); setShowCustomSport(false)
   }
 
   function toggleNiveau(v: string) {
@@ -248,27 +255,56 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
               </div>
 
               {/* Sport */}
-              <SectionLabel label="SPORT" meta={availableSports.length > 5 ? `+${availableSports.length - 5}` : undefined} />
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
-                {/* Alle chip */}
-                <SportChip
-                  emoji={undefined}
-                  label="Alle"
-                  count={meetups.length}
-                  active={!sportFilter}
-                  onToggle={() => setSportFilter('')}
-                />
-                {availableSports.map(s => (
+              <SectionLabel label="SPORT" />
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: showCustomSport ? 8 : 20 }}>
+                <SportChip emoji={undefined} label="Alle" count={meetups.length} active={!sportFilter && !showCustomSport} onToggle={() => { setSportFilter(''); setShowCustomSport(false); setCustomSportInput('') }} />
+                {KNOWN_SPORTS.map(s => (
                   <SportChip
                     key={s}
                     emoji={SPORT_EMOJI[s]}
                     label={s}
                     count={sportCounts[s] ?? 0}
-                    active={sportFilter === s}
-                    onToggle={() => setSportFilter(prev => prev === s ? '' : s)}
+                    active={sportFilter === s && !showCustomSport}
+                    onToggle={() => { setSportFilter(prev => prev === s ? '' : s); setShowCustomSport(false); setCustomSportInput('') }}
                   />
                 ))}
+                {/* Unknown sports from DB not in KNOWN_SPORTS */}
+                {availableSports.filter(s => !KNOWN_SPORTS.includes(s)).map(s => (
+                  <SportChip key={s} emoji={undefined} label={s} count={sportCounts[s] ?? 0} active={sportFilter === s && !showCustomSport} onToggle={() => { setSportFilter(prev => prev === s ? '' : s); setShowCustomSport(false) }} />
+                ))}
+                {/* Anders chip */}
+                <button
+                  onClick={() => { setShowCustomSport(true); setSportFilter(customSportInput) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 6,
+                    height: 36, padding: '0 12px', borderRadius: 18,
+                    border: showCustomSport ? 'none' : `1px dashed ${LINE}`,
+                    background: showCustomSport ? INK : 'transparent',
+                    color: showCustomSport ? WHITE : MUTE,
+                    cursor: 'pointer', transition: 'all 150ms',
+                    fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 800,
+                  }}
+                >
+                  + Anders
+                </button>
               </div>
+              {showCustomSport && (
+                <div style={{ marginBottom: 20 }}>
+                  <input
+                    autoFocus
+                    type="text"
+                    value={customSportInput}
+                    onChange={e => { setCustomSportInput(e.target.value); setSportFilter(e.target.value) }}
+                    placeholder="Typ een sport..."
+                    style={{
+                      width: '100%', height: 44, padding: '0 14px', boxSizing: 'border-box',
+                      borderRadius: 12, border: `1.5px solid ${ACCENT}`, outline: 'none',
+                      background: WHITE, fontFamily: "'DM Sans', sans-serif",
+                      fontSize: 14, fontWeight: 600, color: INK,
+                    }}
+                  />
+                </div>
+              )}
 
               {/* Type */}
               <SectionLabel label="TYPE" />
