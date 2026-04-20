@@ -175,7 +175,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className={`${isVideosPage ? 'bg-black' : 'bg-[#F5F0E8]'} flex flex-col ${isImmersive ? 'h-full' : 'min-h-screen'}`}>
+    <div className={`${isVideosPage ? 'bg-black' : 'bg-[#F5F0E8]'} flex flex-col h-full`}>
 
       {/* ── Topbar — verborgen op mobile, zichtbaar op desktop ─────────── */}
       <header

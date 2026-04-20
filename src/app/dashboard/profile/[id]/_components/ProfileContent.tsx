@@ -1115,7 +1115,16 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
   }
 
   return (
-    <div className="max-w-3xl mx-auto pb-20">
+    <div
+      style={{
+        position: 'fixed', inset: 0,
+        overflowY: 'auto', WebkitOverflowScrolling: 'touch' as never,
+        background: '#F5F0E8',
+        paddingTop: 'env(safe-area-inset-top)',
+        paddingBottom: 'calc(72px + env(safe-area-inset-bottom))',
+      }}
+    >
+    <div className="max-w-3xl mx-auto">
       {/* Back link */}
       {!isOwnProfile && (
         <div className="mb-4">
@@ -1468,6 +1477,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
           Je rapport is ontvangen. We bekijken dit zo snel mogelijk.
         </div>
       )}
+    </div>
     </div>
   )
 }

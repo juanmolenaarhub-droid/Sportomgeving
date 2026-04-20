@@ -13,7 +13,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
+html {
+  height: 100%;
+  height: 100dvh;
+}
+
 body {
+  height: 100%;
   background: #F5F0E8;
   color: #171717;
 }

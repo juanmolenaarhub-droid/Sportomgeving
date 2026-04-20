@@ -660,7 +660,13 @@ export default function MessagesClient({
 
   return (
     <>
-      <div className="h-[calc(100vh-8rem)] flex bg-white rounded-2xl border border-gray-100 overflow-hidden">
+      <div
+        className="flex bg-white overflow-hidden md:rounded-2xl md:border md:border-gray-100 md:h-[calc(100dvh-4rem)]"
+        style={{
+          position: 'fixed', inset: 0,
+          paddingTop: 'env(safe-area-inset-top)',
+        }}
+      >
 
         {/* ── Linker kolom ── */}
         <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-100 ${(selected || activeMeetupId) ? 'hidden md:flex' : 'flex'}`}>
@@ -695,7 +701,7 @@ export default function MessagesClient({
             <MeetupChatList currentUserId={currentUserId} onSelect={openMeetupChat} />
           )}
 
-          {activeTab !== 'meetups' && <div className="flex-1 overflow-y-auto">
+          {activeTab !== 'meetups' && <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom))' }}>
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center p-8">
                 <MessageCircle className="w-10 h-10 text-gray-200 mb-3" />
