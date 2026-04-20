@@ -164,33 +164,29 @@ export default function MeetupPageClient({ initialMeetups, center, currentUserId
         }}>
           {filtered.length} meetup{filtered.length !== 1 ? 's' : ''}
         </div>
-      </div>
 
-      {/* FAB — meetup aanmaken */}
-      <Link
-        href="/dashboard/meetup/nieuw"
-        style={{
-          position: 'absolute',
-          bottom: 96,
-          right: 16,
-          zIndex: 20,
-          display: 'flex',
-          alignItems: 'center',
-          gap: 8,
-          background: '#E87722',
-          color: '#fff',
-          fontFamily: "'Syne', sans-serif",
-          fontWeight: 700,
-          fontSize: 14,
-          padding: '12px 18px',
-          borderRadius: 18,
-          textDecoration: 'none',
-          boxShadow: '0 4px 20px rgba(232,119,34,0.45)',
-        }}
-      >
-        <Plus size={16} />
-        Meetup
-      </Link>
+        {/* + Meetup knop */}
+        <Link
+          href="/dashboard/meetup/nieuw"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 6,
+            background: '#E87722',
+            color: '#fff',
+            fontFamily: "'Syne', sans-serif",
+            fontWeight: 700,
+            fontSize: 14,
+            padding: '9px 16px',
+            borderRadius: 999,
+            textDecoration: 'none',
+            boxShadow: '0 4px 16px rgba(232,119,34,0.45)',
+          }}
+        >
+          <Plus size={15} />
+          Meetup
+        </Link>
+      </div>
 
       {/* Filter sheet overlay */}
       {filterOpen && (
