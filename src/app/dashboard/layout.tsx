@@ -283,7 +283,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </header>
 
       {/* ── Page content ───────────────────────────────────────────────── */}
-      {(pathname === '/dashboard/videos' || isFeedPage) ? (
+      {(pathname === '/dashboard/videos' || isFeedPage || isMeetupPage || isMessagesPage || isProfilePage || isFindPage) ? (
         <div className="flex-1 flex flex-col overflow-hidden">
           <ProfileCardProvider currentUserId={currentUserId}>
             {children}
