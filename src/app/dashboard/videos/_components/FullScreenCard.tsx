@@ -292,16 +292,30 @@ export function FullScreenCard({
         </div>
       )}
 
-      {/* ── Action rail — rechtsonder, aligned met metadata ──────────────── */}
+      {/* ── Action rail — rechts, + boven, glass cluster eronder ────────── */}
       <div
         style={{
           position: 'absolute', right: 12,
-          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
           zIndex: 20,
-          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10,
         }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Follow button — oranje bovenaan */}
+        <button
+          style={{
+            width: 44, height: 44, borderRadius: '50%',
+            background: '#E87722',
+            border: 'none', cursor: 'pointer',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(232,119,34,0.45)',
+          }}
+          onClick={e => e.stopPropagation()}
+        >
+          <Plus size={22} color="white" strokeWidth={2.5} />
+        </button>
+
         {/* Glass cluster */}
         <div style={{
           background: 'rgba(0,0,0,0.25)',
@@ -357,22 +371,7 @@ export function FullScreenCard({
               color="white" fill={saved ? 'white' : 'none'}
             />
           </button>
-
         </div>
-
-        {/* Follow button — oranje, los onder cluster */}
-        <button
-          style={{
-            width: 44, height: 44, borderRadius: '50%',
-            background: '#E87722',
-            border: 'none', cursor: 'pointer',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 4px 16px rgba(232,119,34,0.45)',
-          }}
-          onClick={e => e.stopPropagation()}
-        >
-          <Plus size={22} color="white" strokeWidth={2.5} />
-        </button>
       </div>
 
       {/* ── Metadata overlay — bottom left ─────────────────────────────────── */}
@@ -380,8 +379,8 @@ export function FullScreenCard({
         style={{
           position: 'absolute',
           left: 16,
-          right: 80,   // ← ruimte voor de action rail
-          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 110px)',
+          right: 72,
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
           zIndex: 20,
           display: 'flex', flexDirection: 'column', gap: 8,
         }}
@@ -473,7 +472,7 @@ export function FullScreenCard({
           ref={progressRef}
           style={{
             position: 'absolute', left: 0, right: 0,
-            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 72px)',
+            bottom: 'calc(env(safe-area-inset-bottom, 0px) + 8px)',
             zIndex: 25, padding: '10px 16px', cursor: 'pointer',
           }}
           onClick={e => { e.stopPropagation(); handleSeek(e) }}
