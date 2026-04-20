@@ -12,13 +12,13 @@ const config: CapacitorConfig = {
   },
 
   ios: {
-    contentInset: 'automatic',
-    backgroundColor: '#F5F0E8',
+    contentInset: 'never',
+    backgroundColor: '#000000',
     scheme: 'Buddys',
   },
 
   android: {
-    backgroundColor: '#F5F0E8',
+    backgroundColor: '#000000',
     allowMixedContent: false,
   },
 
