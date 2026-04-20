@@ -6,6 +6,7 @@ import {
   MapPin,
 } from 'lucide-react'
 import type { PlayPost } from './types'
+import { CommentsSheet } from '@/components/feed/CommentsSheet'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -68,6 +69,9 @@ export function FullScreenCard({
   const [mediaIndex,   setMediaIndex]   = useState(0)
   const [liked,        setLiked]        = useState(false)
   const [likes,        setLikes]        = useState(post.likes_count)
+  const [comments,     setComments]     = useState(post.comments_count)
+  const [showComments, setShowComments] = useState(false)
+  const currentUidRef = useRef<string | null>(null)
   const [saved,        setSaved]        = useState(false)
   const [bounce,       setBounce]       = useState(false)
   const [paused,       setPaused]       = useState(false)
@@ -91,13 +95,32 @@ export function FullScreenCard({
   const sport    = post.sport_tags[0]
   const location = (post as unknown as Record<string, unknown>).location as string | null | undefined
 
-  // Reset on post change
+  // Reset on post change + fetch like status
   useEffect(() => {
     setMediaIndex(0)
     setLoaded(false)
     setHasError(false)
     setExpanded(false)
-  }, [post.id])
+    setLikes(post.likes_count)
+    setComments(post.comments_count)
+
+    async function fetchLikeStatus() {
+      const supabase = (await import('@/lib/supabase')).createClient()
+      if (!currentUidRef.current) {
+        const { data: { user } } = await supabase.auth.getUser()
+        currentUidRef.current = user?.id ?? null
+      }
+      if (!currentUidRef.current) return
+      const { data } = await supabase
+        .from('post_likes')
+        .select('post_id')
+        .eq('post_id', post.id)
+        .eq('user_id', currentUidRef.current)
+        .maybeSingle()
+      setLiked(!!data)
+    }
+    fetchLikeStatus()
+  }, [post.id, post.likes_count, post.comments_count])
 
   // Auto-play / pause
   useEffect(() => {
@@ -142,12 +165,25 @@ export function FullScreenCard({
     setLastTap(now)
   }, [lastTap, liked, isVideo])
 
-  function handleLike(e: React.MouseEvent) {
+  async function handleLike(e: React.MouseEvent) {
     e.stopPropagation()
-    setLiked(p => !p)
-    setLikes(p => liked ? p - 1 : p + 1)
+    const newLiked = !liked
+    setLiked(newLiked)
+    setLikes(p => newLiked ? p + 1 : Math.max(0, p - 1))
     setBounce(true)
     setTimeout(() => setBounce(false), 300)
+
+    const supabase = (await import('@/lib/supabase')).createClient()
+    if (!currentUidRef.current) {
+      const { data: { user } } = await supabase.auth.getUser()
+      currentUidRef.current = user?.id ?? null
+    }
+    if (!currentUidRef.current) return
+    if (newLiked) {
+      await supabase.from('post_likes').upsert({ post_id: post.id, user_id: currentUidRef.current })
+    } else {
+      await supabase.from('post_likes').delete().eq('post_id', post.id).eq('user_id', currentUidRef.current)
+    }
   }
 
   function onTouchStart(e: React.TouchEvent) {
@@ -343,11 +379,12 @@ export function FullScreenCard({
 
           {/* Comment */}
           <button
+            onClick={e => { e.stopPropagation(); setShowComments(true) }}
             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
           >
             <MessageCircle size={26} strokeWidth={2} color="white" fill="white" />
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700, color: 'white', lineHeight: 1 }}>
-              {fmt(post.comments_count)}
+              {fmt(comments)}
             </span>
           </button>
 
@@ -510,6 +547,15 @@ export function FullScreenCard({
             </span>
           </div>
         </div>
+      )}
+
+      {/* ── Comments sheet ─────────────────────────────────────────────────── */}
+      {showComments && (
+        <CommentsSheet
+          postId={post.id}
+          onClose={() => setShowComments(false)}
+          onCountChange={delta => setComments(p => Math.max(0, p + delta))}
+        />
       )}
 
       {/* ── CSS animations ─────────────────────────────────────────────────── */}

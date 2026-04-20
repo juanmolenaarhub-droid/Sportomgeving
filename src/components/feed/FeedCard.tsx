@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Heart, MessageCircle, Share2, MapPin, Music, Play } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { CommentsSheet } from './CommentsSheet'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -108,9 +109,11 @@ export function FeedCard({ post, onLikeToggle }: {
   post: FeedPostData
   onLikeToggle: (postId: string, newLiked: boolean, newCount: number) => void
 }) {
-  const supabase   = createClient()
-  const [liking,   setLiking]   = useState(false)
-  const [expanded, setExpanded] = useState(false)
+  const supabase       = createClient()
+  const [liking,       setLiking]       = useState(false)
+  const [expanded,     setExpanded]     = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  const [commentCount, setCommentCount] = useState(post.comments_count)
 
   const hasMedia  = !!(post.media_url || post.thumbnail_url)
   const isVideo   = post.media_type === 'video'
@@ -260,9 +263,9 @@ export function FeedCard({ post, onLikeToggle }: {
               <Heart style={{ width: 18, height: 18, color: post.liked ? '#E87722' : '#1A1714', fill: post.liked ? '#E87722' : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
               <span style={{ ...DM, fontSize: 12, fontWeight: 500, color: 'rgba(26,23,20,0.55)' }}>{post.likes_count}</span>
             </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <button onClick={() => setShowComments(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
               <MessageCircle style={{ width: 18, height: 18, color: '#1A1714' }} />
-              <span style={{ ...DM, fontSize: 12, fontWeight: 500, color: 'rgba(26,23,20,0.55)' }}>{post.comments_count}</span>
+              <span style={{ ...DM, fontSize: 12, fontWeight: 500, color: 'rgba(26,23,20,0.55)' }}>{commentCount}</span>
             </button>
             <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginLeft: 'auto' }}>
               <Share2 style={{ width: 18, height: 18, color: '#1A1714' }} />
@@ -280,6 +283,14 @@ export function FeedCard({ post, onLikeToggle }: {
       </div>
 
       <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
+
+      {showComments && (
+        <CommentsSheet
+          postId={post.id}
+          onClose={() => setShowComments(false)}
+          onCountChange={delta => setCommentCount(p => Math.max(0, p + delta))}
+        />
+      )}
     </div>
   )
 }
