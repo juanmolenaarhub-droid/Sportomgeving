@@ -175,7 +175,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className={`bg-[#F5F0E8] flex flex-col ${isImmersive ? 'h-screen overflow-hidden' : 'min-h-screen'}`}>
+    <div className={`bg-[#F5F0E8] flex flex-col ${isImmersive ? 'h-full' : 'min-h-screen'}`}>
 
       {/* ── Topbar — verborgen op mobile feed pagina ────────────────────── */}
       <header
@@ -284,11 +284,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* ── Page content ───────────────────────────────────────────────── */}
       {(isVideosPage || isFeedPage || isMeetupPage || isMessagesPage || isProfilePage || isFindPage) ? (
-        <div className="flex-1 flex flex-col overflow-hidden">
-          <ProfileCardProvider currentUserId={currentUserId}>
-            {children}
-          </ProfileCardProvider>
-        </div>
+        <ProfileCardProvider currentUserId={currentUserId}>
+          {children}
+        </ProfileCardProvider>
       ) : (
         <div className="flex-1 max-w-7xl mx-auto w-full px-6 py-8 pb-safe-nav md:pb-8">
           <ProfileCardProvider currentUserId={currentUserId}>
