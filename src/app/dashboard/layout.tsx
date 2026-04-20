@@ -301,8 +301,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         style={{
           bottom: 0,
           background: '#FFFFFF',
-          borderRadius: '20px 20px 0 0',
-          boxShadow: '0 -4px 24px rgba(26,23,20,0.10)',
+          borderTop: '1px solid rgba(0,0,0,0.07)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
