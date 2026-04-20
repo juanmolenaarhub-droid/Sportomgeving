@@ -60,6 +60,7 @@ export function VoorJouFeed({ isMuted, onMuteToggle, isVisible }: Props) {
     let query = supabase
       .from('posts')
       .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at')
+      .eq('media_type', 'video')
       .not('media_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE * 3)

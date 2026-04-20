@@ -22,6 +22,17 @@ const PAGE_SIZE = 20
 export default function PlayPage() {
   const supabase = createClient()
 
+  // Force black background on body so no cream bleeds through on iOS
+  useEffect(() => {
+    const prev = document.body.style.background
+    document.body.style.background = '#000'
+    document.documentElement.style.background = '#000'
+    return () => {
+      document.body.style.background = prev
+      document.documentElement.style.background = ''
+    }
+  }, [])
+
   const [tab,            setTab]            = useState<Tab>('ontdekken')
   const [dropdownOpen,   setDropdownOpen]   = useState(false)
   const [showDropdownUI, setShowDropdownUI] = useState(true)
@@ -91,6 +102,7 @@ export default function PlayPage() {
     let q = supabase
       .from('posts')
       .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at, location')
+      .eq('media_type', 'video')
       .not('media_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
@@ -126,6 +138,7 @@ export default function PlayPage() {
       .from('posts')
       .select('id, user_id, content, sport_tags, sport_tag, media_url, media_type, thumbnail_url, media_items, likes_count, comments_count, view_count, created_at, location')
       .in('user_id', resolvedIds)
+      .eq('media_type', 'video')
       .not('media_url', 'is', null)
       .order('created_at', { ascending: false })
       .limit(PAGE_SIZE)
