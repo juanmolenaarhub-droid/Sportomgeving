@@ -148,6 +148,11 @@ export function FullScreenCard({
       if (!liked) {
         setLiked(true)
         setLikes(p => p + 1)
+        // Persist double-tap like
+        import('@/lib/supabase').then(({ createClient }) => {
+          const uid = currentUidRef.current
+          if (uid) createClient().from('post_likes').upsert({ post_id: post.id, user_id: uid })
+        })
       }
       setBounce(true)
       setTimeout(() => setBounce(false), 400)
