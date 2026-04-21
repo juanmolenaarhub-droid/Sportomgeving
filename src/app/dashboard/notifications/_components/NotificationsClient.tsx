@@ -426,13 +426,16 @@ const PRIORITY_TYPES = [
 ]
 
 function findFeaturedNotif(notifs: Notif[]): Notif | null {
+  if (notifs.length === 0) return null
+  // Prefer unread priority notifications first
   const unread = notifs.filter(n => !n.read)
-  if (unread.length === 0) return null
   for (const pt of PRIORITY_TYPES) {
     const found = unread.find(n => n.type.toLowerCase().includes(pt))
     if (found) return found
   }
-  return unread[0]
+  if (unread.length > 0) return unread[0]
+  // Fall back to most recent read notification so hero card always shows
+  return notifs[0]
 }
 
 // ─── Hoofdcomponent ────────────────────────────────────────────────────────────
@@ -493,8 +496,8 @@ export default function NotificationsClient({
     [notifs, featuredNotif])
 
   const earlierNotifs = useMemo(() =>
-    notifs.filter(n => n.read),
-    [notifs])
+    notifs.filter(n => n.read && n.id !== featuredNotif?.id),
+    [notifs, featuredNotif])
 
   const totalUnread = requests.length + notifs.filter(n => !n.read).length
   const isEmpty     = requests.length === 0 && notifs.length === 0
