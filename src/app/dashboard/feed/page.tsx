@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
-import { FeedCard, FeedCardSkeleton, type FeedPostData } from '@/components/feed/FeedCard'
+import { FeedList, FeedCardSkeleton, type FeedPostData } from '@/components/feed/FeedCard'
 import { StoriesRow, type StoryBuddy } from '@/components/feed/StoriesRow'
 import { StoryViewer, type StoryFrame } from '@/components/feed/StoryViewer'
 import { createClient } from '@/lib/supabase'
@@ -308,13 +308,9 @@ export default function FeedPage() {
         )}
 
         {/* Posts */}
-        {!loading && posts.map(post => (
-          <FeedCard
-            key={post.id}
-            post={post}
-            onLikeToggle={handleLikeToggle}
-          />
-        ))}
+        {!loading && (
+          <FeedList posts={posts} onLikeToggle={handleLikeToggle} />
+        )}
 
         {/* Empty state */}
         {!loading && posts.length === 0 && <EmptyState />}

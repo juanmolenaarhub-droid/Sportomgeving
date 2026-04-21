@@ -1,7 +1,8 @@
 'use client'
 
 import { useState } from 'react'
-import { Heart, MessageCircle, Share2, MapPin, Music, Play } from 'lucide-react'
+import { Heart, MessageCircle, Send, Play } from 'lucide-react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { CommentsSheet } from './CommentsSheet'
 
@@ -38,251 +39,272 @@ export type FeedPostData = {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
-const CREAM = '#F5F0E8'
+const ORANGE = '#E87722'
+const INK    = '#111111'
 
-// ─── Avatar ────────────────────────────────────────────────────────────────────
+// ─── User color (deterministic from userId) ────────────────────────────────────
 
-function PostAvatar({ url, name, size }: { url: string | null; name: string; size: number }) {
-  const initials = name.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
-  const colors   = ['#E87722', '#2A2420', '#11998e', '#6366F1', '#DB2777']
-  const color    = colors[name.charCodeAt(0) % colors.length]
+const USER_COLORS = [
+  '#D4538C', '#7F77DD', '#1D9E75', '#E87722',
+  '#3A7AC4', '#D4A87A', '#E8A560', '#5B4A8B',
+]
 
-  if (url) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element
-      <img src={url} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-    )
-  }
-  return (
-    <div style={{ width: size, height: size, borderRadius: '50%', flexShrink: 0, background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-      <span style={{ ...DM, fontSize: size <= 28 ? 9 : 13, fontWeight: 700, color: 'white' }}>{initials}</span>
-    </div>
-  )
+function getUserColor(id: string): string {
+  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return USER_COLORS[hash % USER_COLORS.length]
+}
+
+// ─── Sport color mapping ────────────────────────────────────────────────────────
+
+const SPORT_COLORS: Record<string, string> = {
+  tennis:     '#E87722',
+  hardlopen:  '#E87722',
+  fietsen:    '#1D9E75',
+  wielrennen: '#1D9E75',
+  zwemmen:    '#3A7AC4',
+  gym:        '#7F77DD',
+  fitness:    '#7F77DD',
+  yoga:       '#1D9E75',
+  voetbal:    '#E87722',
+  padel:      '#5B4A8B',
+  golf:       '#D4A87A',
+  triathlon:  '#E87722',
+  basketbal:  '#E87722',
+  hockey:     '#1D9E75',
+  boksen:     '#D4538C',
+}
+
+function getSportColor(sport: string | null): string {
+  if (!sport) return INK
+  return SPORT_COLORS[sport.toLowerCase()] ?? INK
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-function displayUsername(post: FeedPostData): string {
-  if (post.userUsername) return `@${post.userUsername}`
-  return `@${post.userName.toLowerCase().replace(/\s+/g, '')}`
+function getInitials(name: string): string {
+  return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+}
+
+function getFirstName(fullName: string): string {
+  return fullName.trim().split(' ')[0]
+}
+
+function getMetric(post: FeedPostData): string | null {
+  if (post.distance_km) return `${post.distance_km} km`
+  if (post.duration_minutes) {
+    const h = Math.floor(post.duration_minutes / 60)
+    const m = post.duration_minutes % 60
+    return h > 0 ? `${h}u ${m}m` : `${m} min`
+  }
+  return null
+}
+
+function getEyebrowText(post: FeedPostData): string {
+  const sport    = (post.sport_tag ?? post.type ?? '').toUpperCase()
+  const location = post.location ? post.location.split(',')[0].trim().toUpperCase() : ''
+  const metric   = getMetric(post)
+  if (location) return sport ? `${sport} · ${location}` : location
+  if (metric)   return sport ? `${sport} · ${metric.toUpperCase()}` : metric.toUpperCase()
+  return sport || 'POST'
+}
+
+function getTimeOfDay(rawDate: string): string {
+  const hour = new Date(rawDate).getHours()
+  if (hour <  9) return 'Ochtend'
+  if (hour < 12) return 'Voormiddag'
+  if (hour < 18) return 'Middag'
+  if (hour < 22) return 'Avond'
+  return 'Late'
+}
+
+function generateTitle(post: FeedPostData): string {
+  const sport    = post.sport_tag ?? post.type ?? null
+  const metric   = getMetric(post)
+  const time     = getTimeOfDay(post.created_at_raw)
+  const location = post.location ? post.location.split(',')[0].trim() : null
+
+  if (post.activity_name) return post.activity_name
+  if (location && sport)  return `${sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase()} in ${location}`
+  if (metric && sport)    return `${metric} ${sport.toLowerCase()}`
+  if (sport)              return `${time} ${sport.toLowerCase()}`
+  if (post.content)       return post.content.slice(0, 50) + (post.content.length > 50 ? '…' : '')
+  return 'Post'
+}
+
+// ─── Like handler (shared) ─────────────────────────────────────────────────────
+
+async function toggleLike(
+  supabase: ReturnType<typeof createClient>,
+  post: FeedPostData,
+  onLikeToggle: (id: string, liked: boolean, count: number) => void,
+  setLiking: (v: boolean) => void,
+) {
+  setLiking(true)
+  const newLiked = !post.liked
+  onLikeToggle(post.id, newLiked, post.likes_count + (newLiked ? 1 : -1))
+  const uid = (await supabase.auth.getUser()).data.user?.id
+  if (!uid) { setLiking(false); return }
+  if (newLiked) {
+    await supabase.from('post_likes').upsert({ post_id: post.id, user_id: uid })
+  } else {
+    await supabase.from('post_likes').delete().eq('post_id', post.id).eq('user_id', uid)
+  }
+  setLiking(false)
 }
 
 // ─── Skeleton ──────────────────────────────────────────────────────────────────
 
 export function FeedCardSkeleton() {
   return (
-    <div style={{ position: 'relative' }}>
-      {/* Tab skeleton */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, zIndex: 2,
-        height: 42,
-        display: 'inline-flex', alignItems: 'center', gap: 8,
-        background: CREAM, borderRadius: '16px 16px 0 0', padding: '0 14px', minWidth: 140,
-      }}>
-        <div style={{ width: 24, height: 24, borderRadius: '50%', background: '#EDE7DD' }} />
-        <div style={{ width: 80, height: 10, borderRadius: 6, background: '#EDE7DD' }} />
-      </div>
-
-      {/* Card body skeleton */}
-      <div style={{ position: 'relative', zIndex: 1, background: '#FFFFFF', borderRadius: '0 20px 20px 20px', boxShadow: '0 4px 20px rgba(26,23,20,0.06)', padding: '42px 10px 14px' }}>
-        <div style={{ aspectRatio: '4/5', borderRadius: 14, overflow: 'hidden', background: 'linear-gradient(90deg, #EDE7DD 25%, #F5F0E8 50%, #EDE7DD 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
-        <div style={{ padding: '12px 6px 4px' }}>
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center', marginBottom: 10 }}>
-            <div style={{ width: 40, height: 40, borderRadius: '50%', background: '#EDE7DD', flexShrink: 0 }} />
-            <div>
-              <div style={{ width: 110, height: 12, borderRadius: 6, background: '#EDE7DD', marginBottom: 6 }} />
-              <div style={{ width: 75, height: 10, borderRadius: 6, background: '#EDE7DD' }} />
-            </div>
-          </div>
-          <div style={{ width: '80%', height: 11, borderRadius: 6, background: '#EDE7DD', marginBottom: 8 }} />
-          <div style={{ width: '55%', height: 11, borderRadius: 6, background: '#EDE7DD' }} />
-        </div>
+    <div style={{ background: 'white', borderRadius: 20, overflow: 'hidden' }}>
+      <div style={{ margin: '14px 14px 0', aspectRatio: '5/4', borderRadius: 14, background: 'linear-gradient(90deg, #EDE7DD 25%, #F5F0E8 50%, #EDE7DD 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+      <div style={{ padding: '16px 16px' }}>
+        <div style={{ width: 80, height: 9, borderRadius: 6, background: '#EDE7DD', marginBottom: 10 }} />
+        <div style={{ width: '75%', height: 18, borderRadius: 6, background: '#EDE7DD', marginBottom: 6 }} />
+        <div style={{ width: '50%', height: 18, borderRadius: 6, background: '#EDE7DD' }} />
       </div>
       <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
     </div>
   )
 }
 
-// ─── Main card ─────────────────────────────────────────────────────────────────
+// ─── EditorialCard (default) ───────────────────────────────────────────────────
 
-export function FeedCard({ post, onLikeToggle }: {
+function EditorialCard({ post, onLikeToggle }: {
   post: FeedPostData
-  onLikeToggle: (postId: string, newLiked: boolean, newCount: number) => void
+  onLikeToggle: (id: string, liked: boolean, count: number) => void
 }) {
-  const supabase       = createClient()
+  const supabase = createClient()
+  const router   = useRouter()
   const [liking,       setLiking]       = useState(false)
-  const [expanded,     setExpanded]     = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comments_count)
 
-  const hasMedia  = !!(post.media_url || post.thumbnail_url)
-  const isVideo   = post.media_type === 'video'
-  const sport     = post.sport_tag ?? post.type ?? null
-  const caption   = post.content ?? ''
-  const isLong    = caption.length > 120
-  const musicText = post.music_title
-    ? `${post.music_artist ?? ''} — ${post.music_title}`.trim()
-    : (post.music ?? null)
+  const sport      = post.sport_tag ?? post.type ?? null
+  const sportColor = getSportColor(sport)
+  const eyebrow    = getEyebrowText(post)
+  const title      = generateTitle(post)
+  const metric     = getMetric(post)
+  const hasMedia   = !!(post.media_url || post.thumbnail_url)
+  const isVideo    = post.media_type === 'video'
+  const firstName  = getFirstName(post.userName)
+  const initials   = getInitials(post.userName)
+  const userColor  = getUserColor(post.userId)
+  const description = post.content
 
-  async function handleLike() {
-    if (liking) return
-    setLiking(true)
-    const newLiked = !post.liked
-    onLikeToggle(post.id, newLiked, post.likes_count + (newLiked ? 1 : -1))
-    const uid = (await supabase.auth.getUser()).data.user?.id
-    if (!uid) { setLiking(false); return }
-    if (newLiked) {
-      await supabase.from('post_likes').upsert({ post_id: post.id, user_id: uid })
-    } else {
-      await supabase.from('post_likes').delete().eq('post_id', post.id).eq('user_id', uid)
-    }
-    setLiking(false)
+  function UserPill({ absolute }: { absolute?: boolean }) {
+    const style: React.CSSProperties = absolute
+      ? { position: 'absolute', top: 10, left: 10 }
+      : {}
+    return (
+      <button
+        onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
+        style={{
+          ...style,
+          display: 'inline-flex', alignItems: 'center', gap: 6,
+          background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
+          borderRadius: 999, padding: '4px 10px 4px 4px',
+          border: 'none', cursor: 'pointer',
+        }}
+      >
+        {post.userAvatarUrl ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src={post.userAvatarUrl} alt={firstName} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }} />
+        ) : (
+          <div style={{ width: 22, height: 22, borderRadius: '50%', background: userColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <span style={{ ...SYNE, fontSize: 7, fontWeight: 800, color: 'white' }}>{initials}</span>
+          </div>
+        )}
+        <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: INK }}>{firstName}</span>
+      </button>
+    )
   }
 
   return (
-    <div style={{ position: 'relative' }}>
+    <article style={{ background: 'white', borderRadius: 20, overflow: 'hidden' }}>
 
-      {/* ── TAB ──────────────────────────────────────────────────────────── */}
-      <div style={{
-        position: 'absolute', top: 0, left: 0, zIndex: 2,
-        height: 42, pointerEvents: 'auto',
-        display: 'inline-flex', alignItems: 'center', gap: 8,
-        background: CREAM,
-        borderRadius: '16px 16px 0 0',
-        padding: '0 14px',
-        minWidth: 110, maxWidth: 200,
-      }}>
-        <PostAvatar url={post.userAvatarUrl} name={post.userName} size={24} />
-        <span style={{
-          ...DM, fontSize: 12, fontWeight: 600, color: '#1A1714',
-          whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 130,
-        }}>
-          {displayUsername(post)}
-        </span>
-      </div>
-
-      {/* ── CARD BODY ─────────────────────────────────────────────────────── */}
-      {/* Starts at y=0 with paddingTop:42 so white bg shows behind inverted corner */}
-      <div style={{
-        position: 'relative', zIndex: 1,
-        background: '#FFFFFF',
-        borderRadius: '0 20px 20px 20px',
-        boxShadow: '0 4px 20px rgba(26,23,20,0.08)',
-        paddingTop: 42,
-        padding: '42px 10px 14px',
-      }}>
-
-        {/* ── MEDIA ───────────────────────────────────────────────────── */}
-        {hasMedia && (
-          <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '4/5' }}>
-
-            {isVideo ? (
-              <>
-                {post.thumbnail_url && (
-                  // eslint-disable-next-line @next/next/no-img-element
-                  <img src={post.thumbnail_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-                )}
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(26,23,20,0.25)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)', border: '1.5px solid rgba(255,255,255,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Play style={{ width: 20, height: 20, color: 'white', marginLeft: 2 }} />
-                  </div>
-                </div>
-              </>
-            ) : (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={post.media_url!} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
-            )}
-
-            {/* Pills onderaan foto: locatie + sport */}
-            {(post.userRegion || sport) && (
-              <div style={{ position: 'absolute', bottom: 10, left: 10, right: 10, display: 'flex', flexWrap: 'wrap', gap: 6, zIndex: 1 }}>
-                {post.userRegion && (
-                  <div style={{ ...DM, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '5px 10px', fontSize: 11, fontWeight: 500, color: '#1A1714' }}>
-                    <MapPin style={{ width: 10, height: 10, flexShrink: 0 }} />
-                    {post.userRegion}
-                  </div>
-                )}
-                {sport && (
-                  <div style={{ ...DM, display: 'inline-flex', alignItems: 'center', gap: 5, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '5px 10px', fontSize: 11, fontWeight: 500, color: '#1A1714' }}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid #1A1714', display: 'inline-block', flexShrink: 0 }} />
-                    {sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase()}
-                  </div>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Text post zonder media */}
-        {!hasMedia && (
-          <div style={{ position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '4/5', background: 'linear-gradient(135deg, #FAF6EE 0%, #E8E1D3 100%)' }}>
-            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: 28 }}>
-              <p style={{ ...SYNE, fontWeight: 800, fontSize: 26, lineHeight: 1.05, letterSpacing: '-0.02em', color: '#1A1714', opacity: 0.85 }}>
-                &ldquo;{caption.slice(0, 80)}{caption.length > 80 ? '…' : ''}&rdquo;
-              </p>
-            </div>
-          </div>
-        )}
-
-        {/* ── META SECTIE ─────────────────────────────────────────────── */}
-        <div style={{ padding: '12px 6px 4px' }}>
-
-          {/* Auteur rij */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 8 }}>
-            <PostAvatar url={post.userAvatarUrl} name={post.userName} size={40} />
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#1A1714', lineHeight: 1.2 }}>{post.userName}</p>
-              <p style={{ ...DM, fontSize: 12, color: 'rgba(26,23,20,0.50)', lineHeight: 1.2, marginTop: 2 }}>{displayUsername(post)}</p>
-            </div>
-            <span style={{ ...DM, fontSize: 11, color: 'rgba(26,23,20,0.40)', flexShrink: 0 }}>{post.created_at}</span>
-          </div>
-
-          {/* Caption */}
-          {caption && (
-            <div style={{ marginBottom: 10 }}>
-              <p style={{
-                ...DM, fontSize: 14, color: '#1A1714', lineHeight: 1.55,
-                display: expanded ? 'block' : '-webkit-box',
-                WebkitLineClamp: expanded ? undefined : 3,
-                WebkitBoxOrient: 'vertical',
-                overflow: expanded ? 'visible' : 'hidden',
-              }}>
-                {caption}
-              </p>
-              {isLong && !expanded && (
-                <button onClick={() => setExpanded(true)} style={{ ...DM, fontSize: 12, fontWeight: 600, color: 'rgba(26,23,20,0.45)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginTop: 2 }}>
-                  meer lezen
-                </button>
+      {/* Media */}
+      {hasMedia ? (
+        <div style={{ margin: '14px 14px 0', position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '5/4' }}>
+          {isVideo ? (
+            <>
+              {post.thumbnail_url && (
+                // eslint-disable-next-line @next/next/no-img-element
+                <img src={post.thumbnail_url} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
               )}
-            </div>
+              <button
+                onClick={() => router.push(`/dashboard/posts/${post.id}`)}
+                style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.20)', border: 'none', cursor: 'pointer' }}
+              >
+                <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Play style={{ width: 20, height: 20, color: 'white', marginLeft: 2 }} />
+                </div>
+              </button>
+            </>
+          ) : (
+            <button onClick={() => router.push(`/dashboard/posts/${post.id}`)} style={{ display: 'block', position: 'absolute', inset: 0, border: 'none', padding: 0, cursor: 'pointer', width: '100%', height: '100%' }}>
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={post.media_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            </button>
           )}
-
-          {/* Actie-rij */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: musicText ? 10 : 0 }}>
-            <button onClick={handleLike} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-              <Heart style={{ width: 18, height: 18, color: post.liked ? '#E87722' : '#1A1714', fill: post.liked ? '#E87722' : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
-              <span style={{ ...DM, fontSize: 12, fontWeight: 500, color: 'rgba(26,23,20,0.55)' }}>{post.likes_count}</span>
-            </button>
-            <button onClick={() => setShowComments(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-              <MessageCircle style={{ width: 18, height: 18, color: '#1A1714' }} />
-              <span style={{ ...DM, fontSize: 12, fontWeight: 500, color: 'rgba(26,23,20,0.55)' }}>{commentCount}</span>
-            </button>
-            <button style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer', marginLeft: 'auto' }}>
-              <Share2 style={{ width: 18, height: 18, color: '#1A1714' }} />
-            </button>
-          </div>
-
-          {/* Muziek pill */}
-          {musicText && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: '#E8E1D3', borderRadius: 999, padding: '6px 12px', maxWidth: 220, overflow: 'hidden' }}>
-              <Music style={{ width: 12, height: 12, flexShrink: 0, color: '#1A1714' }} />
-              <p style={{ ...DM, fontSize: 12, color: '#1A1714', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{musicText}</p>
+          <UserPill absolute />
+          {metric && (
+            <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '4px 10px' }}>
+              <span style={{ ...DM, fontSize: 10, fontWeight: 500, color: 'white' }}>{metric}</span>
             </div>
           )}
         </div>
-      </div>
+      ) : (
+        <div style={{ margin: '14px 14px 0', position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '5/4', background: `linear-gradient(135deg, ${userColor}22 0%, ${userColor}55 100%)` }}>
+          <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: 24 }}>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, lineHeight: 1.1, color: INK, opacity: 0.85 }}>
+              &ldquo;{(description ?? '').slice(0, 80)}{(description ?? '').length > 80 ? '…' : ''}&rdquo;
+            </p>
+          </div>
+          <UserPill absolute />
+        </div>
+      )}
 
-      <style>{`@keyframes marquee{0%{transform:translateX(0)}100%{transform:translateX(-50%)}}`}</style>
+      {/* Content below media */}
+      <div style={{ padding: '14px 16px 16px' }}>
+        <p style={{ ...DM, fontSize: 10, fontWeight: 600, color: ORANGE, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+          {eyebrow}
+        </p>
+        <h2
+          onClick={() => router.push(`/dashboard/posts/${post.id}`)}
+          style={{ ...SYNE, fontWeight: 800, fontSize: 20, lineHeight: 1.15, color: INK, marginBottom: 6, cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+        >
+          {title}
+        </h2>
+        {description && (
+          <p style={{ ...DM, fontSize: 11, color: 'rgba(17,17,17,0.60)', lineHeight: 1.5, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {description}
+          </p>
+        )}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+          {sport && (
+            <div style={{ display: 'inline-flex', alignItems: 'center', background: `${sportColor}18`, borderRadius: 999, padding: '3px 8px' }}>
+              <span style={{ ...DM, fontSize: 9, fontWeight: 700, letterSpacing: '0.10em', color: sportColor }}>
+                {sport.toUpperCase()}
+              </span>
+            </div>
+          )}
+          <span style={{ ...DM, fontSize: 10, color: 'rgba(17,17,17,0.40)' }}>{post.created_at}</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <button onClick={() => toggleLike(supabase, post, onLikeToggle, setLiking)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <Heart style={{ width: 18, height: 18, color: post.liked ? ORANGE : INK, fill: post.liked ? ORANGE : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
+            <span style={{ ...DM, fontSize: 12, fontWeight: 600, color: INK }}>{post.likes_count}</span>
+          </button>
+          <button onClick={() => setShowComments(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <MessageCircle style={{ width: 18, height: 18, color: INK }} />
+            <span style={{ ...DM, fontSize: 12, fontWeight: 600, color: INK }}>{commentCount}</span>
+          </button>
+          <button style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <Send style={{ width: 17, height: 17, color: INK }} />
+          </button>
+        </div>
+      </div>
 
       {showComments && (
         <CommentsSheet
@@ -291,6 +313,170 @@ export function FeedCard({ post, onLikeToggle }: {
           onCountChange={delta => setCommentCount(p => Math.max(0, p + delta))}
         />
       )}
-    </div>
+    </article>
   )
+}
+
+// ─── HeroCard (every 4th post) ─────────────────────────────────────────────────
+
+function HeroCard({ post, onLikeToggle }: {
+  post: FeedPostData
+  onLikeToggle: (id: string, liked: boolean, count: number) => void
+}) {
+  const supabase = createClient()
+  const router   = useRouter()
+  const [liking,       setLiking]       = useState(false)
+  const [showComments, setShowComments] = useState(false)
+  const [commentCount, setCommentCount] = useState(post.comments_count)
+
+  const userColor  = getUserColor(post.userId)
+  const initials   = getInitials(post.userName)
+  const firstName  = getFirstName(post.userName)
+  const eyebrow    = getEyebrowText(post)
+  const title      = generateTitle(post)
+  const metric     = getMetric(post)
+  const hasMedia   = !!(post.media_url || post.thumbnail_url)
+  const isVideo    = post.media_type === 'video'
+  const description = post.content
+  const sport      = post.sport_tag ?? post.type ?? null
+
+  return (
+    <article style={{ borderRadius: 20, overflow: 'hidden', position: 'relative', background: userColor }}>
+
+      {/* Giant initials ornament */}
+      <div style={{ position: 'absolute', right: -10, bottom: -20, pointerEvents: 'none', userSelect: 'none', overflow: 'hidden' }}>
+        <span style={{ ...SYNE, fontWeight: 800, fontSize: 280, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
+          {initials}
+        </span>
+      </div>
+
+      <div style={{ position: 'relative', padding: 16 }}>
+
+        {/* User pill */}
+        <div style={{ marginBottom: 14 }}>
+          <button
+            onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '4px 12px 4px 4px', border: 'none', cursor: 'pointer' }}
+          >
+            {post.userAvatarUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.userAvatarUrl} alt={firstName} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid white' }} />
+            ) : (
+              <div style={{ width: 28, height: 28, borderRadius: '50%', background: userColor, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.4)' }}>
+                <span style={{ ...SYNE, fontSize: 9, fontWeight: 800, color: 'white' }}>{initials}</span>
+              </div>
+            )}
+            <span style={{ ...DM, fontSize: 11, fontWeight: 700, color: INK }}>{firstName}</span>
+          </button>
+        </div>
+
+        {/* Media */}
+        {hasMedia && (
+          <button
+            onClick={() => router.push(`/dashboard/posts/${post.id}`)}
+            style={{ display: 'block', width: '100%', position: 'relative', aspectRatio: '5/3', borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', marginBottom: 16 }}
+          >
+            {isVideo ? (
+              <>
+                {post.thumbnail_url && (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={post.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                )}
+                <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Play style={{ width: 18, height: 18, color: 'white', marginLeft: 2 }} />
+                  </div>
+                </div>
+              </>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={post.media_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+            )}
+            <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
+              {sport && (
+                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '3px 8px' }}>
+                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'white' }} />
+                  <span style={{ ...DM, fontSize: 9, fontWeight: 600, color: 'white' }}>
+                    {sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase()}
+                  </span>
+                </div>
+              )}
+              {metric && (
+                <div style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '3px 8px' }}>
+                  <span style={{ ...DM, fontSize: 9, fontWeight: 500, color: 'white' }}>{metric}</span>
+                </div>
+              )}
+            </div>
+          </button>
+        )}
+
+        {/* Eyebrow + title + description */}
+        <p style={{ ...DM, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+          {eyebrow}
+        </p>
+        <h2
+          onClick={() => router.push(`/dashboard/posts/${post.id}`)}
+          style={{ ...SYNE, fontWeight: 800, fontSize: 22, lineHeight: 1.15, color: 'white', marginBottom: 6, cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+        >
+          {title}
+        </h2>
+        {description && (
+          <p style={{ ...DM, fontSize: 11, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5, marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+            {description}
+          </p>
+        )}
+
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+          <button onClick={() => toggleLike(supabase, post, onLikeToggle, setLiking)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <Heart style={{ width: 18, height: 18, color: 'white', fill: post.liked ? 'white' : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
+            <span style={{ ...SYNE, fontSize: 13, fontWeight: 700, color: 'white' }}>{post.likes_count}</span>
+          </button>
+          <button onClick={() => setShowComments(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <MessageCircle style={{ width: 18, height: 18, color: 'white' }} />
+            <span style={{ ...SYNE, fontSize: 13, fontWeight: 700, color: 'white' }}>{commentCount}</span>
+          </button>
+          <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            <Send style={{ width: 17, height: 17, color: 'white' }} />
+          </button>
+        </div>
+      </div>
+
+      {showComments && (
+        <CommentsSheet
+          postId={post.id}
+          onClose={() => setShowComments(false)}
+          onCountChange={delta => setCommentCount(p => Math.max(0, p + delta))}
+        />
+      )}
+    </article>
+  )
+}
+
+// ─── FeedList ──────────────────────────────────────────────────────────────────
+
+export function FeedList({ posts, onLikeToggle }: {
+  posts: FeedPostData[]
+  onLikeToggle: (id: string, liked: boolean, count: number) => void
+}) {
+  return (
+    <>
+      {posts.map((post, index) =>
+        index % 4 === 0 ? (
+          <HeroCard key={post.id} post={post} onLikeToggle={onLikeToggle} />
+        ) : (
+          <EditorialCard key={post.id} post={post} onLikeToggle={onLikeToggle} />
+        )
+      )}
+    </>
+  )
+}
+
+// ─── Legacy export (backward compat) ──────────────────────────────────────────
+
+export function FeedCard({ post, onLikeToggle }: {
+  post: FeedPostData
+  onLikeToggle: (postId: string, newLiked: boolean, newCount: number) => void
+}) {
+  return <EditorialCard post={post} onLikeToggle={onLikeToggle} />
 }
