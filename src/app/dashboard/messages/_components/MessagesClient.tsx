@@ -4,7 +4,7 @@ import { useState, useTransition, useEffect, useRef, useCallback } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import {
-  Search, Check, X, MessageCircle, Clock, Send,
+  Check, X, MessageCircle, Clock, Send, Plus,
   MoreVertical, MoreHorizontal, EyeOff, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
 } from 'lucide-react'
 import { Avatar } from '@/components/Avatar'
@@ -52,6 +52,31 @@ type ChatMessage = {
 
 const PHONE_REGEX = /(\+316\d{8}|0031\s*6\s*\d{8}|06[-\s]?\d{8})/
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
+const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
+
+// ── Sport kleuren ─────────────────────────────────────────────────────────────
+const SPORT_COLORS: Record<string, string> = {
+  Tennis: '#E87722', Hardlopen: '#E87722', Voetbal: '#E87722', Triathlon: '#E87722',
+  Fietsen: '#1D9E75', Yoga: '#1D9E75',
+  Zwemmen: '#3A7AC4',
+  Gym: '#7F77DD',
+  Padel: '#5B4A8B',
+  Golf: '#D4A87A',
+}
+function getSportColor(sport: string | null): string {
+  return sport ? (SPORT_COLORS[sport] ?? '#E87722') : '#E87722'
+}
+
+// ── Gebruiker kleur (consistent per userId) ───────────────────────────────────
+const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#E87722','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
+function getUserColor(userId: string): string {
+  const hash = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  return USER_COLORS[hash % USER_COLORS.length]
+}
+
+function getInitials(name: string): string {
+  return name.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
+}
 
 function formatTime(dateStr: string): string {
   return new Date(dateStr).toLocaleTimeString('nl-NL', { hour: '2-digit', minute: '2-digit' })
@@ -62,10 +87,12 @@ function timeAgo(dateStr: string): string {
   const mins  = Math.floor(diff / 60000)
   const hours = Math.floor(diff / 3600000)
   const days  = Math.floor(diff / 86400000)
-  if (mins < 1)  return 'Zojuist'
-  if (mins < 60) return `${mins} min`
-  if (hours < 24) return `${hours} uur`
-  return `${days} dag${days > 1 ? 'en' : ''}`
+  if (mins < 1)  return 'nu'
+  if (mins < 60) return `${mins}m`
+  if (hours < 24) return `${hours}u`
+  if (days === 1) return 'gisteren'
+  if (days < 7)  return `${days}d`
+  return `${Math.floor(days / 7)}w`
 }
 
 function lastSeenLabel(lastSeen: string | null | undefined, isOnline: boolean): string {
@@ -132,7 +159,24 @@ function Toast({ message, onDone }: { message: string; onDone: () => void }) {
   )
 }
 
-// ── Hoofdcomponent ────────────────────────────────────────────────────────────
+// ── Pill tab ──────────────────────────────────────────────────────────────────
+function TabPill({ label, count, active, onClick }: { label: string; count: number; active: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      style={active ? { background: '#111111' } : { background: 'rgba(255,255,255,0.70)', border: '1px solid rgba(17,17,17,0.10)' }}
+      className="flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 active:scale-95 transition-all"
+    >
+      <span style={{ ...DM, fontSize: 13, fontWeight: 600, color: active ? 'white' : 'rgba(17,17,17,0.70)' }}>{label}</span>
+      {count > 0 && (
+        <span style={{ background: '#E87722', minWidth: 20, height: 20, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px' }}>
+          <span style={{ ...DM, fontSize: 11, fontWeight: 700, color: 'white' }}>{count}</span>
+        </span>
+      )}
+    </button>
+  )
+}
+
 // ── Meetup chat data type ─────────────────────────────────────────────────────
 type MeetupChatData = {
   id: string
@@ -147,6 +191,7 @@ type MeetupChatData = {
   participants: { userId: string; name: string; avatarUrl: string | null; isHost: boolean }[]
 }
 
+// ── Hoofdcomponent ────────────────────────────────────────────────────────────
 export default function MessagesClient({
   initialConversations,
   currentUserId,
@@ -172,7 +217,6 @@ export default function MessagesClient({
   ])
   const acceptedIdsRef = useRef<string[]>(initialConversations.filter(c => c.accepted).map(c => c.requestId))
   const [activeTab, setActiveTab] = useState<'inbox' | 'requests' | 'meetups'>('inbox')
-  const [search, setSearch] = useState('')
   const [selected, setSelected] = useState<ConversationItem | null>(null)
   const [newMessage, setNewMessage] = useState('')
   const [messages, setMessages] = useState<ChatMessage[]>([])
@@ -192,10 +236,10 @@ export default function MessagesClient({
   const hasPhoneNumber = PHONE_REGEX.test(newMessage)
   const showPhoneWarning = hasPhoneNumber && !phoneWarningDismissed
 
-  // Feature 2: Afspraken
+  // Afspraken
   const [appointments, setAppointments] = useState<Record<string, AppointmentData>>({})
 
-  // Feature 3: Reacties
+  // Reacties
   const [reactions, setReactions] = useState<Record<string, Reaction[]>>({})
 
   // Berichtverwijdering
@@ -219,7 +263,7 @@ export default function MessagesClient({
     if (longPressTimer.current) { clearTimeout(longPressTimer.current); longPressTimer.current = null }
   }
 
-  // Feature 4: Afbeeldingen
+  // Afbeeldingen
   const [pendingImage, setPendingImage] = useState<File | null>(null)
   const [pendingImagePreview, setPendingImagePreview] = useState<string | null>(null)
   const [uploadingImage, setUploadingImage] = useState(false)
@@ -278,7 +322,6 @@ export default function MessagesClient({
     setLoadingMeetupChat(false)
   }
 
-  // Verwerk ?meetup= URL param bij mount
   useEffect(() => {
     const meetupParam = searchParams.get('meetup')
     if (meetupParam) openMeetupChat(meetupParam)
@@ -293,14 +336,12 @@ export default function MessagesClient({
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
-  // Feature 5: Update last_seen_at bij mount + elke 60s
   useEffect(() => {
     updateLastSeen()
     const interval = setInterval(updateLastSeen, 60000)
     return () => clearInterval(interval)
   }, [])
 
-  // Haal weergavenaam op voor typing indicator
   useEffect(() => {
     supabase.auth.getUser().then(({ data: { user } }) => {
       if (!user) return
@@ -309,7 +350,6 @@ export default function MessagesClient({
     })
   }, [])
 
-  // Online presence via Supabase Realtime
   useEffect(() => {
     const channel = supabase.channel('online-users', {
       config: { presence: { key: currentUserId } },
@@ -322,12 +362,10 @@ export default function MessagesClient({
     return () => { supabase.removeChannel(channel) }
   }, [currentUserId])
 
-  // Houd acceptedIdsRef up-to-date als conversations verandert (bijv. na accepteren verzoek)
   useEffect(() => {
     acceptedIdsRef.current = conversations.filter(c => c.accepted).map(c => c.requestId)
   }, [conversations])
 
-  // Live inbox: luister naar alle nieuwe berichten in geaccepteerde chats
   useEffect(() => {
     const channel = supabase.channel('inbox-live')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages' },
@@ -336,14 +374,12 @@ export default function MessagesClient({
             conversation_id: string; content: string; created_at: string; message_type: string
           }
           if (!acceptedIdsRef.current.includes(msg.conversation_id)) return
-
           setConversations(prev => {
             const updated = prev.map(c =>
               c.requestId === msg.conversation_id
                 ? { ...c, lastMessage: msg.content, lastMessageType: msg.message_type, createdAt: msg.created_at }
                 : c
             )
-            // Meest recent actieve chat bovenaan in inbox
             return [
               ...updated.filter(c => !c.accepted),
               ...updated.filter(c => c.accepted).sort((a, b) =>
@@ -354,17 +390,14 @@ export default function MessagesClient({
         }
       )
       .subscribe()
-
     return () => { supabase.removeChannel(channel) }
-  }, []) // eenmalig mounten — gebruikt ref voor up-to-date IDs
+  }, [])
 
-  // Berichten + realtime per gesprek
   useEffect(() => {
     if (!selected?.accepted) { setMessages([]); setReactions({}); setAppointments({}); setDeletedForMeIds(new Set()); setTypingUsers({}); return }
     const convId = selected.requestId
     setLoadingMessages(true)
 
-    // Laad berichten + afspraken + reacties parallel
     Promise.all([
       supabase.from('chat_messages')
         .select('id, conversation_id, sender_id, content, created_at, message_type, image_url, read_at, deleted_for_all')
@@ -375,31 +408,21 @@ export default function MessagesClient({
         .eq('conversation_id', convId),
       supabase.from('message_reactions')
         .select('id, message_id, user_id, emoji')
-        .in('message_id',
-          // Placeholder — we'll refetch after messages load if needed
-          ['00000000-0000-0000-0000-000000000000']
-        ),
+        .in('message_id', ['00000000-0000-0000-0000-000000000000']),
     ]).then(([msgRes, apptRes]) => {
       const msgs = (msgRes.data ?? []) as ChatMessage[]
       setMessages(msgs)
       setLoadingMessages(false)
 
-      // Afspraken map
       const apptMap: Record<string, AppointmentData> = {}
       for (const a of apptRes.data ?? []) apptMap[a.id] = a as AppointmentData
       setAppointments(apptMap)
 
-      // Laad reacties + verwijderde berichten (voor mij) parallel
       const msgIds = msgs.map(m => m.id)
       if (msgIds.length > 0) {
         Promise.all([
-          supabase.from('message_reactions')
-            .select('id, message_id, user_id, emoji')
-            .in('message_id', msgIds),
-          supabase.from('deleted_messages')
-            .select('message_id')
-            .eq('user_id', currentUserId)
-            .in('message_id', msgIds),
+          supabase.from('message_reactions').select('id, message_id, user_id, emoji').in('message_id', msgIds),
+          supabase.from('deleted_messages').select('message_id').eq('user_id', currentUserId).in('message_id', msgIds),
         ]).then(([reactRes, deletedRes]) => {
           const rMap: Record<string, Reaction[]> = {}
           for (const r of reactRes.data ?? []) {
@@ -410,34 +433,23 @@ export default function MessagesClient({
           setDeletedForMeIds(new Set((deletedRes.data ?? []).map(r => r.message_id)))
         })
       }
-
-      // Feature 6: markeer berichten als gelezen
       markMessagesAsRead(convId)
     })
 
-    // Realtime: nieuwe berichten
     const chatChannel = supabase.channel(`chat:${convId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${convId}` },
         (payload) => {
           const newMsg = payload.new as ChatMessage
           setMessages(prev => prev.some(m => m.id === newMsg.id) ? prev : [...prev, newMsg])
-
-          // Als het een afspraakbericht is, laad de afspraak
           if (newMsg.message_type === 'appointment' && newMsg.content) {
             supabase.from('training_appointments')
               .select('id, proposed_by, proposed_to, sport, location, proposed_date, notes, status')
-              .eq('id', newMsg.content)
-              .single()
-              .then(({ data }) => {
-                if (data) setAppointments(prev => ({ ...prev, [data.id]: data as AppointmentData }))
-              })
+              .eq('id', newMsg.content).single()
+              .then(({ data }) => { if (data) setAppointments(prev => ({ ...prev, [data.id]: data as AppointmentData })) })
           }
-
-          // Markeer ook meteen als gelezen als het niet van ons is
           if (newMsg.sender_id !== currentUserId) markMessagesAsRead(convId)
         }
       )
-      // Feature 6: update read_at op bestaande berichten
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'chat_messages', filter: `conversation_id=eq.${convId}` },
         (payload) => {
           const updated = payload.new as ChatMessage
@@ -446,29 +458,21 @@ export default function MessagesClient({
       )
       .subscribe()
 
-    // Realtime: reacties
     const reactChannel = supabase.channel(`reactions:${convId}`)
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'message_reactions' },
         (payload) => {
           const r = payload.new as Reaction
-          setReactions(prev => ({
-            ...prev,
-            [r.message_id]: [...(prev[r.message_id] ?? []).filter(x => x.id !== r.id), r],
-          }))
+          setReactions(prev => ({ ...prev, [r.message_id]: [...(prev[r.message_id] ?? []).filter(x => x.id !== r.id), r] }))
         }
       )
       .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'message_reactions' },
         (payload) => {
           const r = payload.old as { id: string; message_id: string }
-          setReactions(prev => ({
-            ...prev,
-            [r.message_id]: (prev[r.message_id] ?? []).filter(x => x.id !== r.id),
-          }))
+          setReactions(prev => ({ ...prev, [r.message_id]: (prev[r.message_id] ?? []).filter(x => x.id !== r.id) }))
         }
       )
       .subscribe()
 
-    // Realtime: afspraak status updates
     const apptChannel = supabase.channel(`appointments:${convId}`)
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'training_appointments', filter: `conversation_id=eq.${convId}` },
         (payload) => {
@@ -478,7 +482,6 @@ export default function MessagesClient({
       )
       .subscribe()
 
-    // Typing indicator presence channel
     setTypingUsers({})
     const typingChannel = supabase.channel(`typing:${convId}`, {
       config: { presence: { key: currentUserId } },
@@ -539,9 +542,7 @@ export default function MessagesClient({
     if (!typingChannelRef.current) return
     typingChannelRef.current.track({ name: myDisplayNameRef.current })
     if (typingTimerRef.current) clearTimeout(typingTimerRef.current)
-    typingTimerRef.current = setTimeout(() => {
-      typingChannelRef.current?.untrack()
-    }, 2000)
+    typingTimerRef.current = setTimeout(() => { typingChannelRef.current?.untrack() }, 2000)
   }
 
   async function sendMessage() {
@@ -549,7 +550,6 @@ export default function MessagesClient({
     const content = newMessage.trim()
     setNewMessage('')
     setPhoneWarningDismissed(false)
-    // Stop typing indicator
     typingChannelRef.current?.untrack()
     if (typingTimerRef.current) { clearTimeout(typingTimerRef.current); typingTimerRef.current = null }
     const { error } = await supabase.from('chat_messages').insert({
@@ -561,13 +561,11 @@ export default function MessagesClient({
     if (error) setNewMessage(content)
   }
 
-  // Feature 4: Afbeelding verzenden
   async function handleImageSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
     setPendingImage(file)
-    const url = URL.createObjectURL(file)
-    setPendingImagePreview(url)
+    setPendingImagePreview(URL.createObjectURL(file))
   }
 
   async function sendImage() {
@@ -575,24 +573,14 @@ export default function MessagesClient({
     setUploadingImage(true)
     const ext  = pendingImage.name.split('.').pop() ?? 'jpg'
     const path = `${currentUserId}/${Date.now()}.${ext}`
-
     const { data: uploadData, error: uploadError } = await supabase.storage
-      .from('chat-images')
-      .upload(path, pendingImage, { contentType: pendingImage.type })
-
-    if (uploadError) {
-      setToast('Afbeelding uploaden mislukt')
-      setUploadingImage(false)
-      return
-    }
-
+      .from('chat-images').upload(path, pendingImage, { contentType: pendingImage.type })
+    if (uploadError) { setToast('Afbeelding uploaden mislukt'); setUploadingImage(false); return }
     const { data: urlData } = supabase.storage.from('chat-images').getPublicUrl(uploadData.path)
     const result = await sendImageMessage(selected.requestId, urlData.publicUrl)
-
     setUploadingImage(false)
-    if (result.error) {
-      setToast('Afbeelding verzenden mislukt')
-    } else {
+    if (result.error) { setToast('Afbeelding verzenden mislukt') }
+    else {
       setPendingImage(null)
       if (pendingImagePreview) { URL.revokeObjectURL(pendingImagePreview); setPendingImagePreview(null) }
     }
@@ -607,14 +595,9 @@ export default function MessagesClient({
 
   async function handleAfspraakSubmit({ location, proposedDate, notes }: { location: string; proposedDate: string; notes: string }) {
     if (!selected) return
-    const isoDate = new Date(proposedDate).toISOString()
     const result = await createAppointment(
-      selected.requestId,
-      selected.otherUserId,
-      selected.sport,
-      location,
-      isoDate,
-      notes,
+      selected.requestId, selected.otherUserId, selected.sport,
+      location, new Date(proposedDate).toISOString(), notes,
     )
     if (result.error) setToast('Afspraak kon niet worden verzonden')
   }
@@ -645,111 +628,308 @@ export default function MessagesClient({
     })
   }
 
-  const filtered = (activeTab === 'requests' ? conversations.filter(c => !c.accepted) : conversations.filter(c => c.accepted))
-    .filter(c => c.otherUserName.toLowerCase().includes(search.toLowerCase()))
-    .filter(() => activeTab !== 'meetups')
-  const requests = conversations.filter(c => !c.accepted)
-  const showStarters = messages.length === 0 && !loadingMessages && selected?.accepted === true
-
-  // Feature 6: check of mijn laatste bericht gelezen is
   function getReadStatus(msg: ChatMessage): 'read' | 'sent' | null {
     if (msg.sender_id !== currentUserId) return null
     if (msg.message_type === 'appointment') return null
     return msg.read_at ? 'read' : 'sent'
   }
 
+  // ── Conversation splits voor nieuw design ────────────────────────────────────
+  const requests     = conversations.filter(c => !c.accepted)
+  const acceptedSorted = conversations
+    .filter(c => c.accepted)
+    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+  const heroConv     = acceptedSorted[0] ?? null
+  const onlineConvs  = acceptedSorted.filter(c => onlineUsers.has(c.otherUserId) && c.requestId !== heroConv?.requestId)
+  const earlierConvs = acceptedSorted.filter(c => c.requestId !== heroConv?.requestId)
+
+  function getLastMsgPreview(conv: ConversationItem): string {
+    if (conv.lastMessageType === 'image') return '📷 Afbeelding'
+    if (conv.lastMessageType === 'appointment') return '📅 Afspraak voorstel'
+    return conv.lastMessage ?? conv.message ?? 'Wil jouw sportbuddy worden'
+  }
+
   return (
     <>
       <div
-        className="flex bg-white overflow-hidden md:rounded-2xl md:border md:border-gray-100 md:h-[calc(100dvh-4rem)]"
+        className="flex overflow-hidden md:rounded-2xl md:border md:border-gray-100 md:h-[calc(100dvh-4rem)]"
         style={{
           position: 'fixed', inset: 0,
           paddingTop: 'env(safe-area-inset-top)',
+          background: '#F5F0E8',
         }}
       >
 
-        {/* ── Linker kolom ── */}
-        <div className={`w-full md:w-80 lg:w-96 flex flex-col border-r border-gray-100 ${(selected || activeMeetupId) ? 'hidden md:flex' : 'flex'}`}>
-          <div className="p-5 border-b border-gray-100">
-            <h1 className="text-xl font-black text-black mb-4">Berichten</h1>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                value={search}
-                onChange={e => setSearch(e.target.value)}
-                placeholder="Zoek gesprekken..."
-                className="w-full bg-gray-50 rounded-xl pl-9 pr-4 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-black/20"
-              />
+        {/* ══ LINKER KOLOM — nieuw editorial design ══════════════════════════════ */}
+        <div
+          className={`w-full md:w-80 lg:w-96 flex flex-col ${(selected || activeMeetupId) ? 'hidden md:flex' : 'flex'}`}
+          style={{ background: '#F5F0E8' }}
+        >
+          {/* Editorial header */}
+          <div style={{ padding: '16px 20px 0' }}>
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
+              <div>
+                <p style={{ ...DM, fontSize: 11, fontWeight: 600, color: '#E87722', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2 }}>
+                  VANDAAG
+                </p>
+                <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, lineHeight: 1.1, color: '#111111' }}>
+                  Berichten
+                </h1>
+              </div>
+              <button
+                onClick={() => router.push('/dashboard/find')}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  background: '#111111', borderRadius: 999,
+                  padding: '8px 14px', border: 'none', cursor: 'pointer', marginTop: 4,
+                }}
+              >
+                <Plus size={14} color="white" strokeWidth={2.5} />
+                <span style={{ ...DM, fontSize: 12, fontWeight: 600, color: 'white' }}>Nieuw</span>
+              </button>
+            </div>
+
+            {/* Pill tabs */}
+            <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 14 }}
+              className="scrollbar-hide">
+              <TabPill label="Inbox"     count={0}              active={activeTab === 'inbox'}    onClick={() => setActiveTab('inbox')} />
+              <TabPill label="Verzoeken" count={requests.length} active={activeTab === 'requests'} onClick={() => setActiveTab('requests')} />
+              <TabPill label="Meetups"   count={0}              active={activeTab === 'meetups'}  onClick={() => setActiveTab('meetups')} />
             </div>
           </div>
 
-          <div className="flex border-b border-gray-100">
-            <button onClick={() => setActiveTab('inbox')} className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === 'inbox' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
-              Inbox
-            </button>
-            <button onClick={() => setActiveTab('requests')} className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === 'requests' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
-              Verzoeken
-              {requests.length > 0 && <span className="ml-1 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full">{requests.length}</span>}
-            </button>
-            <button onClick={() => setActiveTab('meetups')} className={`flex-1 py-3 text-xs font-bold transition-colors ${activeTab === 'meetups' ? 'text-black border-b-2 border-black' : 'text-gray-400 hover:text-gray-600'}`}>
-              Meetups
-            </button>
-          </div>
+          {/* ── Scrollable content ──────────────────────────────────────────── */}
+          <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom))' }}>
 
-          {activeTab === 'meetups' && (
-            <MeetupChatList currentUserId={currentUserId} onSelect={openMeetupChat} />
-          )}
-
-          {activeTab !== 'meetups' && <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(72px + env(safe-area-inset-bottom))' }}>
-            {filtered.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                <MessageCircle className="w-10 h-10 text-gray-200 mb-3" />
-                <p className="text-sm font-semibold text-gray-400">
-                  {activeTab === 'requests' ? 'Geen berichtverzoeken' : 'Nog geen gesprekken'}
-                </p>
-              </div>
-            ) : (
-              filtered.map(conv => {
-                const isOnline = onlineUsers.has(conv.otherUserId)
-                return (
-                  <button
-                    key={conv.requestId}
-                    onClick={() => { cancelLongPress(); setSelected(conv); setActiveMeetupId(null); setActiveMeetupData(null) }}
-                    onMouseDown={() => startLongPress(conv)}
-                    onMouseUp={cancelLongPress}
-                    onMouseLeave={cancelLongPress}
-                    onTouchStart={() => startLongPress(conv)}
-                    onTouchEnd={cancelLongPress}
-                    onTouchMove={cancelLongPress}
-                    className={`w-full flex items-start gap-3 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 text-left ${selected?.requestId === conv.requestId ? 'bg-gray-100' : ''}`}
-                  >
-                    <div className="relative shrink-0">
-                      <Avatar name={conv.otherUserName} size="md" />
-                      {isOnline && <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />}
-                      {!conv.accepted && !isOnline && <span className="absolute -top-0.5 -right-0.5 w-3.5 h-3.5 bg-[#E87722] rounded-full border-2 border-white" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between mb-0.5">
-                        <p className="font-bold text-sm text-black truncate">{conv.otherUserName}</p>
-                        <span className="text-xs text-gray-400 shrink-0 ml-2">{timeAgo(conv.createdAt)}</span>
-                      </div>
-                      {conv.sport && <p className="text-xs text-[#E87722] font-semibold mb-0.5">{conv.sport}</p>}
-                      <p className={`text-xs truncate ${!conv.accepted ? 'text-black font-semibold' : 'text-gray-400'}`}>
-                        {conv.accepted
-                          ? (conv.lastMessageType === 'image' ? '📷 Afbeelding' : conv.lastMessageType === 'appointment' ? '📅 Afspraak voorstel' : conv.lastMessage ?? conv.message ?? 'Wil jouw sportbuddy worden')
-                          : (conv.message ?? 'Wil jouw sportbuddy worden')
-                        }
-                      </p>
-                    </div>
-                  </button>
-                )
-              })
+            {/* MEETUPS TAB */}
+            {activeTab === 'meetups' && (
+              <MeetupChatList currentUserId={currentUserId} onSelect={openMeetupChat} />
             )}
-          </div>}
+
+            {/* VERZOEKEN TAB */}
+            {activeTab === 'requests' && (
+              <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {requests.length === 0 ? (
+                  <div style={{ textAlign: 'center', padding: '48px 24px' }}>
+                    <MessageCircle size={40} color="rgba(17,17,17,0.15)" style={{ margin: '0 auto 12px' }} />
+                    <p style={{ ...DM, fontSize: 13, color: 'rgba(17,17,17,0.45)', fontWeight: 500 }}>Geen berichtverzoeken</p>
+                  </div>
+                ) : requests.map(conv => {
+                  const color = getUserColor(conv.otherUserId)
+                  return (
+                    <button
+                      key={conv.requestId}
+                      onClick={() => { cancelLongPress(); setSelected(conv); setActiveMeetupId(null); setActiveMeetupData(null) }}
+                      onMouseDown={() => startLongPress(conv)}
+                      onMouseUp={cancelLongPress}
+                      onMouseLeave={cancelLongPress}
+                      onTouchStart={() => startLongPress(conv)}
+                      onTouchEnd={cancelLongPress}
+                      onTouchMove={cancelLongPress}
+                      style={{
+                        width: '100%', background: 'white', borderRadius: 18,
+                        padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                        border: 'none', cursor: 'pointer', textAlign: 'left',
+                      }}
+                    >
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
+                        </div>
+                        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 13, height: 13, borderRadius: '50%', background: '#E87722', border: '2px solid #F5F0E8' }} />
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{conv.otherUserName}</p>
+                        <p style={{ ...DM, fontSize: 12, color: 'rgba(17,17,17,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          {conv.message ?? 'Wil jouw sportbuddy worden'}
+                        </p>
+                      </div>
+                      <span style={{ ...DM, fontSize: 10, color: 'rgba(17,17,17,0.40)', flexShrink: 0 }}>{timeAgo(conv.createdAt)}</span>
+                    </button>
+                  )
+                })}
+              </div>
+            )}
+
+            {/* INBOX TAB */}
+            {activeTab === 'inbox' && (
+              <>
+                {/* Empty state */}
+                {acceptedSorted.length === 0 && (
+                  <div style={{ margin: '32px 16px', background: 'white', borderRadius: 24, padding: '32px 24px', textAlign: 'center' }}>
+                    <p style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#111111', marginBottom: 8 }}>Nog geen berichten</p>
+                    <p style={{ ...DM, fontSize: 13, color: 'rgba(17,17,17,0.55)', marginBottom: 20, lineHeight: 1.5 }}>
+                      Start een gesprek via de Zoek pagina
+                    </p>
+                    <button
+                      onClick={() => router.push('/dashboard/find')}
+                      style={{ background: '#111111', color: 'white', borderRadius: 999, padding: '10px 20px', border: 'none', cursor: 'pointer', ...DM, fontSize: 13, fontWeight: 600 }}
+                    >
+                      Vind een buddy
+                    </button>
+                  </div>
+                )}
+
+                {/* ── Hero card ──────────────────────────────────────────── */}
+                {heroConv && (() => {
+                  const heroColor = getUserColor(heroConv.otherUserId)
+                  const heroInitials = getInitials(heroConv.otherUserName)
+                  const isHeroOnline = onlineUsers.has(heroConv.otherUserId)
+                  return (
+                    <button
+                      onClick={() => { cancelLongPress(); setSelected(heroConv); setActiveMeetupId(null); setActiveMeetupData(null) }}
+                      onMouseDown={() => startLongPress(heroConv)}
+                      onMouseUp={cancelLongPress}
+                      onTouchStart={() => startLongPress(heroConv)}
+                      onTouchEnd={cancelLongPress}
+                      style={{
+                        display: 'block', margin: '0 12px', width: 'calc(100% - 24px)',
+                        borderRadius: 24, overflow: 'hidden', position: 'relative',
+                        background: heroColor, border: 'none', cursor: 'pointer', textAlign: 'left',
+                        marginTop: 4,
+                      }}
+                    >
+                      {/* Reuze initialen ornament */}
+                      <div style={{ position: 'absolute', right: -16, bottom: -24, pointerEvents: 'none', userSelect: 'none' }}>
+                        <span style={{ ...SYNE, fontWeight: 800, fontSize: 200, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
+                          {heroInitials}
+                        </span>
+                      </div>
+
+                      <div style={{ position: 'relative', padding: 20, minHeight: 190, display: 'flex', flexDirection: 'column' }}>
+                        {/* Top rij */}
+                        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 'auto' }}>
+                          {isHeroOnline ? (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '6px 10px' }}>
+                              <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1D9E75' }} />
+                              <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: '#111111' }}>Online nu</span>
+                            </div>
+                          ) : (
+                            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 999, padding: '6px 10px' }}>
+                              <span style={{ ...DM, fontSize: 11, fontWeight: 500, color: 'rgba(255,255,255,0.85)' }}>{timeAgo(heroConv.createdAt)}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Bottom content */}
+                        <div style={{ marginTop: 'auto' }}>
+                          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: 'white', lineHeight: 1.1, margin: 0 }}>
+                            {heroConv.otherUserName}
+                          </h2>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4, marginBottom: 10 }}>
+                            {heroConv.sport && (
+                              <span style={{ ...DM, fontSize: 11, color: 'rgba(255,255,255,0.80)' }}>{heroConv.sport}</span>
+                            )}
+                            {heroConv.sport && <span style={{ color: 'rgba(255,255,255,0.40)' }}>·</span>}
+                            <span style={{ ...DM, fontSize: 11, color: 'rgba(255,255,255,0.80)' }}>{timeAgo(heroConv.createdAt)}</span>
+                          </div>
+                          <p style={{ ...DM, fontSize: 13, color: 'rgba(255,255,255,0.90)', lineHeight: 1.4, margin: 0,
+                            overflow: 'hidden', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
+                            {getLastMsgPreview(heroConv)}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  )
+                })()}
+
+                {/* ── Ook online ─────────────────────────────────────────── */}
+                {onlineConvs.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <p style={{ ...DM, fontSize: 10, fontWeight: 600, color: 'rgba(17,17,17,0.50)', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0 20px', marginBottom: 10 }}>
+                      OOK ONLINE
+                    </p>
+                    <div style={{ padding: '0 16px', display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }} className="scrollbar-hide">
+                      {onlineConvs.slice(0, 8).map(conv => {
+                        const color = getUserColor(conv.otherUserId)
+                        return (
+                          <button
+                            key={conv.requestId}
+                            onClick={() => { setSelected(conv); setActiveMeetupId(null); setActiveMeetupData(null) }}
+                            style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, width: 56, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                          >
+                            <div style={{ position: 'relative' }}>
+                              <div style={{ width: 56, height: 56, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ ...SYNE, fontSize: 14, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
+                              </div>
+                              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 14, height: 14, borderRadius: '50%', background: '#1D9E75', border: '2px solid #F5F0E8' }} />
+                            </div>
+                            <span style={{ ...DM, fontSize: 10, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }}>
+                              {conv.otherUserName.split(' ')[0]}
+                            </span>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+
+                {/* ── Eerder ─────────────────────────────────────────────── */}
+                {earlierConvs.length > 0 && (
+                  <div style={{ marginTop: 24 }}>
+                    <p style={{ ...DM, fontSize: 10, fontWeight: 600, color: 'rgba(17,17,17,0.50)', letterSpacing: '0.12em', textTransform: 'uppercase', padding: '0 20px', marginBottom: 10 }}>
+                      EERDER
+                    </p>
+                    <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                      {earlierConvs.map(conv => {
+                        const color = getUserColor(conv.otherUserId)
+                        const isOnline = onlineUsers.has(conv.otherUserId)
+                        const sportColor = getSportColor(conv.sport)
+                        return (
+                          <button
+                            key={conv.requestId}
+                            onClick={() => { cancelLongPress(); setSelected(conv); setActiveMeetupId(null); setActiveMeetupData(null) }}
+                            onMouseDown={() => startLongPress(conv)}
+                            onMouseUp={cancelLongPress}
+                            onMouseLeave={cancelLongPress}
+                            onTouchStart={() => startLongPress(conv)}
+                            onTouchEnd={cancelLongPress}
+                            onTouchMove={cancelLongPress}
+                            style={{
+                              width: '100%', background: 'white', borderRadius: 18,
+                              padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+                              border: 'none', cursor: 'pointer', textAlign: 'left',
+                            }}
+                          >
+                            <div style={{ position: 'relative', flexShrink: 0 }}>
+                              <div style={{ width: 44, height: 44, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
+                              </div>
+                              {isOnline && (
+                                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 13, height: 13, borderRadius: '50%', background: '#1D9E75', border: '2px solid white' }} />
+                              )}
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
+                                <span style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {conv.otherUserName}
+                                </span>
+                                <span style={{ ...DM, fontSize: 10, color: 'rgba(17,17,17,0.40)', flexShrink: 0 }}>{timeAgo(conv.createdAt)}</span>
+                              </div>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 5 }}>
+                                {conv.sport && (
+                                  <>
+                                    <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: sportColor }}>{conv.sport}</span>
+                                    <span style={{ color: 'rgba(17,17,17,0.25)', fontSize: 10 }}>·</span>
+                                  </>
+                                )}
+                                <span style={{ ...DM, fontSize: 11, color: 'rgba(17,17,17,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                  {getLastMsgPreview(conv)}
+                                </span>
+                              </div>
+                            </div>
+                          </button>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
-        {/* ── Meetup chat ── */}
+        {/* ══ MEETUP CHAT ════════════════════════════════════════════════════════ */}
         {activeMeetupId && activeMeetupData && (
           <MeetupChatView
             meetupId={activeMeetupId}
@@ -773,9 +953,9 @@ export default function MessagesClient({
           </div>
         )}
 
-        {/* ── Chat ── */}
+        {/* ══ CHAT RECHTER KOLOM — ongewijzigd ═══════════════════════════════════ */}
         {!activeMeetupId && selected ? (
-          <div className="flex-1 flex flex-col min-w-0 relative">
+          <div className="flex-1 flex flex-col min-w-0 relative" style={{ background: 'white' }}>
             {/* Header */}
             <div className="flex items-center gap-3 p-4 border-b border-gray-100">
               <button onClick={() => setSelected(null)} className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 font-bold">←</button>
@@ -832,18 +1012,11 @@ export default function MessagesClient({
 
             {/* Berichten */}
             <div className="flex-1 overflow-y-auto p-4 space-y-1">
-              {/* Initieel bericht van het verzoek */}
               {selected.message && (
                 <div className="flex justify-start items-end gap-2 mb-2">
                   <Avatar name={selected.otherUserName} size="xs" />
-                  <div
-                    className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
-                    style={{
-                      background: '#FFFFFF', color: '#111111',
-                      borderRadius: '16px 16px 16px 4px',
-                      boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-                    }}
-                  >
+                  <div className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
+                    style={{ background: '#FFFFFF', color: '#111111', borderRadius: '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
                     <p className="text-xs font-semibold mb-0.5" style={{ color: '#3B82F6' }}>{selected.otherUserName}</p>
                     {selected.message}
                     <p className="text-[10px] mt-1 text-gray-400">{timeAgo(selected.createdAt)} geleden</p>
@@ -859,7 +1032,6 @@ export default function MessagesClient({
 
               {messages.map(msg => {
                 if (deletedForMeIds.has(msg.id)) return null
-
                 const fromMe = msg.sender_id === currentUserId
                 const msgReactions = reactions[msg.id] ?? []
                 const readStatus = getReadStatus(msg)
@@ -869,14 +1041,10 @@ export default function MessagesClient({
                 const appt = isAppointment ? appointments[msg.content] : null
 
                 return (
-                  <div
-                    key={msg.id}
-                    className={`group flex flex-col ${fromMe ? 'items-end' : 'items-start'} mb-1`}
-                  >
+                  <div key={msg.id} className={`group flex flex-col ${fromMe ? 'items-end' : 'items-start'} mb-1`}>
                     <div className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2 relative`}>
                       {!fromMe && <Avatar name={selected.otherUserName} size="xs" />}
 
-                      {/* Bericht inhoud */}
                       {isDeleted ? (
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${fromMe ? 'rounded-br-sm' : 'rounded-bl-sm'} bg-gray-50 border border-gray-100`}>
                           <span className="text-gray-400 italic">Dit bericht is verwijderd</span>
@@ -890,16 +1058,8 @@ export default function MessagesClient({
                           <p className={`text-[10px] px-3 py-1 ${fromMe ? 'bg-[#111] text-white/60 text-right' : 'bg-gray-100 text-gray-400'}`}>{formatTime(msg.created_at)}</p>
                         </button>
                       ) : (
-                        <div
-                          className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
-                          style={{
-                            background: fromMe ? '#FFF4ED' : '#FFFFFF',
-                            color: '#111111',
-                            borderRadius: fromMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
-                            boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
-                          }}
-                        >
-                          {/* Naam boven tekst */}
+                        <div className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
+                          style={{ background: fromMe ? '#FFF4ED' : '#FFFFFF', color: '#111111', borderRadius: fromMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
                           <p className="text-xs font-semibold mb-0.5" style={{ color: fromMe ? '#E87722' : '#3B82F6' }}>
                             {fromMe ? 'Jij' : selected.otherUserName}
                           </p>
@@ -915,22 +1075,16 @@ export default function MessagesClient({
                         </div>
                       )}
 
-                      {/* Verwijderknop — verschijnt bij hover, alleen eigen berichten */}
                       {fromMe && !isDeleted && (
                         <div className="opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity shrink-0 self-center relative">
-                          <button
-                            onClick={() => setMsgMenuFor(msgMenuFor === msg.id ? null : msg.id)}
-                            className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center"
-                          >
+                          <button onClick={() => setMsgMenuFor(msgMenuFor === msg.id ? null : msg.id)}
+                            className="w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 flex items-center justify-center">
                             <MoreHorizontal className="w-3 h-3 text-gray-500" />
                           </button>
                           {msgMenuFor === msg.id && (
                             <div className="absolute right-0 bottom-8 z-50 bg-white rounded-xl shadow-xl border border-black/8 overflow-hidden w-52">
-                              <button
-                                onClick={() => handleDeleteMsgForAll(msg.id)}
-                                disabled={!!msg.read_at}
-                                className="w-full flex items-start gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left disabled:opacity-40"
-                              >
+                              <button onClick={() => handleDeleteMsgForAll(msg.id)} disabled={!!msg.read_at}
+                                className="w-full flex items-start gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left disabled:opacity-40">
                                 <Trash2 className="w-4 h-4 text-red-400 shrink-0 mt-0.5" />
                                 <div>
                                   <p>Verwijderen voor iedereen</p>
@@ -938,10 +1092,8 @@ export default function MessagesClient({
                                 </div>
                               </button>
                               <div className="border-t border-black/5" />
-                              <button
-                                onClick={() => handleDeleteMsgForMe(msg.id)}
-                                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left"
-                              >
+                              <button onClick={() => handleDeleteMsgForMe(msg.id)}
+                                className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors text-left">
                                 <EyeOff className="w-4 h-4 text-gray-400" />
                                 Verwijder voor mij
                               </button>
@@ -951,7 +1103,6 @@ export default function MessagesClient({
                       )}
                     </div>
 
-                    {/* Reacties */}
                     {!isAppointment && !isDeleted && (
                       <div className={`${fromMe ? 'mr-8' : 'ml-8'}`}>
                         <MessageReactions
@@ -966,16 +1117,12 @@ export default function MessagesClient({
                   </div>
                 )
               })}
-              {/* Typing indicator */}
+
               {Object.keys(typingUsers).length > 0 && (
                 <div className="flex items-center gap-2 px-2 py-1 ml-1">
                   <div className="flex gap-[3px] items-end">
                     {[0, 1, 2].map(i => (
-                      <span
-                        key={i}
-                        className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce"
-                        style={{ animationDelay: `${i * 150}ms` }}
-                      />
+                      <span key={i} className="w-1.5 h-1.5 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
                     ))}
                   </div>
                   <span style={{ fontStyle: 'italic', color: '#6B7280', fontSize: 13 }}>
@@ -990,12 +1137,9 @@ export default function MessagesClient({
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Feature 1: Gespreksopeners (alleen als nog geen berichten) */}
-            {showStarters && (
-              <ConversationStarters
-                sport={selected.sport}
-                onSelect={text => setNewMessage(text)}
-              />
+            {/* Gespreksopeners */}
+            {messages.length === 0 && !loadingMessages && selected?.accepted === true && (
+              <ConversationStarters sport={selected.sport} onSelect={text => setNewMessage(text)} />
             )}
 
             {/* Telefoonwaarschuwing */}
@@ -1016,7 +1160,7 @@ export default function MessagesClient({
               </div>
             )}
 
-            {/* Feature 4: Afbeelding preview */}
+            {/* Afbeelding preview */}
             {pendingImagePreview && (
               <div className="mx-4 mb-2 bg-white border border-black/8 rounded-2xl p-3 flex items-center gap-3">
                 <img src={pendingImagePreview} alt="Preview" className="w-14 h-14 rounded-xl object-cover" />
@@ -1026,11 +1170,8 @@ export default function MessagesClient({
                 </div>
                 <div className="flex gap-2 shrink-0">
                   <button onClick={cancelImage} className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">Annuleer</button>
-                  <button
-                    onClick={sendImage}
-                    disabled={uploadingImage}
-                    className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50"
-                  >
+                  <button onClick={sendImage} disabled={uploadingImage}
+                    className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
                     {uploadingImage ? 'Sturen...' : 'Verzenden'}
                   </button>
                 </div>
@@ -1041,30 +1182,15 @@ export default function MessagesClient({
             {selected.accepted ? (
               <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-2">
-                  {/* Feature 4: Afbeelding upload */}
-                  <button
-                    onClick={() => fileInputRef.current?.click()}
-                    disabled={!!pendingImage}
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all disabled:opacity-30 shrink-0"
-                  >
+                  <button onClick={() => fileInputRef.current?.click()} disabled={!!pendingImage}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all disabled:opacity-30 shrink-0">
                     <ImageIcon className="w-4 h-4" />
                   </button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/jpeg,image/png,image/webp,image/gif"
-                    className="hidden"
-                    onChange={handleImageSelect}
-                  />
-
-                  {/* Feature 2: Afspraak button */}
-                  <button
-                    onClick={() => setShowAfspraakModal(true)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all shrink-0"
-                  >
+                  <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleImageSelect} />
+                  <button onClick={() => setShowAfspraakModal(true)}
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all shrink-0">
                     <CalendarDays className="w-4 h-4" />
                   </button>
-
                   <input
                     type="text"
                     value={newMessage}
@@ -1073,11 +1199,8 @@ export default function MessagesClient({
                     placeholder="Schrijf een bericht..."
                     className="flex-1 bg-transparent text-sm text-black focus:outline-none"
                   />
-                  <button
-                    onClick={sendMessage}
-                    disabled={!newMessage.trim() || showPhoneWarning}
-                    className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0"
-                  >
+                  <button onClick={sendMessage} disabled={!newMessage.trim() || showPhoneWarning}
+                    className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0">
                     <Send className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
@@ -1089,7 +1212,7 @@ export default function MessagesClient({
             )}
           </div>
         ) : !activeMeetupId ? (
-          <div className="hidden md:flex flex-1 items-center justify-center">
+          <div className="hidden md:flex flex-1 items-center justify-center" style={{ background: 'white' }}>
             <div className="text-center">
               <MessageCircle className="w-12 h-12 text-gray-200 mx-auto mb-3" />
               <p className="font-black text-gray-300 text-lg">Selecteer een gesprek</p>
@@ -1129,38 +1252,23 @@ export default function MessagesClient({
 
       {/* Lange-druk preview sheet */}
       {previewConv && (
-        <div
-          className="fixed inset-0 z-[80] flex items-end justify-center"
+        <div className="fixed inset-0 z-[80] flex items-end justify-center"
           style={{ backgroundColor: 'rgba(17,17,17,0.4)' }}
-          onClick={() => setPreviewConv(null)}
-        >
-          <div
-            className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl overflow-hidden"
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Handle */}
+          onClick={() => setPreviewConv(null)}>
+          <div className="bg-white w-full max-w-lg rounded-t-3xl shadow-2xl overflow-hidden" onClick={e => e.stopPropagation()}>
             <div className="flex justify-center pt-3 pb-1">
               <div className="w-10 h-1 bg-gray-200 rounded-full" />
             </div>
-
-            {/* Header */}
             <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-              <div className="relative">
-                <Avatar name={previewConv.otherUserName} size="md" />
-                {onlineUsers.has(previewConv.otherUserId) && (
-                  <span className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-white" />
-                )}
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: getUserColor(previewConv.otherUserId), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(previewConv.otherUserName)}</span>
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-black text-black text-base">{previewConv.otherUserName}</p>
-                {previewConv.sport && (
-                  <p className="text-xs font-semibold text-[#E87722]">{previewConv.sport}</p>
-                )}
+                {previewConv.sport && <p className="text-xs font-semibold text-[#E87722]">{previewConv.sport}</p>}
               </div>
               <p className="text-xs text-gray-400">{timeAgo(previewConv.createdAt)}</p>
             </div>
-
-            {/* Laatste bericht preview */}
             <div className="px-5 py-4 min-h-[80px] flex items-center">
               {previewConv.lastMessageType === 'image' ? (
                 <p className="text-sm text-gray-500 italic">📷 Afbeelding</p>
@@ -1174,20 +1282,14 @@ export default function MessagesClient({
                 <p className="text-sm text-gray-400 italic">Nog geen berichten</p>
               )}
             </div>
-
-            {/* Acties */}
             <div className="px-5 pb-6 pt-2 flex gap-3">
-              <button
-                onClick={() => setPreviewConv(null)}
-                className="flex-1 py-3 rounded-2xl border border-black/10 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors"
-              >
+              <button onClick={() => setPreviewConv(null)}
+                className="flex-1 py-3 rounded-2xl border border-black/10 text-sm font-bold text-gray-600 hover:bg-gray-50 transition-colors">
                 Sluiten
               </button>
-              <button
-                onClick={() => { setSelected(previewConv); setPreviewConv(null) }}
+              <button onClick={() => { setSelected(previewConv); setPreviewConv(null) }}
                 style={{ fontFamily: "'Syne', sans-serif" }}
-                className="flex-1 py-3 rounded-2xl bg-[#111] text-white text-sm font-bold hover:bg-[#333] transition-colors"
-              >
+                className="flex-1 py-3 rounded-2xl bg-[#111] text-white text-sm font-bold hover:bg-[#333] transition-colors">
                 Chat openen
               </button>
             </div>
