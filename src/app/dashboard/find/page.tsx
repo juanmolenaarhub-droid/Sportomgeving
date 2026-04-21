@@ -87,11 +87,11 @@ function RequestPopover({ buddy, onClose, onSend }: { buddy: Buddy; onClose: () 
 
   return (
     <div
-      style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
+      style={{ position: 'fixed', inset: 0, zIndex: 500, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center' }}
       onClick={onClose}
     >
       <div
-        style={{ background: '#fff', width: '100%', borderRadius: '24px 24px 0 0', padding: '20px 20px 0', paddingBottom: 'max(28px, env(safe-area-inset-bottom))' }}
+        style={{ background: '#fff', width: '100%', borderRadius: '24px 24px 0 0', padding: '20px 20px 0', paddingBottom: 'calc(max(28px, env(safe-area-inset-bottom)) + 76px)' }}
         onClick={e => e.stopPropagation()}
       >
         {/* Header met avatar */}
