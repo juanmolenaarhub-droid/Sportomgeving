@@ -20,11 +20,13 @@ export function StoriesRow({
   currentUserName,
   currentUserAvatarUrl,
   onAddStory,
+  onStoryClick,
 }: {
   buddies: StoryBuddy[]
   currentUserName: string
   currentUserAvatarUrl: string | null
   onAddStory: () => void
+  onStoryClick?: (buddyId: string) => void
 }) {
   return (
     <div
@@ -92,6 +94,7 @@ export function StoriesRow({
       {buddies.map(buddy => (
         <button
           key={buddy.id}
+          onClick={() => onStoryClick?.(buddy.id)}
           style={{
             display: 'flex',
             flexDirection: 'column',

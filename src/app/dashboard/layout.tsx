@@ -6,7 +6,7 @@ import { usePathname, useRouter } from 'next/navigation'
 import Image from 'next/image'
 import {
   Home, Users, MessageCircle, Bell, User,
-  LogOut, Search, MapPin, Settings, Play,
+  LogOut, Search, MapPin, Settings, Play, Plus,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Avatar } from '@/components/Avatar'
@@ -323,6 +323,32 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
       </div>
+
+      {/* ── FAB create button (mobile only, niet op videos pagina) ─────── */}
+      {!isVideosPage && (
+        <button
+          className="md:hidden"
+          onClick={() => setShowCreateSheet(true)}
+          style={{
+            position: 'fixed',
+            bottom: 'calc(env(safe-area-inset-bottom) + 72px)',
+            right: 20,
+            zIndex: 49,
+            width: 52,
+            height: 52,
+            borderRadius: '50%',
+            background: '#E87722',
+            border: 'none',
+            boxShadow: '0 4px 20px rgba(232,119,34,0.45)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            cursor: 'pointer',
+          }}
+        >
+          <Plus style={{ width: 24, height: 24, color: 'white' }} strokeWidth={2.5} />
+        </button>
+      )}
 
       {/* ── CreateActionSheet ───────────────────────────────────────────── */}
       <CreateActionSheet

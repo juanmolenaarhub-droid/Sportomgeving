@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react'
 import Link from 'next/link'
 import { FeedCard, FeedCardSkeleton, type FeedPostData } from '@/components/feed/FeedCard'
 import { StoriesRow, type StoryBuddy } from '@/components/feed/StoriesRow'
+import { StoryViewer, type StoryFrame } from '@/components/feed/StoryViewer'
 import { createClient } from '@/lib/supabase'
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
@@ -47,6 +48,12 @@ export default function FeedPage() {
   const [loading,        setLoading]        = useState(true)
   const [loadingMore,    setLoadingMore]    = useState(false)
   const [hasMore,        setHasMore]        = useState(true)
+  const [storyViewer,    setStoryViewer]    = useState<{
+    stories: StoryFrame[]
+    userName: string
+    userAvatarUrl: string | null
+  } | null>(null)
+  const [storyLoading,   setStoryLoading]   = useState(false)
 
   const cursorRef  = useRef<string | null>(null)
   const PAGE_SIZE  = 8
@@ -69,17 +76,21 @@ export default function FeedPage() {
       (profiles ?? []).map(p => [p.id, p])
     )
 
-    // Check liked posts
+    // Check liked posts + comment counts
     const postIds = raw.map(p => p.id as string)
-    const { data: likedData } = await supabase
-      .from('post_likes')
-      .select('post_id')
-      .eq('user_id', uid)
-      .in('post_id', postIds)
+    const [{ data: likedData }, { data: commentRows }] = await Promise.all([
+      supabase.from('post_likes').select('post_id').eq('user_id', uid).in('post_id', postIds),
+      supabase.from('post_comments').select('post_id').in('post_id', postIds),
+    ])
     const likedSet = new Set([
       ...existingLiked,
       ...(likedData ?? []).map((l: { post_id: string }) => l.post_id),
     ])
+    const commentCountMap: Record<string, number> = {}
+    for (const row of commentRows ?? []) {
+      commentCountMap[(row as { post_id: string }).post_id] =
+        (commentCountMap[(row as { post_id: string }).post_id] ?? 0) + 1
+    }
 
     return raw.map(p => {
       const prof = profileMap[p.user_id as string] ?? {}
@@ -97,7 +108,7 @@ export default function FeedPage() {
         media_type:      (p.media_type ?? null) as string | null,
         thumbnail_url:   (p.thumbnail_url ?? null) as string | null,
         likes_count:     (p.likes_count ?? 0) as number,
-        comments_count:  0,
+        comments_count:  commentCountMap[p.id as string] ?? 0,
         created_at:      timeAgo(p.created_at as string),
         created_at_raw:  p.created_at as string,
         location:        (p.location ?? null) as string | null,
@@ -214,6 +225,35 @@ export default function FeedPage() {
     )
   }
 
+  // ── Story viewer ─────────────────────────────────────────────────────────────
+
+  async function handleStoryClick(buddyId: string) {
+    const buddy = buddies.find(b => b.id === buddyId)
+    if (!buddy || storyLoading) return
+    setStoryLoading(true)
+
+    const { data: raw } = await supabase
+      .from('posts')
+      .select(POST_SELECT)
+      .eq('user_id', buddyId)
+      .order('created_at', { ascending: false })
+      .limit(10)
+
+    setStoryLoading(false)
+    if (!raw || raw.length === 0) return
+
+    const frames: StoryFrame[] = (raw as unknown as Record<string, unknown>[]).map(p => ({
+      id:          p.id as string,
+      mediaUrl:    (p.media_url ?? null) as string | null,
+      mediaType:   (p.media_type ?? null) as string | null,
+      thumbnailUrl:(p.thumbnail_url ?? null) as string | null,
+      content:     (p.content ?? null) as string | null,
+      createdAt:   timeAgo(p.created_at as string),
+    }))
+
+    setStoryViewer({ stories: frames, userName: buddy.name, userAvatarUrl: buddy.avatarUrl })
+  }
+
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
@@ -251,6 +291,7 @@ export default function FeedPage() {
           currentUserName={userName || 'G'}
           currentUserAvatarUrl={userAvatarUrl}
           onAddStory={() => {/* TODO: story maken */}}
+          onStoryClick={handleStoryClick}
         />
       </div>
 
@@ -320,6 +361,33 @@ export default function FeedPage() {
         {/* Ruimte voor floating nav */}
         <div style={{ height: 100 }} />
       </div>
+
+      {/* Story loading indicator */}
+      {storyLoading && (
+        <div style={{
+          position: 'fixed', inset: 0, zIndex: 490,
+          background: 'rgba(0,0,0,0.5)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+        }}>
+          <div style={{
+            width: 44, height: 44, borderRadius: '50%',
+            border: '3px solid rgba(255,255,255,0.2)',
+            borderTopColor: '#E87722',
+            animation: 'spin 0.8s linear infinite',
+          }} />
+          <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>
+        </div>
+      )}
+
+      {/* Story viewer */}
+      {storyViewer && (
+        <StoryViewer
+          stories={storyViewer.stories}
+          userName={storyViewer.userName}
+          userAvatarUrl={storyViewer.userAvatarUrl}
+          onClose={() => setStoryViewer(null)}
+        />
+      )}
     </div>
   )
 }
