@@ -654,7 +654,9 @@ export default function MessagesClient({
       <div
         className="flex overflow-hidden md:rounded-2xl md:border md:border-gray-100 md:h-[calc(100dvh-4rem)]"
         style={{
-          position: 'fixed', inset: 0,
+          position: 'fixed',
+          top: 0, left: 0, right: 0,
+          bottom: 'calc(env(safe-area-inset-bottom) + 60px)',
           paddingTop: 'env(safe-area-inset-top)',
           background: '#F5F0E8',
         }}
