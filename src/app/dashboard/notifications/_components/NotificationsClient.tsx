@@ -1,10 +1,10 @@
 'use client'
 
-import { useState, useEffect, useTransition } from 'react'
+import { useState, useEffect, useTransition, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import {
-  Bell, Check, X, ChevronLeft, MessageCircle,
-  MapPin, Heart, Zap, Trophy, UserPlus, Calendar,
+  Bell, Check, X, ChevronLeft,
+  MapPin, MessageCircle, Heart, Zap, Trophy, UserPlus, Calendar,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
@@ -48,6 +48,7 @@ const GREEN  = '#1D9E75'
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
 const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#E87722','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
+
 function getUserColor(id: string): string {
   const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
   return USER_COLORS[hash % USER_COLORS.length]
@@ -88,18 +89,19 @@ function resolveRoute(n: Notif): string {
   if (t.includes('message') || t.includes('chat'))     return '/dashboard/messages'
   if (t.includes('accepted'))                          return '/dashboard/messages'
   if (t.includes('match') || t.includes('buddy') || t.includes('request') || t.includes('follow')) return '/dashboard/notifications'
-  if (t.includes('group'))                             return '/dashboard/groups'
   return '/dashboard/feed'
 }
+
+// ─── Kleur per notificatietype ──────────────────────────────────────────────────
 
 function getTypeColor(type: string): string {
   const t = type.toLowerCase()
   if (t.includes('meetup') || t.includes('spontaan'))    return ORANGE
   if (t.includes('message') || t.includes('chat'))       return '#3A7AC4'
-  if (t.includes('accepted') || t.includes('accept') || t.includes('match')) return GREEN
+  if (t.includes('accepted') || t.includes('match'))     return GREEN
   if (t.includes('like') || t.includes('heart'))         return '#D4538C'
-  if (t.includes('challenge') || t.includes('trophy') || t.includes('achievement')) return '#7F77DD'
-  if (t.includes('buddy') || t.includes('request') || t.includes('follow')) return ORANGE
+  if (t.includes('interest') || t.includes('challenge') || t.includes('trophy')) return '#7F77DD'
+  if (t.includes('buddy') || t.includes('request'))      return ORANGE
   return INK
 }
 
@@ -109,33 +111,65 @@ function getTypeBg(type: string): string {
   if (t.includes('message') || t.includes('chat'))    return 'rgba(58,122,196,0.12)'
   if (t.includes('accepted') || t.includes('match'))  return 'rgba(29,158,117,0.12)'
   if (t.includes('like'))                             return 'rgba(212,83,140,0.12)'
-  if (t.includes('challenge') || t.includes('trophy')) return 'rgba(127,119,221,0.12)'
+  if (t.includes('interest') || t.includes('trophy')) return 'rgba(127,119,221,0.12)'
   return 'rgba(17,17,17,0.06)'
+}
+
+function getTypeBadgeLabel(type: string): string {
+  const t = type.toLowerCase()
+  if (t.includes('meetup_created') || t.includes('new_meetup')) return 'NIEUWE MEETUP'
+  if (t.includes('meetup_invite'))   return 'UITNODIGING'
+  if (t.includes('meetup_interest') || t.includes('interest')) return 'INTERESSE'
+  if (t.includes('meetup'))          return 'MEETUP'
+  if (t.includes('match'))           return 'NIEUWE MATCH'
+  if (t.includes('message') || t.includes('chat')) return 'BERICHT'
+  if (t.includes('like'))            return 'LIKE'
+  if (t.includes('trophy') || t.includes('achievement')) return 'PRESTATIE'
+  if (t.includes('buddy') || t.includes('request')) return 'BUDDY VERZOEK'
+  return 'NIEUW'
+}
+
+function getActionLabel(type: string): string {
+  const t = type.toLowerCase()
+  if (t.includes('meetup'))          return 'Bekijk meetup'
+  if (t.includes('match'))           return 'Bekijk profiel'
+  if (t.includes('message') || t.includes('chat')) return 'Open chat'
+  if (t.includes('interest'))        return 'Bekijk reactie'
+  return 'Bekijken'
 }
 
 // ─── Icon per type ─────────────────────────────────────────────────────────────
 
-function TypeIcon({ type, size = 16 }: { type: string; size?: number }) {
-  const color = getTypeColor(type)
+function TypeIcon({ type, size = 16, color }: { type: string; size?: number; color?: string }) {
+  const c = color ?? getTypeColor(type)
   const t = type.toLowerCase()
-  const s = { width: size, height: size, color, flexShrink: 0 } as React.CSSProperties
+  const s = { width: size, height: size, color: c, flexShrink: 0 } as React.CSSProperties
   if (t.includes('meetup') || t.includes('spontaan')) return <MapPin style={s} />
   if (t.includes('message') || t.includes('chat'))    return <MessageCircle style={s} />
   if (t.includes('accepted') || t.includes('match'))  return <Check style={s} />
   if (t.includes('like'))                             return <Heart style={s} />
-  if (t.includes('challenge') || t.includes('trophy')) return <Trophy style={s} />
+  if (t.includes('trophy') || t.includes('achievement')) return <Trophy style={s} />
   if (t.includes('spontaan'))                         return <Zap style={s} />
-  if (t.includes('buddy') || t.includes('request') || t.includes('follow')) return <UserPlus style={s} />
-  if (t.includes('calendar') || t.includes('appointment')) return <Calendar style={s} />
+  if (t.includes('interest'))                         return <Zap style={s} />
+  if (t.includes('buddy') || t.includes('request'))   return <UserPlus style={s} />
+  if (t.includes('calendar'))                         return <Calendar style={s} />
   return <Bell style={s} />
 }
 
-// ─── Hero card (featured) ──────────────────────────────────────────────────────
+// ─── SectionLabel ──────────────────────────────────────────────────────────────
+
+function SectionLabel({ label }: { label: string }) {
+  return (
+    <p style={{ ...DM, fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(17,17,17,0.45)', padding: '0 20px', marginBottom: 10 }}>
+      {label}
+    </p>
+  )
+}
+
+// ─── Featured hero: buddy verzoek ──────────────────────────────────────────────
 
 function HeroRequestCard({
-  req,
-  onAccepted,
-  onDeclined,
+  req, onAccepted, onDeclined,
 }: {
   req: PendingRequest
   onAccepted: () => void
@@ -145,26 +179,10 @@ function HeroRequestCard({
   const [done, setDone] = useState<'accepted' | 'declined' | null>(null)
   const router = useRouter()
 
-  const name     = req.from_profile?.full_name ?? req.from_profile?.username ?? 'Iemand'
-  const color    = getUserColor(req.from_user_id)
-  const inits    = getInitials(name)
+  const name      = req.from_profile?.full_name ?? req.from_profile?.username ?? 'Iemand'
+  const color     = getUserColor(req.from_user_id)
+  const inits     = getInitials(name)
   const firstName = name.split(' ')[0]
-
-  function handleAccept() {
-    startTransition(async () => {
-      await acceptBuddyRequest(req.id)
-      setDone('accepted')
-      onAccepted()
-    })
-  }
-
-  function handleDecline() {
-    startTransition(async () => {
-      await declineBuddyRequest(req.id)
-      setDone('declined')
-      onDeclined()
-    })
-  }
 
   if (done === 'accepted') {
     return (
@@ -174,11 +192,8 @@ function HeroRequestCard({
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: 'white', marginBottom: 4 }}>Je bent nu buddies met {firstName}!</p>
-          <button
-            onClick={() => router.push('/dashboard/messages')}
-            style={{ ...DM, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
-          >
-            <MessageCircle style={{ width: 13, height: 13 }} /> Stuur een bericht
+          <button onClick={() => router.push('/dashboard/messages')} style={{ ...DM, fontSize: 12, fontWeight: 700, color: 'rgba(255,255,255,0.85)', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+            Open chat →
           </button>
         </div>
       </div>
@@ -187,8 +202,8 @@ function HeroRequestCard({
 
   if (done === 'declined') {
     return (
-      <div style={{ margin: '0 20px', borderRadius: 24, background: 'white', padding: 20 }}>
-        <p style={{ ...DM, fontSize: 13, color: 'rgba(17,17,17,0.45)', textAlign: 'center' }}>Verzoek van {name} geweigerd.</p>
+      <div style={{ margin: '0 20px', borderRadius: 24, background: 'white', padding: 20, textAlign: 'center' }}>
+        <p style={{ ...DM, fontSize: 13, color: 'rgba(17,17,17,0.45)' }}>Verzoek van {firstName} geweigerd.</p>
       </div>
     )
   }
@@ -201,47 +216,38 @@ function HeroRequestCard({
           {inits}
         </span>
       </div>
-
       <div style={{ position: 'relative', padding: 20, minHeight: 190, display: 'flex', flexDirection: 'column' }}>
-        {/* Top badge */}
+        {/* Badge */}
         <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '6px 12px', alignSelf: 'flex-start' }}>
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: ORANGE }} />
-          <span style={{ ...DM, fontSize: 11, fontWeight: 700, color: INK }}>NIEUW VERZOEK</span>
+          <UserPlus style={{ width: 10, height: 10, color: INK }} />
+          <span style={{ ...DM, fontSize: 10, fontWeight: 700, color: INK, letterSpacing: '0.08em' }}>BUDDY VERZOEK</span>
         </div>
-
-        {/* Avatar + naam */}
         <div style={{ marginTop: 'auto', marginBottom: 12 }}>
-          {req.from_profile?.avatar_url ? (
+          {req.from_profile?.avatar_url && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={req.from_profile.avatar_url} alt={name} style={{ width: 52, height: 52, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.4)', marginBottom: 10 }} />
-          ) : null}
-          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: 'white', lineHeight: 1.1, marginBottom: 4 }}>
+            <img src={req.from_profile.avatar_url} alt={name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.4)', marginBottom: 8 }} />
+          )}
+          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 20, color: 'white', lineHeight: 1.1, marginBottom: 4 }}>
             {firstName} wil jouw sportbuddy worden
           </h2>
           {(req.sport || req.message) && (
-            <p style={{ ...DM, fontSize: 12, color: 'rgba(255,255,255,0.80)', lineHeight: 1.4 }}>
+            <p style={{ ...DM, fontSize: 11, color: 'rgba(255,255,255,0.80)' }}>
               {req.sport && <strong>{req.sport}</strong>}
               {req.sport && req.message && ' · '}
-              {req.message && `"${req.message.slice(0, 60)}${req.message.length > 60 ? '…' : ''}"`}
+              {req.message && `"${req.message.slice(0, 50)}…"`}
             </p>
           )}
         </div>
-
-        {/* CTA knoppen */}
         <div style={{ display: 'flex', gap: 10 }}>
-          <button
-            onClick={handleAccept}
+          <button onClick={() => startTransition(async () => { await acceptBuddyRequest(req.id); setDone('accepted'); onAccepted() })}
             disabled={isPending}
-            style={{ flex: 1, height: 44, borderRadius: 14, border: 'none', background: 'white', color: INK, ...SYNE, fontSize: 13, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isPending ? 0.7 : 1 }}
-          >
-            <Check style={{ width: 15, height: 15 }} /> Accepteer
+            style={{ flex: 1, height: 40, borderRadius: 20, border: 'none', background: 'white', color: INK, ...SYNE, fontSize: 12, fontWeight: 800, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, opacity: isPending ? 0.7 : 1 }}>
+            <Check style={{ width: 13, height: 13 }} /> Accepteer
           </button>
-          <button
-            onClick={handleDecline}
+          <button onClick={() => startTransition(async () => { await declineBuddyRequest(req.id); setDone('declined'); onDeclined() })}
             disabled={isPending}
-            style={{ flex: 1, height: 44, borderRadius: 14, border: '1.5px solid rgba(255,255,255,0.35)', background: 'transparent', color: 'white', ...DM, fontSize: 13, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6, opacity: isPending ? 0.7 : 1 }}
-          >
-            <X style={{ width: 15, height: 15 }} /> Weigeren
+            style={{ flex: 1, height: 40, borderRadius: 20, border: '1.5px solid rgba(255,255,255,0.35)', background: 'transparent', color: 'white', ...DM, fontSize: 12, fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5, opacity: isPending ? 0.7 : 1 }}>
+            <X style={{ width: 13, height: 13 }} /> Weigeren
           </button>
         </div>
       </div>
@@ -262,36 +268,31 @@ function RequestRow({ req, onAccepted, onDeclined }: { req: PendingRequest; onAc
 
   if (done === 'accepted') {
     return (
-      <div style={{ background: 'white', borderRadius: 18, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
-        <div style={{ width: 40, height: 40, borderRadius: '50%', background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <Check style={{ width: 18, height: 18, color: 'white' }} />
+      <div style={{ background: 'white', borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 10 }}>
+        <div style={{ width: 32, height: 32, borderRadius: '50%', background: GREEN, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <Check style={{ width: 15, height: 15, color: 'white' }} />
         </div>
-        <div style={{ flex: 1 }}>
-          <p style={{ ...DM, fontSize: 13, fontWeight: 700, color: GREEN }}>Jullie zijn nu buddies!</p>
-        </div>
-        <button onClick={() => router.push('/dashboard/messages')} style={{ ...DM, fontSize: 11, fontWeight: 700, color: INK, background: 'rgba(17,17,17,0.06)', border: 'none', borderRadius: 999, padding: '6px 12px', cursor: 'pointer' }}>
-          Chat
-        </button>
+        <p style={{ ...DM, fontSize: 13, fontWeight: 700, color: GREEN, flex: 1 }}>Jullie zijn nu buddies!</p>
+        <button onClick={() => router.push('/dashboard/messages')} style={{ ...DM, fontSize: 11, fontWeight: 700, color: INK, background: 'rgba(17,17,17,0.06)', border: 'none', borderRadius: 999, padding: '5px 10px', cursor: 'pointer' }}>Chat</button>
       </div>
     )
   }
   if (done === 'declined') {
     return (
-      <div style={{ background: 'white', borderRadius: 18, padding: '12px 14px' }}>
-        <p style={{ ...DM, fontSize: 12, color: 'rgba(17,17,17,0.40)', textAlign: 'center' }}>Verzoek geweigerd</p>
+      <div style={{ background: 'white', borderRadius: 16, padding: '10px 14px', textAlign: 'center' }}>
+        <p style={{ ...DM, fontSize: 12, color: 'rgba(17,17,17,0.40)' }}>Verzoek geweigerd</p>
       </div>
     )
   }
 
   return (
-    <div style={{ background: 'white', borderRadius: 18, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-      {/* Avatar */}
+    <div style={{ background: 'white', borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
       {req.from_profile?.avatar_url ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={req.from_profile.avatar_url} alt={name} style={{ width: 44, height: 44, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+        <img src={req.from_profile.avatar_url} alt={name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
       ) : (
-        <div style={{ width: 44, height: 44, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-          <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{inits}</span>
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ ...SYNE, fontSize: 12, fontWeight: 800, color: 'white' }}>{inits}</span>
         </div>
       )}
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -301,30 +302,76 @@ function RequestRow({ req, onAccepted, onDeclined }: { req: PendingRequest; onAc
         </p>
       </div>
       <div style={{ display: 'flex', gap: 8, flexShrink: 0 }}>
-        <button
-          onClick={() => startTransition(async () => { await acceptBuddyRequest(req.id); setDone('accepted'); onAccepted() })}
+        <button onClick={() => startTransition(async () => { await acceptBuddyRequest(req.id); setDone('accepted'); onAccepted() })}
           disabled={isPending}
-          style={{ width: 34, height: 34, borderRadius: '50%', background: GREEN, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isPending ? 0.6 : 1 }}
-        >
-          <Check style={{ width: 16, height: 16, color: 'white' }} />
+          style={{ width: 32, height: 32, borderRadius: '50%', background: GREEN, border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isPending ? 0.6 : 1 }}>
+          <Check style={{ width: 14, height: 14, color: 'white' }} />
         </button>
-        <button
-          onClick={() => startTransition(async () => { await declineBuddyRequest(req.id); setDone('declined'); onDeclined() })}
+        <button onClick={() => startTransition(async () => { await declineBuddyRequest(req.id); setDone('declined'); onDeclined() })}
           disabled={isPending}
-          style={{ width: 34, height: 34, borderRadius: '50%', background: 'rgba(17,17,17,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isPending ? 0.6 : 1 }}
-        >
-          <X style={{ width: 14, height: 14, color: INK }} />
+          style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(17,17,17,0.07)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', opacity: isPending ? 0.6 : 1 }}>
+          <X style={{ width: 13, height: 13, color: INK }} />
         </button>
       </div>
-      {/* Ongelezen dot */}
       <div style={{ width: 8, height: 8, borderRadius: '50%', background: ORANGE, flexShrink: 0 }} />
     </div>
   )
 }
 
-// ─── Notification rij ──────────────────────────────────────────────────────────
+// ─── Featured hero: system notificatie ─────────────────────────────────────────
 
-function NotifRow({ notif, dimmed, onRead }: { notif: Notif; dimmed?: boolean; onRead: (id: string) => void }) {
+function FeaturedNotifCard({ notif, onRead }: { notif: Notif; onRead: (id: string) => void }) {
+  const router = useRouter()
+  const color  = getUserColor(notif.target_id ?? notif.id)
+  const inits  = getInitials(notif.message.split(' ').slice(0, 2).join(' '))
+
+  async function handleClick() {
+    onRead(notif.id)
+    await markNotificationRead(notif.id)
+    router.push(resolveRoute(notif))
+  }
+
+  return (
+    <div style={{ margin: '0 20px', borderRadius: 24, overflow: 'hidden', position: 'relative', background: color }}>
+      {/* Reuze initialen ornament */}
+      <div style={{ position: 'absolute', right: -12, bottom: -20, pointerEvents: 'none', userSelect: 'none' }}>
+        <span style={{ ...SYNE, fontWeight: 800, fontSize: 180, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
+          {inits}
+        </span>
+      </div>
+      <div style={{ position: 'relative', padding: 20, minHeight: 180, display: 'flex', flexDirection: 'column' }}>
+        {/* Badge */}
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '6px 12px', alignSelf: 'flex-start' }}>
+          <TypeIcon type={notif.type} size={10} color={INK} />
+          <span style={{ ...DM, fontSize: 10, fontWeight: 700, color: INK, letterSpacing: '0.08em' }}>
+            {getTypeBadgeLabel(notif.type)}
+          </span>
+        </div>
+
+        {/* Headline */}
+        <div style={{ marginTop: 'auto' }}>
+          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 20, color: 'white', lineHeight: 1.15, marginBottom: 4 }}>
+            {notif.message.length > 70 ? notif.message.slice(0, 68) + '…' : notif.message}
+          </h2>
+          <p style={{ ...DM, fontSize: 11, color: 'rgba(255,255,255,0.75)', marginBottom: 12 }}>
+            {timeAgo(notif.created_at)} · {getActionLabel(notif.type) === 'Bekijk meetup' ? 'Doe je mee?' : 'Nieuw voor jou'}
+          </p>
+          {/* CTA */}
+          <button
+            onClick={handleClick}
+            style={{ background: 'white', borderRadius: 999, padding: '7px 16px', border: 'none', cursor: 'pointer', ...DM, fontSize: 11, fontWeight: 700, color: INK }}
+          >
+            {getActionLabel(notif.type)}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+// ─── Compacte notificatie rij ──────────────────────────────────────────────────
+
+function NotifRow({ notif, onRead }: { notif: Notif; onRead: (id: string) => void }) {
   const router = useRouter()
 
   async function handleClick() {
@@ -335,49 +382,57 @@ function NotifRow({ notif, dimmed, onRead }: { notif: Notif; dimmed?: boolean; o
     router.push(resolveRoute(notif))
   }
 
+  const typeColor = getTypeColor(notif.type)
+  const typeBg    = getTypeBg(notif.type)
+
   return (
     <button
       onClick={handleClick}
       style={{
-        width: '100%', background: 'white', borderRadius: 18,
-        padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12,
+        width: '100%', background: 'white', borderRadius: 16,
+        padding: '14px 14px', display: 'flex', alignItems: 'center', gap: 12,
         border: 'none', cursor: 'pointer', textAlign: 'left',
-        opacity: dimmed ? 0.55 : 1,
-        borderLeft: !notif.read && !dimmed ? `3px solid ${ORANGE}` : '3px solid transparent',
+        opacity: notif.read ? 0.55 : 1,
         transition: 'opacity 200ms',
       }}
     >
-      {/* Icon cirkel */}
-      <div style={{ width: 44, height: 44, borderRadius: '50%', background: getTypeBg(notif.type), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-        <TypeIcon type={notif.type} size={18} />
+      {/* Icon circle 32×32, gekleurde achtergrond per type */}
+      <div style={{ width: 32, height: 32, borderRadius: '50%', background: typeBg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+        <TypeIcon type={notif.type} size={14} color={typeColor} />
       </div>
 
       {/* Content */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ ...DM, fontSize: 13, fontWeight: notif.read ? 500 : 700, color: INK, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+        <p style={{ ...DM, fontSize: 12, fontWeight: notif.read ? 500 : 700, color: INK, lineHeight: 1.35, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
           {notif.message}
         </p>
-        <p style={{ ...DM, fontSize: 11, color: 'rgba(17,17,17,0.45)', marginTop: 3 }}>
+        <p style={{ ...DM, fontSize: 10, color: 'rgba(17,17,17,0.45)', marginTop: 2 }}>
           {timeAgo(notif.created_at)}
         </p>
       </div>
 
-      {/* Unread dot */}
-      {!notif.read && !dimmed && (
+      {/* Oranje unread dot rechts */}
+      {!notif.read && (
         <div style={{ width: 8, height: 8, borderRadius: '50%', background: ORANGE, flexShrink: 0 }} />
       )}
     </button>
   )
 }
 
-// ─── Sectie label ──────────────────────────────────────────────────────────────
+// ─── Priority logic voor featured ──────────────────────────────────────────────
 
-function SectionLabel({ label }: { label: string }) {
-  return (
-    <p style={{ ...DM, fontSize: 10, fontWeight: 600, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(17,17,17,0.45)', padding: '0 20px', marginBottom: 10 }}>
-      {label}
-    </p>
-  )
+const PRIORITY_TYPES = [
+  'meetup_invite', 'match', 'meetup_created', 'meetup_interest', 'message',
+]
+
+function findFeaturedNotif(notifs: Notif[]): Notif | null {
+  const unread = notifs.filter(n => !n.read)
+  if (unread.length === 0) return null
+  for (const pt of PRIORITY_TYPES) {
+    const found = unread.find(n => n.type.toLowerCase().includes(pt))
+    if (found) return found
+  }
+  return unread[0]
 }
 
 // ─── Hoofdcomponent ────────────────────────────────────────────────────────────
@@ -389,18 +444,16 @@ export default function NotificationsClient({
   notifications: Notif[]
   pendingRequests: PendingRequest[]
 }) {
-  const router  = useRouter()
+  const router   = useRouter()
   const supabase = createClient()
 
-  const [notifs,   setNotifs]   = useState<Notif[]>(initialNotifs)
-  const [requests, setRequests] = useState<PendingRequest[]>(initialRequests)
+  const [notifs,   setNotifs]   = useState<Notif[]>(initialNotifs ?? [])
+  const [requests, setRequests] = useState<PendingRequest[]>(initialRequests ?? [])
 
-  // Mark single notif as read (optimistic)
   function markRead(id: string) {
     setNotifs(prev => prev.map(n => n.id === id ? { ...n, read: true } : n))
   }
 
-  // Mark all as read
   async function markAllAsRead() {
     setNotifs(prev => prev.map(n => ({ ...n, read: true })))
     const { data: { user } } = await supabase.auth.getUser()
@@ -408,7 +461,7 @@ export default function NotificationsClient({
     await supabase.from('system_notifications').update({ read: true }).eq('user_id', user.id).eq('read', false)
   }
 
-  // Realtime: prepend new notifications
+  // Realtime
   useEffect(() => {
     let userId = ''
     supabase.auth.getUser().then(({ data: { user } }) => {
@@ -417,29 +470,39 @@ export default function NotificationsClient({
       const channel = supabase
         .channel('notif-realtime')
         .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'system_notifications', filter: `user_id=eq.${userId}` },
-          payload => {
-            const n = payload.new as Notif
-            setNotifs(prev => [n, ...prev])
-          })
+          payload => setNotifs(prev => [payload.new as Notif, ...prev]))
         .subscribe()
       return () => { supabase.removeChannel(channel) }
     })
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  // Derive sections
+  // ── Derived state ─────────────────────────────────────────────────────────────
+
   const featuredRequest = requests[0] ?? null
   const restRequests    = requests.slice(1)
-  const unreadNotifs    = notifs.filter(n => !n.read)
-  const readNotifs      = notifs.filter(n => n.read)
-  const totalUnread     = requests.length + unreadNotifs.length
 
-  const isEmpty = requests.length === 0 && notifs.length === 0
+  const featuredNotif = useMemo(() => {
+    // Als er een buddy-request featured is, hoef je geen notif te featuren
+    if (featuredRequest) return null
+    return findFeaturedNotif(notifs)
+  }, [notifs, featuredRequest])
+
+  const recentNotifs = useMemo(() =>
+    notifs.filter(n => !n.read && n.id !== featuredNotif?.id),
+    [notifs, featuredNotif])
+
+  const earlierNotifs = useMemo(() =>
+    notifs.filter(n => n.read),
+    [notifs])
+
+  const totalUnread = requests.length + notifs.filter(n => !n.read).length
+  const isEmpty     = requests.length === 0 && notifs.length === 0
 
   return (
-    <div style={{ background: CREAM, minHeight: '100vh' }}>
+    <div style={{ background: CREAM, minHeight: '100vh', paddingBottom: 40 }}>
 
-      {/* ── Top navigatie ──────────────────────────────────────────────── */}
+      {/* ── Top nav ────────────────────────────────────────────────────── */}
       <div style={{ padding: 'calc(env(safe-area-inset-top) + 8px) 12px 0', display: 'flex', alignItems: 'center' }}>
         <button
           onClick={() => router.back()}
@@ -477,10 +540,10 @@ export default function NotificationsClient({
         </div>
       )}
 
-      {/* ── UITNODIGING: featured request hero card ─────────────────────── */}
+      {/* ── UITNODIGING: featured buddy request ────────────────────────── */}
       {featuredRequest && (
         <div style={{ marginBottom: 28 }}>
-          <SectionLabel label="UITNODIGING" />
+          <SectionLabel label="NIEUW VOOR JOU" />
           <HeroRequestCard
             req={featuredRequest}
             onAccepted={() => setRequests(prev => prev.filter(r => r.id !== featuredRequest.id))}
@@ -489,7 +552,7 @@ export default function NotificationsClient({
         </div>
       )}
 
-      {/* ── MEER VERZOEKEN: resterende buddy requests ──────────────────── */}
+      {/* ── VERZOEKEN: resterende buddy requests ───────────────────────── */}
       {restRequests.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <SectionLabel label={`VERZOEKEN · ${restRequests.length}`} />
@@ -506,44 +569,54 @@ export default function NotificationsClient({
         </div>
       )}
 
-      {/* ── RECENT: ongelezen system notificaties ─────────────────────── */}
-      {unreadNotifs.length > 0 && (
+      {/* ── Featured system notificatie ────────────────────────────────── */}
+      {featuredNotif && (
+        <div style={{ marginBottom: 28 }}>
+          <SectionLabel label="NIEUW VOOR JOU" />
+          <FeaturedNotifCard notif={featuredNotif} onRead={markRead} />
+        </div>
+      )}
+
+      {/* ── RECENT: overige ongelezen ──────────────────────────────────── */}
+      {recentNotifs.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <SectionLabel label="RECENT" />
           <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {unreadNotifs.map(n => (
+            {recentNotifs.map(n => (
               <NotifRow key={n.id} notif={n} onRead={markRead} />
             ))}
           </div>
         </div>
       )}
 
-      {/* ── EERDER: gelezen notificaties (gedimd) ─────────────────────── */}
-      {readNotifs.length > 0 && (
+      {/* ── EERDER: gelezen notificaties ──────────────────────────────── */}
+      {earlierNotifs.length > 0 && (
         <div style={{ marginBottom: 28 }}>
           <SectionLabel label="EERDER" />
           <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
-            {readNotifs.map(n => (
-              <NotifRow key={n.id} notif={n} dimmed onRead={markRead} />
+            {earlierNotifs.map(n => (
+              <NotifRow key={n.id} notif={n} onRead={markRead} />
             ))}
           </div>
         </div>
       )}
 
-      {/* ── Footer: markeer alles als gelezen ─────────────────────────── */}
+      {/* ── Markeer alles als gelezen ─────────────────────────────────── */}
       {totalUnread > 0 && (
-        <div style={{ padding: '0 12px 32px' }}>
+        <div style={{ padding: '0 12px' }}>
           <button
             onClick={markAllAsRead}
-            style={{ width: '100%', height: 40, borderRadius: 999, background: CREAM, border: '1px solid rgba(17,17,17,0.10)', cursor: 'pointer', ...DM, fontSize: 12, fontWeight: 500, color: 'rgba(17,17,17,0.55)' }}
+            style={{
+              width: '100%', height: 36, borderRadius: 999,
+              background: CREAM, border: '1px solid rgba(17,17,17,0.10)',
+              ...DM, fontSize: 11, fontWeight: 500, color: 'rgba(17,17,17,0.60)',
+              cursor: 'pointer',
+            }}
           >
             Markeer alles als gelezen
           </button>
         </div>
       )}
-
-      {/* Ruimte voor nav */}
-      <div style={{ height: 100 }} />
     </div>
   )
 }
