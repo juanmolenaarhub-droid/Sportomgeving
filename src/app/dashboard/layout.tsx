@@ -42,7 +42,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const [profileImageUrl, setProfileImageUrl] = useState<string | null>(null)
   const [unreadMessages,  setUnreadMessages]  = useState(0)
   const [hasMeetupDot,    setHasMeetupDot]    = useState(false)
-  const [hasNotifDot,     setHasNotifDot]     = useState(false)
+  const [notifCount,      setNotifCount]      = useState(0)
   const [showDropdown,    setShowDropdown]    = useState(false)
   const [currentUserId,   setCurrentUserId]   = useState('')
 
@@ -98,7 +98,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
     setUnreadMessages((msgRes as { count: number | null }).count ?? 0)
     setHasMeetupDot(((meetupRes as { count: number | null }).count ?? 0) > 0)
-    setHasNotifDot(((notifRes as { count: number | null }).count ?? 0) > 0)
+    setNotifCount((notifRes as { count: number | null }).count ?? 0)
   }, [supabase])
 
   useEffect(() => {
@@ -231,8 +231,10 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
             >
               <Bell className="w-5 h-5 text-gray-500" />
-              {hasNotifDot && (
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#E87722] rounded-full" />
+              {notifCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
+                  {notifCount > 9 ? '9+' : notifCount}
+                </span>
               )}
             </Link>
 
@@ -323,6 +325,52 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           ))}
         </nav>
       </div>
+
+      {/* ── Mobiele notificatie bell (niet op videos, meetup, berichten) ── */}
+      {!isVideosPage && !isMeetupPage && !isMessagesPage && (
+        <Link
+          href="/dashboard/notifications"
+          className="md:hidden"
+          style={{
+            position: 'fixed',
+            top: 'calc(env(safe-area-inset-top) + 12px)',
+            right: 16,
+            zIndex: 30,
+            width: 40,
+            height: 40,
+            borderRadius: '50%',
+            background: 'rgba(255,255,255,0.92)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            border: '1px solid rgba(0,0,0,0.08)',
+            boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            WebkitTapHighlightColor: 'transparent',
+            textDecoration: 'none',
+          }}
+        >
+          <Bell style={{ width: 18, height: 18, color: '#1A1714' }} />
+          {notifCount > 0 && (
+            <span style={{
+              position: 'absolute',
+              top: -4, right: -4,
+              minWidth: 18, height: 18,
+              background: '#E87722',
+              color: 'white',
+              fontSize: 10, fontWeight: 900,
+              borderRadius: 999,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              padding: '0 4px',
+              fontFamily: "'DM Sans', sans-serif",
+              border: '2px solid #F5F0E8',
+            }}>
+              {notifCount > 9 ? '9+' : notifCount}
+            </span>
+          )}
+        </Link>
+      )}
 
       {/* ── FAB create button (mobile only, niet op videos pagina) ─────── */}
       {!isVideosPage && (
