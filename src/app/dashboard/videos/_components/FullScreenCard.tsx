@@ -232,12 +232,15 @@ export function FullScreenCard({
         // eslint-disable-next-line jsx-a11y/media-has-caption
         <video
           key={`${post.id}-${mediaIndex}`}
-          ref={videoRef}
+          ref={(el) => {
+            videoRef.current = el
+            if (el) el.muted = true  // iOS Safari vereist muted vóór autoplay
+          }}
           src={current?.url}
           poster={current?.thumbnail_url ?? undefined}
           style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
-          loop playsInline autoPlay={isActive} muted
-          preload={isActive ? 'auto' : 'none'}
+          loop playsInline
+          preload={isActive ? 'auto' : 'metadata'}
           onCanPlay={() => {
             setLoaded(true)
             if (isActive && videoRef.current) videoRef.current.play().catch(() => {})
