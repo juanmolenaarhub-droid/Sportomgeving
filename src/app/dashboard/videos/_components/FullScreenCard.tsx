@@ -127,14 +127,15 @@ export function FullScreenCard({
     const v = videoRef.current
     if (!v || !isVideo) return
     if (isActive) {
-      v.muted = isMuted
+      v.muted = true  // must be muted before play() on iOS WKWebView
       v.currentTime = 0
       v.play().then(() => setPaused(false)).catch(() => setPaused(true))
     } else {
       v.pause()
       setPaused(false)
     }
-  }, [isActive, isVideo, mediaIndex, isMuted])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isActive, isVideo, mediaIndex])
 
   // Sync mute
   useEffect(() => {
