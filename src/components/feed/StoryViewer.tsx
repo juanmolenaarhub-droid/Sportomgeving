@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { X } from 'lucide-react'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
@@ -16,7 +16,7 @@ export type StoryFrame = {
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 
-const DURATION = 5000
+const DURATION = 5000 // ms per story frame
 
 // ─── StoryViewer ───────────────────────────────────────────────────────────────
 
@@ -31,47 +31,123 @@ export function StoryViewer({
   userAvatarUrl: string | null
   onClose: () => void
 }) {
-  const [index,      setIndex]      = useState(0)
-  const [animPaused, setAnimPaused] = useState(false)
-  const [vidProgress,setVidProgress]= useState(0)
+  const [index,       setIndex]       = useState(0)
+  const [progress,    setProgress]    = useState(0)   // 0–1
+  const [vidProgress, setVidProgress] = useState(0)   // 0–1, video only
+
+  // Refs so timer always reads fresh values without stale closures
+  const indexRef      = useRef(0)
+  const pausedRef     = useRef(false)
+  const elapsedRef    = useRef(0)       // ms accumulated for current frame
+  const lastTickRef   = useRef(Date.now())
+  const timerRef      = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  indexRef.current = index
 
   const current = stories[index]
-  const isVideo  = current?.mediaType === 'video'
+  const isVideo = current?.mediaType === 'video'
 
-  const goNext = useCallback(() => {
-    setVidProgress(0)
-    if (index < stories.length - 1) {
-      setIndex(i => i + 1)
+  // ── Navigation helpers ────────────────────────────────────────────────────
+
+  function advance() {
+    const next = indexRef.current + 1
+    if (next < stories.length) {
+      elapsedRef.current = 0
+      setProgress(0)
+      setVidProgress(0)
+      setIndex(next)
     } else {
       onClose()
     }
-  }, [index, stories.length, onClose])
+  }
 
-  const goPrev = useCallback(() => {
-    setVidProgress(0)
-    if (index > 0) setIndex(i => i - 1)
-  }, [index])
+  function retreat() {
+    const prev = indexRef.current - 1
+    if (prev >= 0) {
+      elapsedRef.current = 0
+      setProgress(0)
+      setVidProgress(0)
+      setIndex(prev)
+    }
+  }
 
-  // Keyboard navigation
+  // ── Timer (runs for image/text frames) ───────────────────────────────────
+
+  useEffect(() => {
+    // Reset on every new frame
+    elapsedRef.current = 0
+    pausedRef.current  = false
+    lastTickRef.current = Date.now()
+    setProgress(0)
+
+    if (isVideo) return // video drives progress via onTimeUpdate
+
+    if (timerRef.current) clearInterval(timerRef.current)
+
+    timerRef.current = setInterval(() => {
+      if (pausedRef.current) {
+        // While paused: keep resetting lastTick so paused time is never counted
+        lastTickRef.current = Date.now()
+        return
+      }
+
+      const now = Date.now()
+      elapsedRef.current += now - lastTickRef.current
+      lastTickRef.current = now
+
+      const p = Math.min(elapsedRef.current / DURATION, 1)
+      setProgress(p)
+
+      if (p >= 1) {
+        clearInterval(timerRef.current!)
+        timerRef.current = null
+        advance()
+      }
+    }, 50)
+
+    return () => {
+      if (timerRef.current) clearInterval(timerRef.current)
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [index, isVideo])
+
+  // ── Keyboard navigation ───────────────────────────────────────────────────
+
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
-      if (e.key === 'Escape')      onClose()
-      if (e.key === 'ArrowRight')  goNext()
-      if (e.key === 'ArrowLeft')   goPrev()
+      if (e.key === 'Escape')     onClose()
+      if (e.key === 'ArrowRight') advance()
+      if (e.key === 'ArrowLeft')  retreat()
     }
     window.addEventListener('keydown', onKey)
     return () => window.removeEventListener('keydown', onKey)
-  }, [onClose, goNext, goPrev])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
-  // Lock body scroll
+  // ── Lock body scroll ──────────────────────────────────────────────────────
+
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => { document.body.style.overflow = '' }
   }, [])
 
+  // ── Hold to pause handlers ────────────────────────────────────────────────
+
+  function handleHoldStart() {
+    pausedRef.current = true
+  }
+
+  function handleHoldEnd() {
+    pausedRef.current = false
+    lastTickRef.current = Date.now()
+  }
+
+  // ─── Render ──────────────────────────────────────────────────────────────
+
   if (!current) return null
 
   const initials = userName.trim().split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase()
+  const displayProgress = isVideo ? vidProgress : progress
 
   return (
     <div
@@ -80,61 +156,55 @@ export function StoryViewer({
         background: '#000',
         display: 'flex', flexDirection: 'column',
         userSelect: 'none',
+        WebkitUserSelect: 'none',
       }}
     >
+
+      {/* ── Gradient voor leesbaarheid progress + header ──────────────── */}
+      <div style={{
+        position: 'absolute', top: 0, left: 0, right: 0,
+        height: 140,
+        background: 'linear-gradient(to bottom, rgba(0,0,0,0.55) 0%, transparent 100%)',
+        zIndex: 9,
+        pointerEvents: 'none',
+      }} />
 
       {/* ── Progress bars ─────────────────────────────────────────────── */}
       <div style={{
         position: 'absolute', top: 0, left: 0, right: 0,
         zIndex: 10,
         display: 'flex', gap: 3,
-        padding: 'calc(env(safe-area-inset-top) + 10px) 10px 0',
+        padding: 'calc(env(safe-area-inset-top) + 10px) 12px 0',
         pointerEvents: 'none',
       }}>
         {stories.map((_, i) => (
           <div key={i} style={{
             flex: 1, height: 2.5, borderRadius: 2,
-            background: 'rgba(255,255,255,0.28)',
+            background: 'rgba(255,255,255,0.30)',
             overflow: 'hidden',
           }}>
-            {/* Past stories: full */}
-            {i < index && (
-              <div style={{ height: '100%', background: 'white', width: '100%' }} />
-            )}
-
-            {/* Current story: CSS animation (image) or controlled width (video) */}
-            {i === index && (
-              isVideo ? (
-                <div style={{ height: '100%', background: 'white', width: `${vidProgress * 100}%`, transition: 'width 0.1s linear' }} />
-              ) : (
-                <div
-                  key={`prog-${index}`}
-                  onAnimationEnd={goNext}
-                  style={{
-                    height: '100%',
-                    background: 'white',
-                    animationName: 'story-fill',
-                    animationDuration: `${DURATION}ms`,
-                    animationTimingFunction: 'linear',
-                    animationFillMode: 'forwards',
-                    animationPlayState: animPaused ? 'paused' : 'running',
-                  }}
-                />
-              )
-            )}
-            {/* Future stories: empty */}
+            <div style={{
+              height: '100%',
+              background: 'rgba(255,255,255,0.95)',
+              width: i < index
+                ? '100%'
+                : i === index
+                  ? `${displayProgress * 100}%`
+                  : '0%',
+            }} />
           </div>
         ))}
       </div>
 
-      {/* ── Header: avatar + naam + close ─────────────────────────────── */}
+      {/* ── Header: avatar + naam + sluit ─────────────────────────────── */}
       <div style={{
         position: 'absolute',
         top: 'calc(env(safe-area-inset-top) + 24px)',
-        left: 0, right: 0, zIndex: 10,
-        display: 'flex', alignItems: 'center', padding: '0 16px', gap: 10,
+        left: 0, right: 0,
+        zIndex: 10,
+        display: 'flex', alignItems: 'center',
+        padding: '0 16px', gap: 10,
       }}>
-        {/* Avatar */}
         {userAvatarUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -153,17 +223,15 @@ export function StoryViewer({
           </div>
         )}
 
-        {/* Naam + tijd */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, color: 'white', lineHeight: 1.2, margin: 0 }}>
             {userName}
           </p>
-          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: 'rgba(255,255,255,0.65)', lineHeight: 1.2, margin: 0 }}>
+          <p style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, color: 'rgba(255,255,255,0.70)', lineHeight: 1.2, margin: 0 }}>
             {current.createdAt}
           </p>
         </div>
 
-        {/* Close */}
         <button
           onClick={onClose}
           style={{ background: 'none', border: 'none', padding: 8, cursor: 'pointer', flexShrink: 0 }}
@@ -172,15 +240,16 @@ export function StoryViewer({
         </button>
       </div>
 
-      {/* ── Media / tekst ─────────────────────────────────────────────── */}
+      {/* ── Media + tekst ─────────────────────────────────────────────── */}
       <div
         style={{ flex: 1, position: 'relative' }}
-        onPointerDown={() => setAnimPaused(true)}
-        onPointerUp={() => setAnimPaused(false)}
-        onPointerLeave={() => setAnimPaused(false)}
+        onPointerDown={handleHoldStart}
+        onPointerUp={handleHoldEnd}
+        onPointerLeave={handleHoldEnd}
+        onPointerCancel={handleHoldEnd}
       >
         {/* Media */}
-        {current.mediaUrl || current.thumbnailUrl ? (
+        {(current.mediaUrl || current.thumbnailUrl) ? (
           isVideo ? (
             <video
               key={current.id}
@@ -192,7 +261,7 @@ export function StoryViewer({
                 const v = e.currentTarget
                 if (v.duration > 0) setVidProgress(v.currentTime / v.duration)
               }}
-              onEnded={goNext}
+              onEnded={advance}
             />
           ) : (
             // eslint-disable-next-line @next/next/no-img-element
@@ -204,7 +273,7 @@ export function StoryViewer({
             />
           )
         ) : (
-          /* Tekst post */
+          /* Tekst-post */
           <div style={{
             position: 'absolute', inset: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -221,42 +290,35 @@ export function StoryViewer({
           </div>
         )}
 
-        {/* Caption overlay (alleen bij media) */}
+        {/* Caption overlay (bij media-posts) */}
         {current.content && (current.mediaUrl || current.thumbnailUrl) && (
           <div style={{
-            position: 'absolute', bottom: 60, left: 0, right: 0,
-            padding: '0 24px',
-            background: 'linear-gradient(to top, rgba(0,0,0,0.5) 0%, transparent 100%)',
-            paddingTop: 48,
+            position: 'absolute',
+            bottom: 0, left: 0, right: 0,
+            padding: '60px 24px 40px',
+            background: 'linear-gradient(to top, rgba(0,0,0,0.60) 0%, transparent 100%)',
             pointerEvents: 'none',
           }}>
             <p style={{
               fontFamily: "'DM Sans', sans-serif",
-              fontSize: 14, color: 'white', lineHeight: 1.5, margin: 0,
+              fontSize: 14, fontWeight: 500,
+              color: 'white', lineHeight: 1.5, margin: 0,
             }}>
               {current.content.slice(0, 150)}{current.content.length > 150 ? '…' : ''}
             </p>
           </div>
         )}
 
-        {/* Tap zones: links = vorig, rechts = volgende */}
+        {/* Tap-zones: links = vorig, rechts = volgende */}
         <div
-          style={{ position: 'absolute', top: 0, left: 0, width: '38%', bottom: 0, zIndex: 5 }}
-          onClick={goPrev}
+          style={{ position: 'absolute', top: 0, left: 0, width: '35%', bottom: 0, zIndex: 5 }}
+          onClick={e => { e.stopPropagation(); retreat() }}
         />
         <div
-          style={{ position: 'absolute', top: 0, right: 0, width: '38%', bottom: 0, zIndex: 5 }}
-          onClick={goNext}
+          style={{ position: 'absolute', top: 0, right: 0, width: '35%', bottom: 0, zIndex: 5 }}
+          onClick={e => { e.stopPropagation(); advance() }}
         />
       </div>
-
-      {/* CSS keyframe voor progress animation */}
-      <style>{`
-        @keyframes story-fill {
-          from { width: 0%; }
-          to   { width: 100%; }
-        }
-      `}</style>
     </div>
   )
 }
