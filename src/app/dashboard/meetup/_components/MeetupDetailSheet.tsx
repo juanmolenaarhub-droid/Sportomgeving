@@ -4,7 +4,7 @@ import { useState, useEffect, useTransition } from 'react'
 import dynamic from 'next/dynamic'
 import Link from 'next/link'
 import { ArrowLeft, CalendarDays, MapPin, Users, Globe, Lock } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import {
   getMeetupDetailForModal,
   respondToInterest,
@@ -438,7 +438,7 @@ function InfoTab({ data }: {
         <Link href={`/dashboard/profile/${c.id}`} style={{ textDecoration: 'none', color: 'inherit', display: 'block' }}>
           <div style={{ ...ROW, cursor: 'pointer' }}>
             <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-              <Avatar name={c.name} imageUrl={c.avatarUrl} size="sm" />
+              <Avatar initials={getInitials(c.name)} imageUrl={c.avatarUrl} size="sm" />
             </div>
             <div style={{ flex: 1 }}>
               <p style={ROW_LABEL}>Host</p>
@@ -551,7 +551,7 @@ function AanwezigTab({ data, actionPending, onMarkAttended, onRemove }: {
         <div key={p.userId} style={{ ...ROW, alignItems: 'center' }}>
           <Link href={`/dashboard/profile/${p.userId}`} style={{ flexShrink: 0 }}>
             <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden' }}>
-              <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
+              <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
             </div>
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
@@ -629,7 +629,7 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: p.message ? 8 : 6 }}>
               <Link href={`/dashboard/profile/${p.userId}`} style={{ flexShrink: 0 }}>
                 <div style={{ width: 44, height: 44, borderRadius: '50%', overflow: 'hidden' }}>
-                  <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
+                  <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
                 </div>
               </Link>
               <div style={{ flex: 1, minWidth: 0 }}>

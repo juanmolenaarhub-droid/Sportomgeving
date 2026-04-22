@@ -4,7 +4,7 @@ import { useState } from 'react'
 import { ArrowLeft, Plus, X } from 'lucide-react'
 import { SportSelector } from '@/components/ui/SportSelector'
 import { getSportById } from '@/lib/sports'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import TagPeoplePanel from '@/components/composer/TagPeoplePanel'
 
@@ -163,7 +163,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
       <div className="flex-1 overflow-y-auto px-4 pb-8 space-y-5 pt-4">
         {/* User row */}
         <div className="flex items-center gap-3">
-          <Avatar name={userName} imageUrl={avatarUrl} size="sm" />
+          <Avatar initials={getInitials(userName)} imageUrl={avatarUrl} size="sm" />
           <div className="flex items-center gap-2">
             <span className="text-[14px] font-semibold text-gray-900" style={SYNE}>
               {userName}

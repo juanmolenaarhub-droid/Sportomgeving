@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { Star, Zap, ShieldCheck, User } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import type { ModalCreator } from '@/app/actions/meetups'
 
 const SPORT_COLORS: Record<string, string> = {
@@ -63,7 +63,7 @@ export default function HostTrustCard({ creator }: Props) {
         {/* Avatar gecentreerd onderaan, overlappend */}
         <div style={{ position: 'absolute', bottom: -22, left: 14 }}>
           <div style={{ width: 52, height: 52, borderRadius: '50%', border: '3px solid #F5F0E8', overflow: 'hidden', background: '#fff' }}>
-            <Avatar name={creator.name} imageUrl={creator.avatarUrl} size="md" />
+            <Avatar initials={getInitials(creator.name)} imageUrl={creator.avatarUrl} size="md" />
           </div>
         </div>
       </div>

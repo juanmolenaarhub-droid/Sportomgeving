@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { UserRoundPlus, X } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 
 interface TaggedUser {
   id: string
@@ -134,7 +134,7 @@ export default function TagPeoplePanel({
                 >
                   <Avatar
                     imageUrl={user.avatarUrl ?? null}
-                    name={user.name}
+                    initials={getInitials(user.name)}
                     size="xs"
                   />
                   <span className="font-medium">{user.name}</span>
@@ -184,7 +184,7 @@ export default function TagPeoplePanel({
                 >
                   <Avatar
                     imageUrl={row.avatar_url ?? null}
-                    name={row.full_name}
+                    initials={getInitials(row.full_name)}
                     size="sm"
                   />
                   <div className="flex-1 min-w-0">

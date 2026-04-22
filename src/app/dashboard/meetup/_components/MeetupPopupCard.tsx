@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useTransition } from 'react'
 import { MapPin } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import { showInterest, withdrawInterest, clearDeclinedParticipant } from '@/app/actions/meetups'
 import type { MeetupListItem } from '@/app/actions/meetups'
 
@@ -54,7 +54,7 @@ function AvatarStack({ count, creatorName, creatorUrl }: {
           width: 32, height: 32, borderRadius: '50%',
           border: '2px solid white', overflow: 'hidden', flexShrink: 0,
         }}>
-          <Avatar name={creatorName} imageUrl={creatorUrl} size="xs" />
+          <Avatar initials={getInitials(creatorName)} imageUrl={creatorUrl} size="xs" />
         </div>
         {/* Extra placeholder circles */}
         {colors.slice(0, Math.min(extra, 4)).map((c, i) => (

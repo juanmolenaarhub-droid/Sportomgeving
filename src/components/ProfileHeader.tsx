@@ -2,7 +2,7 @@
 
 import { useRef, useState, useEffect } from 'react'
 import { Camera, Pencil } from 'lucide-react'
-import { Avatar } from './Avatar'
+import { Avatar, getInitials } from './Avatar'
 import { validateImageFile } from '@/lib/validateFile'
 
 type Props = {
@@ -79,7 +79,7 @@ export function ProfileHeader({
             {avatarPreview ? (
               <img src={avatarPreview} alt={name} className="w-full h-full object-cover" />
             ) : (
-              <Avatar name={name} size="lg" className="w-full h-full rounded-none" />
+              <Avatar initials={getInitials(name)} size="lg" className="w-full h-full rounded-none" />
             )}
           </div>
 

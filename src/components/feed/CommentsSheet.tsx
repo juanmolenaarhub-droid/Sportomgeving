@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { X, Send, Trash2 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
+import { Avatar, getInitials } from '@/components/ui/Avatar'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
@@ -28,18 +29,6 @@ function timeAgo(iso: string) {
   return `${d}d`
 }
 
-function Avatar({ name, url, size }: { name: string; url: string | null; size: number }) {
-  const colors = ['#E87722', '#2A2420', '#11998e', '#6366F1', '#DB2777']
-  const bg = colors[name.charCodeAt(0) % colors.length]
-  if (url) return <img src={url} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
-  return (
-    <div style={{ width: size, height: size, borderRadius: '50%', background: bg, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-      <span style={{ ...DM, fontSize: size * 0.38, fontWeight: 700, color: 'white' }}>
-        {name.trim().split(' ').slice(0, 2).map(w => w[0]).join('').toUpperCase()}
-      </span>
-    </div>
-  )
-}
 
 interface Props {
   postId: string
@@ -184,7 +173,7 @@ export function CommentsSheet({ postId, onClose, onCountChange }: Props) {
                 const isOwn = c.user_id === currentUid
                 return (
                   <div key={c.id} style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-                    <Avatar name={name} url={c.profile?.avatar_url ?? null} size={34} />
+                    <Avatar initials={getInitials(name)} imageUrl={c.profile?.avatar_url ?? null} size="sm" />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 2 }}>
                         <span style={{ ...DM, fontSize: 13, fontWeight: 700, color: INK }}>{name}</span>
@@ -206,7 +195,7 @@ export function CommentsSheet({ postId, onClose, onCountChange }: Props) {
 
         {/* Input */}
         <div style={{ borderTop: '1px solid #f3f4f6', padding: '12px 16px', display: 'flex', gap: 10, alignItems: 'center' }}>
-          {currentProfile && <Avatar name={currentProfile.name} url={currentProfile.url} size={32} />}
+          {currentProfile && <Avatar initials={getInitials(currentProfile.name)} imageUrl={currentProfile.url} size="sm" />}
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', background: '#F3F4F6', borderRadius: 999, padding: '0 14px', height: 40 }}>
             <input
               ref={inputRef}

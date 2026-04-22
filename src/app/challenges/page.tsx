@@ -6,7 +6,7 @@ import Image from 'next/image'
 import { Trophy, Users, Calendar, ArrowRight, Check, Euro, Filter } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { VerifiedBadge } from '@/components/ui/VerifiedBadge'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM: React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
@@ -104,7 +104,7 @@ function ChallengeCard({ challenge, onJoin, joined }: { challenge: Challenge; on
       <div className="px-5 py-3 flex-1">
         {/* Creator */}
         <div className="flex items-center gap-2 mb-4">
-          <Avatar name={challenge.creator_name} size="xs" />
+          <Avatar initials={getInitials(challenge.creator_name)} size="xs" />
           <span className="text-xs font-semibold text-gray-700">{challenge.creator_name}</span>
           {challenge.creator_verified && <VerifiedBadge />}
         </div>

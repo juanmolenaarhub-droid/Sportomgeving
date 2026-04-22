@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { ArrowLeft, Users } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import {
   updateMeetup,
   deleteMeetup,
@@ -306,7 +306,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
             accepted.map((p: ModalParticipant) => (
               <div key={p.userId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #F9FAFB' }}>
                 <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-                  <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
+                  <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
                 </div>
                 <p style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#111', margin: 0 }}>{p.name}</p>
                 <button
@@ -335,7 +335,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
             {accepted.map((p: ModalParticipant) => (
               <div key={p.userId} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 0', borderBottom: '1px solid #F9FAFB' }}>
                 <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
-                  <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
+                  <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
                 </div>
                 <p style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#111', margin: 0 }}>{p.name}</p>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>

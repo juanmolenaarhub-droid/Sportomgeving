@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Check, Shield, Globe, Lock, Download, FileText, Trash2, LogOut } from 'lucide-react'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { useRouter } from 'next/navigation'
 import { updatePrivacySettings, unblockUser } from '@/app/actions/settings'
@@ -298,7 +298,7 @@ export default function PrivacyInstellingenPage() {
           <div className="divide-y divide-black/5">
             {blockedUsers.map(u => (
               <div key={u.blocked_id} className="flex items-center gap-3 px-5 py-4">
-                <Avatar name={u.name} imageUrl={u.avatarUrl} size="sm" />
+                <Avatar initials={getInitials(u.name)} imageUrl={u.avatarUrl} size="sm" />
                 <p className="flex-1 text-sm font-semibold text-gray-800">{u.name}</p>
                 <button
                   onClick={() => handleUnblock(u.blocked_id)}

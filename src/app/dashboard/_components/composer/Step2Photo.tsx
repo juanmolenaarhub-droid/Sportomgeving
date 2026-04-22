@@ -4,7 +4,7 @@ import { useState, useRef, useCallback } from 'react'
 import { ArrowLeft, ImageIcon, X, Upload } from 'lucide-react'
 import { SportSelector } from '@/components/ui/SportSelector'
 import { getSportById } from '@/lib/sports'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
 import TagPeoplePanel from '@/components/composer/TagPeoplePanel'
@@ -483,7 +483,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
           <div className="flex-1 px-4 py-4 space-y-5">
             {/* User row */}
             <div className="flex items-center gap-3">
-              <Avatar name={userName} imageUrl={avatarUrl} size="sm" />
+              <Avatar initials={getInitials(userName)} imageUrl={avatarUrl} size="sm" />
               <span className="text-[14px] font-semibold text-gray-900" style={SYNE}>
                 {userName}
               </span>
