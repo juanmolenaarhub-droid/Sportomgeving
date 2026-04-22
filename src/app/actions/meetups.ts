@@ -744,15 +744,20 @@ export async function markAttended(meetupId: string, targetUserId: string) {
 
 // ─── 10. Review indienen ──────────────────────────────────────────────────────
 
-export async function submitReview(meetupId: string, organizerId: string, rating: number) {
+export async function submitReview(meetupId: string, _legacyOrganizerId: string, rating: number) {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { success: false, error: 'Niet ingelogd' }
   if (rating < 1 || rating > 5) return { success: false, error: 'Ongeldige rating' }
 
+  // Always look up the real organizer from the meetup — never trust caller-supplied organizerId
+  const { data: meetup } = await supabase
+    .from('meetups').select('creator_id').eq('id', meetupId).single()
+  if (!meetup) return { success: false, error: 'Meetup niet gevonden' }
+
   try {
     const { error } = await supabase.from('meetup_reviews')
-      .insert({ meetup_id: meetupId, reviewer_id: user.id, organizer_id: organizerId, rating })
+      .insert({ meetup_id: meetupId, reviewer_id: user.id, organizer_id: meetup.creator_id, rating })
     if (error) return { success: false, error: error.message }
     return { success: true }
   } catch {

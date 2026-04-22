@@ -31,10 +31,15 @@ const MAX_VIDEO_BYTES = 50 * 1024 * 1024 // 50 MB
 export async function uploadFile(
   file: File,
   bucket: string,
-  userId: string,
+  _legacyUserId?: string,
 ): Promise<{ success: true; url: string; path: string } | { success: false; error: string }> {
   const supabase = await createServerSupabaseClient()
   const admin    = createAdminClient()
+
+  // Always use the authenticated user — never trust a caller-supplied userId
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { success: false, error: 'Niet ingelogd.' }
+  const userId = user.id
 
   const isVideo   = ALLOWED_VIDEO_TYPES.includes(file.type)
   const isImage   = ALLOWED_IMAGE_TYPES.includes(file.type)

@@ -1,6 +1,6 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+
 import { createServerSupabaseClient } from '@/lib/supabase-server'
 import { createAdminClient } from '@/lib/supabase-admin'
 
@@ -108,7 +108,7 @@ export async function toggleReaction(messageId: string, emoji: string) {
 // ── Feature 2: Training afspraken ─────────────────────────────────────────────
 export async function createAppointment(
   conversationId: string,
-  proposedToId: string,
+  _proposedToId: string,
   sport: string | null,
   location: string,
   proposedDate: string,  // ISO string
@@ -130,13 +130,16 @@ export async function createAppointment(
     return { error: 'Geen toegang tot deze conversatie' }
   }
 
+  // Derive the other party from the conversation — never trust caller-supplied proposedToId
+  const realProposedToId = conv.from_user_id === user.id ? conv.to_user_id : conv.from_user_id
+
   // Maak afspraak aan
   const { data: appt, error: apptError } = await supabase
     .from('training_appointments')
     .insert({
       conversation_id: conversationId,
       proposed_by: user.id,
-      proposed_to: proposedToId,
+      proposed_to: realProposedToId,
       sport,
       location,
       proposed_date: proposedDate,
