@@ -9,7 +9,7 @@ import {
   LogOut, Search, MapPin, Settings, Play, Plus,
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/Avatar'
 import { ProfileCardProvider } from '@/components/ProfileCardModal'
 import { CreateActionSheet } from '@/components/feed/CreateActionSheet'
 import PostComposer from './_components/PostComposer'
@@ -203,13 +203,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   {label}
 
                   {href === '/dashboard/messages' && unreadMessages > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#C4F542] text-[#1E2B20] text-[10px] font-black rounded-[4px] flex items-center justify-center px-1">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   )}
 
                   {href === '/dashboard/meetup' && hasMeetupDot && !active && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#C4F542] rounded-[4px]" />
                   )}
                 </Link>
               )
@@ -219,8 +219,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard/find"
-              className="hidden md:flex items-center gap-2 bg-[#111111] text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-[#E87722] transition-colors shrink-0"
-              style={{ fontFamily: "'Syne', sans-serif" }}
+              className="hidden md:flex items-center gap-2 bg-forest text-lime text-sm font-bold px-4 py-2 rounded-xl hover:opacity-80 transition-opacity shrink-0"
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               <Search className="w-3.5 h-3.5" />
               Vind buddy
@@ -228,11 +228,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
             <Link
               href="/dashboard/notifications"
-              className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-black/5 transition-colors"
+              className="relative w-9 h-9 flex items-center justify-center rounded-lg hover:bg-forest/5 transition-colors"
             >
-              <Bell className="w-5 h-5 text-gray-500" />
+              <Bell className="w-5 h-5 text-forest/60" />
               {notifCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#C4F542] text-[#1E2B20] text-[10px] font-black rounded-[4px] flex items-center justify-center px-1">
                   {notifCount > 9 ? '9+' : notifCount}
                 </span>
               )}
@@ -241,9 +241,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowDropdown(v => !v)}
-                className="rounded-full overflow-hidden hover:ring-2 hover:ring-[#E87722] transition-all focus:outline-none"
+                className="rounded-full overflow-hidden hover:ring-2 hover:ring-forest transition-all focus:outline-none"
               >
-                <Avatar name={profileName || 'G'} imageUrl={profileImageUrl} size="sm" />
+                <Avatar initials={getInitials(profileName)} imageUrl={profileImageUrl} size="sm" />
               </button>
 
               {showDropdown && (
@@ -302,22 +302,17 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         className={`md:hidden fixed z-50 left-0 right-0${isVideosPage ? ' hidden' : ''}`}
         style={{
           bottom: 0,
-          background: '#FFFFFF',
-          borderTop: '1px solid rgba(0,0,0,0.07)',
+          background: '#F4F1E8',
+          borderTop: '1px solid rgba(30,43,32,0.12)',
           paddingBottom: 'env(safe-area-inset-bottom)',
         }}
       >
-        {/* Nav items — 6 gelijke items */}
-        <nav style={{
-          display: 'flex',
-          alignItems: 'center',
-          padding: '8px 4px 6px',
-        }}>
+        <nav style={{ display: 'flex', alignItems: 'center', padding: '8px 0 6px' }}>
           {MOBILE_NAV_ITEMS.map(({ href, icon: Icon, label, exact }) => (
             <BottomNavItem
               key={href}
               href={href}
-              icon={<Icon style={{ width: 20, height: 20 }} />}
+              icon={<Icon style={{ width: 22, height: 22 }} strokeWidth={1.75} />}
               label={label}
               active={isActive(href, exact)}
               badge={href === '/dashboard/messages' ? unreadMessages : 0}
@@ -357,14 +352,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               position: 'absolute',
               top: -4, right: -4,
               minWidth: 18, height: 18,
-              background: '#E87722',
-              color: 'white',
+              background: '#C4F542',
+              color: '#1E2B20',
               fontSize: 10, fontWeight: 900,
-              borderRadius: 999,
+              borderRadius: 4,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '0 4px',
-              fontFamily: "'DM Sans', sans-serif",
-              border: '2px solid #F5F0E8',
+              fontFamily: 'var(--font-display)',
+              border: '2px solid #F4F1E8',
             }}>
               {notifCount > 9 ? '9+' : notifCount}
             </span>
@@ -385,16 +380,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             width: 52,
             height: 52,
             borderRadius: '50%',
-            background: '#E87722',
+            background: '#1E2B20',
             border: 'none',
-            boxShadow: '0 4px 20px rgba(232,119,34,0.45)',
+            boxShadow: '0 4px 20px rgba(30,43,32,0.30)',
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
             cursor: 'pointer',
           }}
         >
-          <Plus style={{ width: 24, height: 24, color: 'white' }} strokeWidth={2.5} />
+          <Plus style={{ width: 24, height: 24, color: '#C4F542' }} strokeWidth={2.5} />
         </button>
       )}
 
@@ -430,6 +425,9 @@ function BottomNavItem({
   active: boolean
   badge?: number
 }) {
+  const activeColor = '#1E2B20'
+  const inactiveColor = 'rgba(30,43,32,0.40)'
+
   return (
     <Link
       href={href}
@@ -444,23 +442,22 @@ function BottomNavItem({
         WebkitTapHighlightColor: 'transparent',
       }}
     >
-      {/* Icoon — actief: oranje bg pill */}
+      {/* Icoon */}
       <div style={{
         width: 44, height: 34,
         display: 'flex', alignItems: 'center', justifyContent: 'center',
-        borderRadius: 12,
-        background: active ? 'rgba(232,119,34,0.12)' : 'transparent',
-        transition: 'background 150ms',
       }}>
-        <span style={{ color: active ? '#E87722' : '#9CA3AF' }}>{icon}</span>
+        <span style={{ color: active ? activeColor : inactiveColor }}>{icon}</span>
       </div>
 
       {/* Label */}
       <span style={{
-        fontFamily: "'DM Sans', sans-serif",
+        fontFamily: 'var(--font-display)',
         fontSize: 10,
-        fontWeight: active ? 700 : 500,
-        color: active ? '#E87722' : '#9CA3AF',
+        fontWeight: 900,
+        letterSpacing: '0.05em',
+        textTransform: 'uppercase',
+        color: active ? activeColor : inactiveColor,
         lineHeight: 1,
       }}>
         {label}
@@ -471,14 +468,14 @@ function BottomNavItem({
         <span style={{
           position: 'absolute', top: 2, right: '20%',
           minWidth: 16, height: 16,
-          background: '#E87722',
-          color: 'white',
+          background: '#C4F542',
+          color: '#1E2B20',
           fontSize: 9,
           fontWeight: 900,
-          borderRadius: 999,
+          borderRadius: 4,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           padding: '0 3px',
-          fontFamily: "'DM Sans', sans-serif",
+          fontFamily: 'var(--font-display)',
         }}>
           {(badge ?? 0) > 9 ? '9+' : badge}
         </span>
