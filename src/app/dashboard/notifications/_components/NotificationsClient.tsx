@@ -9,7 +9,6 @@ import {
 import { createClient } from '@/lib/supabase'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
 import { markNotificationRead } from '@/app/actions/notifications'
-import { Avatar, getInitials } from '@/components/ui/Avatar'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -47,6 +46,18 @@ const INK    = '#111111'
 const GREEN  = '#1D9E75'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
+
+const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#E87722','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
+
+function getUserColor(id: string): string {
+  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
+  return USER_COLORS[hash % USER_COLORS.length]
+}
+
+function getInitials(name: string | null | undefined): string {
+  if (!name) return '??'
+  return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+}
 
 function timeAgo(dateStr: string): string {
   const diff  = Date.now() - new Date(dateStr).getTime()
@@ -169,6 +180,8 @@ function HeroRequestCard({
   const router = useRouter()
 
   const name      = req.from_profile?.full_name ?? req.from_profile?.username ?? 'Iemand'
+  const color     = getUserColor(req.from_user_id)
+  const inits     = getInitials(name)
   const firstName = name.split(' ')[0]
 
   if (done === 'accepted') {
@@ -196,11 +209,11 @@ function HeroRequestCard({
   }
 
   return (
-    <div style={{ margin: '0 20px', borderRadius: 24, overflow: 'hidden', position: 'relative', background: '#1E2B20' }}>
+    <div style={{ margin: '0 20px', borderRadius: 24, overflow: 'hidden', position: 'relative', background: color }}>
       {/* Reuze initialen ornament */}
       <div style={{ position: 'absolute', right: -12, bottom: -20, pointerEvents: 'none', userSelect: 'none' }}>
-        <span style={{ ...SYNE, fontWeight: 800, fontSize: 180, color: 'rgba(196,245,66,0.08)', lineHeight: 1 }}>
-          {getInitials(name)}
+        <span style={{ ...SYNE, fontWeight: 800, fontSize: 180, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
+          {inits}
         </span>
       </div>
       <div style={{ position: 'relative', padding: 20, minHeight: 190, display: 'flex', flexDirection: 'column' }}>
@@ -210,7 +223,10 @@ function HeroRequestCard({
           <span style={{ ...DM, fontSize: 10, fontWeight: 700, color: INK, letterSpacing: '0.08em' }}>BUDDY VERZOEK</span>
         </div>
         <div style={{ marginTop: 'auto', marginBottom: 12 }}>
-          <Avatar initials={getInitials(name)} imageUrl={req.from_profile?.avatar_url} size="md" className="mb-2" />
+          {req.from_profile?.avatar_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img src={req.from_profile.avatar_url} alt={name} style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover', border: '3px solid rgba(255,255,255,0.4)', marginBottom: 8 }} />
+          )}
           <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 20, color: 'white', lineHeight: 1.1, marginBottom: 4 }}>
             {firstName} wil jouw sportbuddy worden
           </h2>
@@ -247,6 +263,8 @@ function RequestRow({ req, onAccepted, onDeclined }: { req: PendingRequest; onAc
   const router = useRouter()
 
   const name  = req.from_profile?.full_name ?? req.from_profile?.username ?? 'Iemand'
+  const color = getUserColor(req.from_user_id)
+  const inits = getInitials(name)
 
   if (done === 'accepted') {
     return (
@@ -269,7 +287,14 @@ function RequestRow({ req, onAccepted, onDeclined }: { req: PendingRequest; onAc
 
   return (
     <div style={{ background: 'white', borderRadius: 16, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-      <Avatar initials={getInitials(name)} imageUrl={req.from_profile?.avatar_url} size="md" />
+      {req.from_profile?.avatar_url ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img src={req.from_profile.avatar_url} alt={name} style={{ width: 40, height: 40, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: 40, height: 40, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+          <span style={{ ...SYNE, fontSize: 12, fontWeight: 800, color: 'white' }}>{inits}</span>
+        </div>
+      )}
       <div style={{ flex: 1, minWidth: 0 }}>
         <p style={{ ...DM, fontSize: 13, fontWeight: 700, color: INK }}>{name}</p>
         <p style={{ ...DM, fontSize: 11, color: 'rgba(17,17,17,0.55)', marginTop: 1 }}>
@@ -297,6 +322,9 @@ function RequestRow({ req, onAccepted, onDeclined }: { req: PendingRequest; onAc
 
 function FeaturedNotifCard({ notif, onRead }: { notif: Notif; onRead: (id: string) => void }) {
   const router = useRouter()
+  const color  = getUserColor(notif.target_id ?? notif.id)
+  const inits  = getInitials(notif.message.split(' ').slice(0, 2).join(' '))
+
   async function handleClick() {
     onRead(notif.id)
     await markNotificationRead(notif.id)
@@ -304,11 +332,11 @@ function FeaturedNotifCard({ notif, onRead }: { notif: Notif; onRead: (id: strin
   }
 
   return (
-    <div style={{ margin: '0 20px', borderRadius: 24, overflow: 'hidden', position: 'relative', background: '#1E2B20' }}>
+    <div style={{ margin: '0 20px', borderRadius: 24, overflow: 'hidden', position: 'relative', background: color }}>
       {/* Reuze initialen ornament */}
       <div style={{ position: 'absolute', right: -12, bottom: -20, pointerEvents: 'none', userSelect: 'none' }}>
-        <span style={{ ...SYNE, fontWeight: 800, fontSize: 180, color: 'rgba(196,245,66,0.08)', lineHeight: 1 }}>
-          {getInitials(notif.message.split(' ').slice(0, 2).join(' '))}
+        <span style={{ ...SYNE, fontWeight: 800, fontSize: 180, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
+          {inits}
         </span>
       </div>
       <div style={{ position: 'relative', padding: 20, minHeight: 180, display: 'flex', flexDirection: 'column' }}>

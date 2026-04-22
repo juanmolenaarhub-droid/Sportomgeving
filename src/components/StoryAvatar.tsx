@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import { X, Heart, MessageCircle, ChevronLeft, ChevronRight } from 'lucide-react'
-import { Avatar, getInitials } from '@/components/ui/Avatar'
 
 export type StoryPost = {
   id: string
@@ -17,6 +16,21 @@ export type StoryPost = {
   likes_count: number
   comments_count: number
   created_at: string
+}
+
+// ─── Initialen avatar helper ─────────────────────────────────────────────────
+const COLORS = ['bg-orange-500','bg-blue-500','bg-green-500','bg-purple-500','bg-pink-500','bg-teal-500','bg-indigo-500','bg-red-500']
+
+function colorFromName(name: string) {
+  let hash = 0
+  for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash)
+  return COLORS[Math.abs(hash) % COLORS.length]
+}
+
+function initials(name: string) {
+  const parts = name.trim().split(' ')
+  if (parts.length >= 2) return (parts[0][0] + parts[1][0]).toUpperCase()
+  return name.slice(0, 2).toUpperCase()
 }
 
 // ─── Story viewer overlay ────────────────────────────────────────────────────
@@ -42,15 +56,15 @@ function StoryViewer({ posts, startIndex, onClose }: { posts: StoryPost[]; start
         {/* Achtergrond */}
         {post.image_url
           ? <img src={post.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          : <div className="absolute inset-0 bg-forest" />
+          : <div className="absolute inset-0 bg-gradient-to-br from-[#111111] to-gray-800" />
         }
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/75" />
 
         {/* Header */}
         <div className="relative z-10 flex items-center justify-between p-4 pt-8">
           <div className="flex items-center gap-3">
-            <div className="ring-2 ring-lime rounded-full">
-              <Avatar initials={getInitials(post.user.name)} size="sm" />
+            <div className={`w-10 h-10 rounded-full border-2 border-[#E87722] flex items-center justify-center text-sm font-bold text-white ${colorFromName(post.user.name)}`}>
+              {initials(post.user.name)}
             </div>
             <div>
               <p className="text-white font-bold text-sm">{post.user.name}</p>
@@ -65,7 +79,7 @@ function StoryViewer({ posts, startIndex, onClose }: { posts: StoryPost[]; start
         {/* Stats */}
         {(post.distance_km || post.duration_minutes) && (
           <div className="relative z-10 mx-4 mt-1">
-            <div className="bg-black/40 backdrop-blur-sm rounded-[4px] p-3 flex gap-6">
+            <div className="bg-black/40 backdrop-blur-sm rounded-xl p-3 flex gap-6">
               {post.distance_km && (
                 <div className="text-center">
                   <p className="text-white font-black text-lg">{post.distance_km} km</p>
@@ -117,7 +131,7 @@ function StoryViewer({ posts, startIndex, onClose }: { posts: StoryPost[]; start
   )
 }
 
-// ─── Story avatar met lime gloed ─────────────────────────────────────────────
+// ─── Avatar met oranje gloed ─────────────────────────────────────────────────
 export function StoryAvatar({
   name,
   size = 'md',
@@ -132,23 +146,30 @@ export function StoryAvatar({
   const [open, setOpen] = useState(false)
   const hasStory = posts && posts.length > 0
 
-  const avatarSize = size === 'lg' ? 'lg' : size === 'sm' ? 'sm' : 'md'
+  const sizeMap = {
+    sm: { outer: 'w-9 h-9', text: 'text-xs', ring: 'ring-[2px]', inset: 'inset-[2px]' },
+    md: { outer: 'w-11 h-11', text: 'text-sm', ring: 'ring-[2px]', inset: 'inset-[2px]' },
+    lg: { outer: 'w-16 h-16', text: 'text-base', ring: 'ring-[3px]', inset: 'inset-[3px]' },
+  }
+  const s = sizeMap[size]
 
   return (
     <>
       <button
         onClick={() => hasStory && setOpen(true)}
-        className={`relative shrink-0 rounded-full ${hasStory ? 'cursor-pointer' : 'cursor-default'}`}
+        className={`relative ${s.outer} rounded-full shrink-0 ${hasStory ? 'cursor-pointer' : 'cursor-default'}`}
         disabled={!hasStory}
       >
         {hasStory && (
           <>
-            <span className="absolute inset-0 rounded-full bg-lime blur-[6px] opacity-40 animate-pulse" />
-            <span className="absolute inset-0 rounded-full ring-2 ring-lime" />
-            <span className="absolute inset-[3px] rounded-full ring-2 ring-bone" />
+            <span className="absolute inset-0 rounded-full bg-[#E87722] blur-[6px] opacity-50 animate-pulse" />
+            <span className={`absolute inset-0 rounded-full ${s.ring} ring-[#E87722]`} />
+            <span className={`absolute ${s.inset} rounded-full ring-2 ring-white`} />
           </>
         )}
-        <Avatar initials={getInitials(name)} size={avatarSize} />
+        <span className={`relative w-full h-full rounded-full flex items-center justify-center font-bold text-white ${colorFromName(name)} ${s.text}`}>
+          {initials(name)}
+        </span>
       </button>
 
       {open && hasStory && (

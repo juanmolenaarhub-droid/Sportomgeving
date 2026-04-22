@@ -27,10 +27,9 @@ export async function GET(
   // Use service role key to bypass RLS
   const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY
   if (!serviceKey) {
-    const SAFE_FIELDS = 'id, full_name, username, avatar_url, banner_url, bio, city, sport, is_active, is_searchable, created_at'
     const { data: profile } = await authClient
       .from('profiles')
-      .select(SAFE_FIELDS)
+      .select('*')
       .eq('id', id)
       .maybeSingle()
     return NextResponse.json({ profile })
@@ -42,11 +41,9 @@ export async function GET(
     { auth: { autoRefreshToken: false, persistSession: false } }
   )
 
-  const SAFE_FIELDS = 'id, full_name, username, avatar_url, banner_url, bio, city, sport, is_active, is_searchable, created_at'
-
   const { data: profile, error } = await admin
     .from('profiles')
-    .select(SAFE_FIELDS)
+    .select('*')
     .eq('id', id)
     .maybeSingle()
 

@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import { AlertTriangle, ChevronDown, Download } from 'lucide-react'
 import { createAdminClient } from '@/lib/supabase-admin'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
@@ -204,13 +204,13 @@ export default function RapportenPage() {
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Avatar initials={getInitials(r.reporter?.full_name ?? '?')} imageUrl={r.reporter?.avatar_url ?? null} size="xs" />
+                      <Avatar name={r.reporter?.full_name ?? '?'} imageUrl={r.reporter?.avatar_url ?? null} size="xs" />
                       <span className="font-semibold text-gray-800">@{r.reporter?.username ?? r.reporter?.full_name ?? '—'}</span>
                     </div>
                   </td>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
-                      <Avatar initials={getInitials(r.reported_user?.full_name ?? '?')} imageUrl={r.reported_user?.avatar_url ?? null} size="xs" />
+                      <Avatar name={r.reported_user?.full_name ?? '?'} imageUrl={r.reported_user?.avatar_url ?? null} size="xs" />
                       <span className="font-semibold text-gray-800">@{r.reported_user?.username ?? r.reported_user?.full_name ?? '—'}</span>
                     </div>
                   </td>
@@ -252,7 +252,7 @@ export default function RapportenPage() {
               <p><span className="font-bold text-gray-500">Ingediend:</span> {new Date(selected.created_at).toLocaleString('nl-NL')}</p>
               {selected.reported_user && (
                 <div className="bg-[#FAFAF7] rounded-xl p-3 flex items-center gap-3">
-                  <Avatar initials={getInitials(selected.reported_user.full_name ?? '?')} imageUrl={selected.reported_user.avatar_url ?? null} size="sm" />
+                  <Avatar name={selected.reported_user.full_name ?? '?'} imageUrl={selected.reported_user.avatar_url ?? null} size="sm" />
                   <div>
                     <p className="font-bold text-gray-900">@{selected.reported_user.username ?? selected.reported_user.full_name}</p>
                     <p className="text-xs text-gray-400">Lid sinds {new Date(selected.reported_user.created_at).toLocaleDateString('nl-NL')}</p>

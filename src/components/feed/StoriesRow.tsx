@@ -1,7 +1,7 @@
 'use client'
 
 import { Plus } from 'lucide-react'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -62,7 +62,7 @@ export function StoriesRow({
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             overflow: 'hidden',
           }}>
-            <Avatar initials={getInitials(currentUserName)} imageUrl={currentUserAvatarUrl} size="lg" />
+            <Avatar name={currentUserName} imageUrl={currentUserAvatarUrl} size="lg" />
           </div>
           {/* Plus badge */}
           <div style={{
@@ -122,7 +122,7 @@ export function StoriesRow({
                 : '2.5px solid #E87722',
               overflow: 'hidden',
             }}>
-              <Avatar initials={getInitials(buddy.name)} imageUrl={buddy.avatarUrl} size="lg" />
+              <Avatar name={buddy.name} imageUrl={buddy.avatarUrl} size="lg" />
             </div>
 
             {/* Live badge */}

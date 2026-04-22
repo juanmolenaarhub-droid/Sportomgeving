@@ -7,7 +7,7 @@ import {
   Check, X, MessageCircle, Clock, Send, Plus,
   MoreVertical, MoreHorizontal, EyeOff, AlertTriangle, Flag, Trash2, ImageIcon, CalendarDays,
 } from 'lucide-react'
-import { Avatar, getInitials } from '@/components/ui/Avatar'
+import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { acceptBuddyRequest, declineBuddyRequest } from '../../actions'
 import { deleteConversation } from '../../safety-actions'
@@ -65,6 +65,17 @@ const SPORT_COLORS: Record<string, string> = {
 }
 function getSportColor(sport: string | null): string {
   return sport ? (SPORT_COLORS[sport] ?? '#E87722') : '#E87722'
+}
+
+// ── Gebruiker kleur (consistent per userId) ───────────────────────────────────
+const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#E87722','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
+function getUserColor(userId: string): string {
+  const hash = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
+  return USER_COLORS[hash % USER_COLORS.length]
+}
+
+function getInitials(name: string): string {
+  return name.trim().split(' ').map(n => n[0]).join('').toUpperCase().slice(0, 2)
 }
 
 function formatTime(dateStr: string): string {
@@ -706,6 +717,7 @@ export default function MessagesClient({
                     <p style={{ ...DM, fontSize: 13, color: 'rgba(17,17,17,0.45)', fontWeight: 500 }}>Geen berichtverzoeken</p>
                   </div>
                 ) : requests.map(conv => {
+                  const color = getUserColor(conv.otherUserId)
                   return (
                     <button
                       key={conv.requestId}
@@ -722,7 +734,12 @@ export default function MessagesClient({
                         border: 'none', cursor: 'pointer', textAlign: 'left',
                       }}
                     >
-                      <Avatar initials={getInitials(conv.otherUserName)} size="md" online />
+                      <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div style={{ width: 44, height: 44, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
+                        </div>
+                        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 13, height: 13, borderRadius: '50%', background: '#E87722', border: '2px solid #F5F0E8' }} />
+                      </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <p style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{conv.otherUserName}</p>
                         <p style={{ ...DM, fontSize: 12, color: 'rgba(17,17,17,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -757,6 +774,8 @@ export default function MessagesClient({
 
                 {/* ── Hero card ──────────────────────────────────────────── */}
                 {heroConv && (() => {
+                  const heroColor = getUserColor(heroConv.otherUserId)
+                  const heroInitials = getInitials(heroConv.otherUserName)
                   const isHeroOnline = onlineUsers.has(heroConv.otherUserId)
                   return (
                     <button
@@ -768,14 +787,14 @@ export default function MessagesClient({
                       style={{
                         display: 'block', margin: '0 12px', width: 'calc(100% - 24px)',
                         borderRadius: 24, overflow: 'hidden', position: 'relative',
-                        background: '#1E2B20', border: 'none', cursor: 'pointer', textAlign: 'left',
+                        background: heroColor, border: 'none', cursor: 'pointer', textAlign: 'left',
                         marginTop: 4,
                       }}
                     >
                       {/* Reuze initialen ornament */}
                       <div style={{ position: 'absolute', right: -16, bottom: -24, pointerEvents: 'none', userSelect: 'none' }}>
-                        <span style={{ ...SYNE, fontWeight: 800, fontSize: 200, color: 'rgba(196,245,66,0.08)', lineHeight: 1 }}>
-                          {getInitials(heroConv.otherUserName)}
+                        <span style={{ ...SYNE, fontWeight: 800, fontSize: 200, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
+                          {heroInitials}
                         </span>
                       </div>
 
@@ -824,13 +843,19 @@ export default function MessagesClient({
                     </p>
                     <div style={{ padding: '0 16px', display: 'flex', gap: 12, overflowX: 'auto', paddingBottom: 4 }} className="scrollbar-hide">
                       {onlineConvs.slice(0, 8).map(conv => {
+                        const color = getUserColor(conv.otherUserId)
                         return (
                           <button
                             key={conv.requestId}
                             onClick={() => { setSelected(conv); setActiveMeetupId(null); setActiveMeetupData(null) }}
                             style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6, flexShrink: 0, width: 56, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
                           >
-                            <Avatar initials={getInitials(conv.otherUserName)} size="lg" online />
+                            <div style={{ position: 'relative' }}>
+                              <div style={{ width: 56, height: 56, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ ...SYNE, fontSize: 14, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
+                              </div>
+                              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 14, height: 14, borderRadius: '50%', background: '#1D9E75', border: '2px solid #F5F0E8' }} />
+                            </div>
                             <span style={{ ...DM, fontSize: 10, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }}>
                               {conv.otherUserName.split(' ')[0]}
                             </span>
@@ -849,6 +874,7 @@ export default function MessagesClient({
                     </p>
                     <div style={{ padding: '0 12px', display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {earlierConvs.map(conv => {
+                        const color = getUserColor(conv.otherUserId)
                         const isOnline = onlineUsers.has(conv.otherUserId)
                         const sportColor = getSportColor(conv.sport)
                         return (
@@ -867,7 +893,14 @@ export default function MessagesClient({
                               border: 'none', cursor: 'pointer', textAlign: 'left',
                             }}
                           >
-                            <Avatar initials={getInitials(conv.otherUserName)} size="md" online={isOnline} />
+                            <div style={{ position: 'relative', flexShrink: 0 }}>
+                              <div style={{ width: 44, height: 44, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
+                              </div>
+                              {isOnline && (
+                                <div style={{ position: 'absolute', bottom: 0, right: 0, width: 13, height: 13, borderRadius: '50%', background: '#1D9E75', border: '2px solid white' }} />
+                              )}
+                            </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
                                 <span style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
@@ -929,7 +962,7 @@ export default function MessagesClient({
             <div className="flex items-center gap-3 p-4 border-b border-gray-100">
               <button onClick={() => setSelected(null)} className="md:hidden p-1.5 hover:bg-gray-100 rounded-lg transition-colors text-gray-500 font-bold">←</button>
               <Link href={`/dashboard/profile/${selected.otherUserId}`} className="relative shrink-0">
-                <Avatar initials={getInitials(selected.otherUserName)} size="sm" />
+                <Avatar name={selected.otherUserName} size="sm" />
                 {onlineUsers.has(selected.otherUserId) && (
                   <span className="absolute bottom-0 right-0 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-white" />
                 )}
@@ -983,7 +1016,7 @@ export default function MessagesClient({
             <div className="flex-1 overflow-y-auto p-4 space-y-1">
               {selected.message && (
                 <div className="flex justify-start items-end gap-2 mb-2">
-                  <Avatar initials={getInitials(selected.otherUserName)} size="xs" />
+                  <Avatar name={selected.otherUserName} size="xs" />
                   <div className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
                     style={{ background: '#FFFFFF', color: '#111111', borderRadius: '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
                     <p className="text-xs font-semibold mb-0.5" style={{ color: '#3B82F6' }}>{selected.otherUserName}</p>
@@ -1012,7 +1045,7 @@ export default function MessagesClient({
                 return (
                   <div key={msg.id} className={`group flex flex-col ${fromMe ? 'items-end' : 'items-start'} mb-1`}>
                     <div className={`flex ${fromMe ? 'justify-end' : 'justify-start'} items-end gap-2 relative`}>
-                      {!fromMe && <Avatar initials={getInitials(selected.otherUserName)} size="xs" />}
+                      {!fromMe && <Avatar name={selected.otherUserName} size="xs" />}
 
                       {isDeleted ? (
                         <div className={`max-w-[75%] px-4 py-2.5 rounded-2xl text-sm ${fromMe ? 'rounded-br-sm' : 'rounded-bl-sm'} bg-gray-50 border border-gray-100`}>
@@ -1229,7 +1262,9 @@ export default function MessagesClient({
               <div className="w-10 h-1 bg-gray-200 rounded-full" />
             </div>
             <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-100">
-              <Avatar initials={getInitials(previewConv.otherUserName)} size="md" />
+              <div style={{ width: 44, height: 44, borderRadius: '50%', background: getUserColor(previewConv.otherUserId), display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(previewConv.otherUserName)}</span>
+              </div>
               <div className="flex-1 min-w-0">
                 <p className="font-black text-black text-base">{previewConv.otherUserName}</p>
                 {previewConv.sport && <p className="text-xs font-semibold text-[#E87722]">{previewConv.sport}</p>}

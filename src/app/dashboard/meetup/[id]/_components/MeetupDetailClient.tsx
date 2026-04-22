@@ -7,7 +7,7 @@ import {
   ArrowLeft, MapPin, Calendar, Clock, Zap, Check, X, MessageCircle,
   AlertTriangle, Send, Crown,
 } from 'lucide-react'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 
 import { respondToInterest, leaveMeetup, cancelMeetup, sendMeetupMessage } from '@/app/actions/meetups'
 import InterestModal from '../../_components/InterestModal'
@@ -203,7 +203,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
 
           {/* Creator */}
           <div className="flex items-center gap-3 mt-4 p-3 bg-gray-50 rounded-xl">
-            <Avatar initials={getInitials(creator?.full_name ?? 'O')} imageUrl={creator?.avatar_url} size="sm" />
+            <Avatar name={creator?.full_name ?? 'O'} imageUrl={creator?.avatar_url} size="sm" />
             <div>
               <p className="text-xs text-gray-500">Organisator</p>
               <p className="text-sm font-bold text-black flex items-center gap-1">
@@ -309,7 +309,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
           <div className="space-y-3">
             {interested.map(p => (
               <div key={p.user_id} className="flex items-center gap-3 p-3 bg-gray-50 rounded-xl">
-                <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
+                <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
                 <div className="flex-1 min-w-0">
                   <p className="font-bold text-sm text-black">{p.name}</p>
                   {p.message && <p className="text-xs text-gray-500 truncate mt-0.5">{p.message}</p>}
@@ -346,7 +346,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
           <div className="flex flex-wrap gap-3">
             {accepted.map(p => (
               <div key={p.user_id} className="flex items-center gap-2">
-                <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
+                <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
                 <span className="text-sm font-semibold text-gray-700">{p.name}</span>
               </div>
             ))}
@@ -367,7 +367,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
             {/* Avatar preview */}
             <div className="flex -space-x-2 ml-auto">
               {[creator, ...accepted.slice(0, 4)].filter(Boolean).map((p: any, i) => (
-                <Avatar key={i} initials={getInitials(p.full_name ?? p.name ?? '?')} imageUrl={p.avatar_url ?? p.avatarUrl} size="xs" />
+                <Avatar key={i} name={p.full_name ?? p.name ?? '?'} imageUrl={p.avatar_url ?? p.avatarUrl} size="xs" />
               ))}
               {accepted.length > 4 && (
                 <div className="w-7 h-7 rounded-full bg-gray-200 flex items-center justify-center text-xs font-bold text-gray-600 border-2 border-white">

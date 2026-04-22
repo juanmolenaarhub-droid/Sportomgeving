@@ -6,7 +6,7 @@ import {
 } from 'lucide-react'
 import { SportSelector } from '@/components/ui/SportSelector'
 import { getSportById } from '@/lib/sports'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
 import TagPeoplePanel from '@/components/composer/TagPeoplePanel'
@@ -245,7 +245,7 @@ export default function Step2Post({
 
           {/* User row */}
           <div className="flex items-center gap-3 px-4 py-3">
-            <Avatar initials={getInitials(userName)} imageUrl={avatarUrl} size="sm" />
+            <Avatar name={userName} imageUrl={avatarUrl} size="sm" />
             <span className="text-[14px] font-semibold text-gray-900" style={SYNE}>
               {userName}
             </span>

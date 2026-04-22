@@ -5,7 +5,7 @@ import { ArrowLeft, MapPin, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { SportSelector } from '@/components/ui/SportSelector'
 import { getSportById } from '@/lib/sports'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 import ToggleRow from '@/components/composer/ToggleRow'
 import LocationPanel from '@/components/composer/LocationPanel'
 import TagPeoplePanel from '@/components/composer/TagPeoplePanel'
@@ -299,7 +299,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
           <div className="px-4 pb-8 space-y-5 pt-2">
             {/* User row */}
             <div className="flex items-center gap-3">
-              <Avatar initials={getInitials(userName)} imageUrl={avatarUrl} size="sm" />
+              <Avatar name={userName} imageUrl={avatarUrl} size="sm" />
               <div className="flex items-center gap-2">
                 <span className="text-[14px] font-semibold text-gray-900" style={SYNE}>
                   {userName}

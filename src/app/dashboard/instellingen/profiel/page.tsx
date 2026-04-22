@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef, useTransition, useCallback } from 'react'
 import Link from 'next/link'
 import { ArrowLeft, Camera, Check, Lock } from 'lucide-react'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 import { createClient } from '@/lib/supabase'
 import { updateProfile } from '@/app/actions/settings'
 import { checkUsernameAvailability, setInitialUsername } from '@/app/actions/profile'
@@ -371,7 +371,7 @@ export default function ProfielInstellingenPage() {
             className="relative shrink-0 group"
           >
             <div className="ring-4 ring-white rounded-full inline-block">
-              <Avatar initials={getInitials(form.full_name || 'G')} imageUrl={form.avatar_url} size="lg" />
+              <Avatar name={form.full_name || 'G'} imageUrl={form.avatar_url} size="lg" />
             </div>
             <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
               {uploadingAvatar

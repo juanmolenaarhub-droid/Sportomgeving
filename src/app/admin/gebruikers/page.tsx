@@ -27,7 +27,17 @@ type UserDetail = Profile & {
   posts: number
 }
 
-import { Avatar, getInitials } from '@/components/Avatar'
+function Avatar({ name, size = 32 }: { name: string | null; size?: number }) {
+  const initials = (name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
+  return (
+    <div
+      className="bg-[#111111] rounded-lg flex items-center justify-center text-white font-bold shrink-0"
+      style={{ width: size, height: size, fontSize: size * 0.35 }}
+    >
+      {initials}
+    </div>
+  )
+}
 
 export default function GebruikersPage() {
   const supabase = createClient()
@@ -186,7 +196,7 @@ export default function GebruikersPage() {
                   >
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2.5">
-                        <Avatar initials={getInitials(p.full_name ?? p.username)} size="sm" />
+                        <Avatar name={p.full_name ?? p.username} size={30} />
                         <div>
                           <p className="font-semibold text-black text-xs">{p.full_name ?? p.username ?? '—'}</p>
                           <p className="text-gray-400 text-[10px]">{p.email ?? '—'}</p>
@@ -228,7 +238,7 @@ export default function GebruikersPage() {
             {/* Header */}
             <div className="bg-[#111111] px-6 py-6 flex items-start justify-between">
               <div className="flex items-center gap-3">
-                <Avatar initials={getInitials(selectedUser.full_name ?? selectedUser.username)} size="md" />
+                <Avatar name={selectedUser.full_name ?? selectedUser.username} size={44} />
                 <div>
                   <p style={{ ...SYNE, fontWeight: 700, fontSize: 16, color: 'white' }}>
                     {selectedUser.full_name ?? selectedUser.username ?? 'Onbekend'}

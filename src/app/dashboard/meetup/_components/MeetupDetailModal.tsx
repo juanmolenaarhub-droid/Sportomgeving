@@ -3,7 +3,7 @@
 import { useState, useEffect, useTransition } from 'react'
 import dynamic from 'next/dynamic'
 import { ArrowLeft, MapPin, Calendar, Users, Eye, Globe, Lock } from 'lucide-react'
-import { Avatar, getInitials } from '@/components/Avatar'
+import { Avatar } from '@/components/Avatar'
 import HostTrustCard from './HostTrustCard'
 import {
   getMeetupDetailForModal,
@@ -469,7 +469,7 @@ function AanwezigTab({ data, actionPending, onMarkAttended, onRemove }: {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       {data.acceptedParticipants.map(p => (
         <div key={p.userId} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
+          <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
           <div style={{ flex: 1 }}>
             <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>{p.name}</p>
             {p.attended ? (
@@ -534,7 +534,7 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
         data.interestedParticipants.map(p => (
           <div key={p.userId} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: p.message ? 8 : 6 }}>
-              <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="sm" />
+              <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
               <div style={{ flex: 1 }}>
                 <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0 }}>{p.name}</p>
                 <p style={{ fontSize: 11, color: '#9ca3af', margin: '1px 0 0' }}>
