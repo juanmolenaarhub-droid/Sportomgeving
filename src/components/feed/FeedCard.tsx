@@ -38,35 +38,11 @@ export type FeedPostData = {
 
 // ─── Design tokens ─────────────────────────────────────────────────────────────
 
-const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
-const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
-const ORANGE = '#E87722'
-const INK    = '#111111'
-
-// ─── Sport color mapping ────────────────────────────────────────────────────────
-
-const SPORT_COLORS: Record<string, string> = {
-  tennis:     '#E87722',
-  hardlopen:  '#E87722',
-  fietsen:    '#1D9E75',
-  wielrennen: '#1D9E75',
-  zwemmen:    '#3A7AC4',
-  gym:        '#7F77DD',
-  fitness:    '#7F77DD',
-  yoga:       '#1D9E75',
-  voetbal:    '#E87722',
-  padel:      '#5B4A8B',
-  golf:       '#D4A87A',
-  triathlon:  '#E87722',
-  basketbal:  '#E87722',
-  hockey:     '#1D9E75',
-  boksen:     '#D4538C',
-}
-
-function getSportColor(sport: string | null): string {
-  if (!sport) return INK
-  return SPORT_COLORS[sport.toLowerCase()] ?? INK
-}
+const BONE   = '#F4F1E8'
+const FOREST = '#1E2B20'
+const LIME   = '#C4F542'
+const DISPLAY: React.CSSProperties = { fontFamily: 'var(--font-display)' }
+const BODY:    React.CSSProperties = { fontFamily: 'var(--font-body)' }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -99,7 +75,7 @@ function getTimeOfDay(rawDate: string): string {
   if (hour < 12) return 'Voormiddag'
   if (hour < 18) return 'Middag'
   if (hour < 22) return 'Avond'
-  return 'Late'
+  return 'Late avond'
 }
 
 function generateTitle(post: FeedPostData): string {
@@ -116,7 +92,7 @@ function generateTitle(post: FeedPostData): string {
   return 'Post'
 }
 
-// ─── Like handler (shared) ─────────────────────────────────────────────────────
+// ─── Like handler ──────────────────────────────────────────────────────────────
 
 async function toggleLike(
   supabase: ReturnType<typeof createClient>,
@@ -141,12 +117,12 @@ async function toggleLike(
 
 export function FeedCardSkeleton() {
   return (
-    <div style={{ background: 'white', borderRadius: 20, overflow: 'hidden' }}>
-      <div style={{ margin: '14px 14px 0', aspectRatio: '5/4', borderRadius: 14, background: 'linear-gradient(90deg, #EDE7DD 25%, #F5F0E8 50%, #EDE7DD 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
-      <div style={{ padding: '16px 16px' }}>
-        <div style={{ width: 80, height: 9, borderRadius: 6, background: '#EDE7DD', marginBottom: 10 }} />
-        <div style={{ width: '75%', height: 18, borderRadius: 6, background: '#EDE7DD', marginBottom: 6 }} />
-        <div style={{ width: '50%', height: 18, borderRadius: 6, background: '#EDE7DD' }} />
+    <div style={{ background: BONE, borderRadius: 4, border: `1px solid ${FOREST}`, overflow: 'hidden' }}>
+      <div style={{ aspectRatio: '5/4', background: 'linear-gradient(90deg, #E5E1D8 25%, #F4F1E8 50%, #E5E1D8 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+      <div style={{ padding: '14px 16px 16px' }}>
+        <div style={{ width: 80, height: 9, borderRadius: 4, background: '#E5E1D8', marginBottom: 10 }} />
+        <div style={{ width: '75%', height: 22, borderRadius: 4, background: '#E5E1D8', marginBottom: 6 }} />
+        <div style={{ width: '50%', height: 22, borderRadius: 4, background: '#E5E1D8' }} />
       </div>
       <style>{`@keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}`}</style>
     </div>
@@ -159,49 +135,45 @@ function EditorialCard({ post, onLikeToggle }: {
   post: FeedPostData
   onLikeToggle: (id: string, liked: boolean, count: number) => void
 }) {
-  const supabase = createClient()
-  const router   = useRouter()
+  const supabase    = createClient()
+  const router      = useRouter()
   const [liking,       setLiking]       = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comments_count)
 
-  const sport      = post.sport_tag ?? post.type ?? null
-  const sportColor = getSportColor(sport)
-  const eyebrow    = getEyebrowText(post)
-  const title      = generateTitle(post)
-  const metric     = getMetric(post)
-  const hasMedia   = !!(post.media_url || post.thumbnail_url)
-  const isVideo    = post.media_type === 'video'
-  const firstName  = getFirstName(post.userName)
+  const eyebrow     = getEyebrowText(post)
+  const title       = generateTitle(post)
+  const metric      = getMetric(post)
+  const hasMedia    = !!(post.media_url || post.thumbnail_url)
+  const isVideo     = post.media_type === 'video'
+  const firstName   = getFirstName(post.userName)
   const description = post.content
 
-  function UserPill({ absolute }: { absolute?: boolean }) {
-    const style: React.CSSProperties = absolute
-      ? { position: 'absolute', top: 10, left: 10 }
-      : {}
+  function UserPill() {
     return (
       <button
         onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
         style={{
-          ...style,
+          position: 'absolute', top: 10, left: 10,
           display: 'inline-flex', alignItems: 'center', gap: 6,
-          background: 'rgba(255,255,255,0.95)', backdropFilter: 'blur(8px)',
-          borderRadius: 999, padding: '4px 10px 4px 4px',
+          background: FOREST, borderRadius: 4, padding: '4px 10px 4px 4px',
           border: 'none', cursor: 'pointer',
         }}
       >
         <Avatar initials={getInitials(post.userName)} imageUrl={post.userAvatarUrl} size="xs" />
-        <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: INK }}>{firstName}</span>
+        <span style={{ ...DISPLAY, fontSize: 10, fontWeight: 900, color: LIME, letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+          {firstName}
+        </span>
       </button>
     )
   }
 
   return (
-    <article style={{ background: 'white', borderRadius: 20, overflow: 'hidden' }}>
+    <article style={{ background: BONE, borderRadius: 4, border: `1px solid ${FOREST}`, overflow: 'hidden' }}>
 
       {/* Media */}
       {hasMedia ? (
-        <div style={{ margin: '14px 14px 0', position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '5/4' }}>
+        <div style={{ position: 'relative', aspectRatio: '5/4', overflow: 'hidden' }}>
           {isVideo ? (
             <>
               {post.thumbnail_url && (
@@ -212,72 +184,84 @@ function EditorialCard({ post, onLikeToggle }: {
                 onClick={() => router.push(`/dashboard/posts/${post.id}`)}
                 style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.20)', border: 'none', cursor: 'pointer' }}
               >
-                <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Play style={{ width: 20, height: 20, color: 'white', marginLeft: 2 }} />
+                <div style={{ width: 52, height: 52, borderRadius: 4, background: FOREST, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Play style={{ width: 20, height: 20, color: LIME, marginLeft: 2 }} />
                 </div>
               </button>
             </>
           ) : (
-            <button onClick={() => router.push(`/dashboard/posts/${post.id}`)} style={{ display: 'block', position: 'absolute', inset: 0, border: 'none', padding: 0, cursor: 'pointer', width: '100%', height: '100%' }}>
+            <button
+              onClick={() => router.push(`/dashboard/posts/${post.id}`)}
+              style={{ display: 'block', position: 'absolute', inset: 0, border: 'none', padding: 0, cursor: 'pointer', width: '100%', height: '100%' }}
+            >
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={post.media_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             </button>
           )}
-          <UserPill absolute />
+          <UserPill />
           {metric && (
-            <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '4px 10px' }}>
-              <span style={{ ...DM, fontSize: 10, fontWeight: 500, color: 'white' }}>{metric}</span>
+            <div style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(30,43,32,0.50)', borderRadius: 4, padding: '4px 10px' }}>
+              <span style={{ ...BODY, fontSize: 10, fontWeight: 500, color: 'white' }}>{metric}</span>
             </div>
           )}
         </div>
       ) : (
-        <div style={{ margin: '14px 14px 0', position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '5/4', background: '#1E2B2020' }}>
+        <div style={{ position: 'relative', aspectRatio: '5/4', overflow: 'hidden', background: 'rgba(30,43,32,0.06)' }}>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: 24 }}>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, lineHeight: 1.1, color: INK, opacity: 0.85 }}>
+            <p style={{ ...DISPLAY, fontWeight: 900, fontSize: 22, lineHeight: 1.1, color: FOREST, opacity: 0.65, textTransform: 'uppercase' }}>
               &ldquo;{(description ?? '').slice(0, 80)}{(description ?? '').length > 80 ? '…' : ''}&rdquo;
             </p>
           </div>
-          <UserPill absolute />
+          <UserPill />
         </div>
       )}
 
-      {/* Content below media */}
+      {/* Content */}
       <div style={{ padding: '14px 16px 16px' }}>
-        <p style={{ ...DM, fontSize: 10, fontWeight: 600, color: ORANGE, letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+        <p style={{ ...DISPLAY, fontSize: 9, fontWeight: 900, color: LIME, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>
           {eyebrow}
         </p>
         <h2
           onClick={() => router.push(`/dashboard/posts/${post.id}`)}
-          style={{ ...SYNE, fontWeight: 800, fontSize: 20, lineHeight: 1.15, color: INK, marginBottom: 6, cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          style={{ ...DISPLAY, fontWeight: 900, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.01em', textTransform: 'uppercase', color: FOREST, marginBottom: 6, cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
         >
           {title}
         </h2>
         {description && (
-          <p style={{ ...DM, fontSize: 11, color: 'rgba(17,17,17,0.60)', lineHeight: 1.5, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <p style={{ ...BODY, fontSize: 12, color: 'rgba(30,43,32,0.70)', lineHeight: 1.6, marginBottom: 10, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {description}
           </p>
         )}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
-          {sport && (
-            <div style={{ display: 'inline-flex', alignItems: 'center', background: `${sportColor}18`, borderRadius: 999, padding: '3px 8px' }}>
-              <span style={{ ...DM, fontSize: 9, fontWeight: 700, letterSpacing: '0.10em', color: sportColor }}>
-                {sport.toUpperCase()}
-              </span>
-            </div>
-          )}
-          <span style={{ ...DM, fontSize: 10, color: 'rgba(17,17,17,0.40)' }}>{post.created_at}</span>
-        </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <button onClick={() => toggleLike(supabase, post, onLikeToggle, setLiking)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-            <Heart style={{ width: 18, height: 18, color: post.liked ? ORANGE : INK, fill: post.liked ? ORANGE : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
-            <span style={{ ...DM, fontSize: 12, fontWeight: 600, color: INK }}>{post.likes_count}</span>
-          </button>
-          <button onClick={() => setShowComments(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-            <MessageCircle style={{ width: 18, height: 18, color: INK }} />
-            <span style={{ ...DM, fontSize: 12, fontWeight: 600, color: INK }}>{commentCount}</span>
-          </button>
-          <button style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-            <Send style={{ width: 17, height: 17, color: INK }} />
+        <span style={{ ...BODY, fontSize: 10, color: 'rgba(30,43,32,0.40)', marginBottom: 14, display: 'block' }}>
+          {post.created_at}
+        </span>
+
+        {/* Actions */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <button
+              onClick={() => toggleLike(supabase, post, onLikeToggle, setLiking)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <Heart style={{ width: 18, height: 18, color: LIME, fill: post.liked ? LIME : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
+              <span style={{ ...BODY, fontSize: 12, fontWeight: 600, color: FOREST }}>{post.likes_count}</span>
+            </button>
+            <button
+              onClick={() => setShowComments(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <MessageCircle style={{ width: 18, height: 18, color: FOREST }} strokeWidth={1.75} />
+              <span style={{ ...BODY, fontSize: 12, fontWeight: 600, color: FOREST }}>{commentCount}</span>
+            </button>
+            <button style={{ display: 'flex', alignItems: 'center', background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+              <Send style={{ width: 17, height: 17, color: FOREST }} strokeWidth={1.75} />
+            </button>
+          </div>
+          <button
+            onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
+            style={{ ...DISPLAY, fontSize: 10, fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', background: FOREST, color: LIME, borderRadius: 4, padding: '6px 12px', border: 'none', cursor: 'pointer' }}
+          >
+            +VOLG
           </button>
         </div>
       </div>
@@ -299,27 +283,27 @@ function HeroCard({ post, onLikeToggle }: {
   post: FeedPostData
   onLikeToggle: (id: string, liked: boolean, count: number) => void
 }) {
-  const supabase = createClient()
-  const router   = useRouter()
+  const supabase    = createClient()
+  const router      = useRouter()
   const [liking,       setLiking]       = useState(false)
   const [showComments, setShowComments] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comments_count)
 
-  const firstName  = getFirstName(post.userName)
-  const eyebrow    = getEyebrowText(post)
-  const title      = generateTitle(post)
-  const metric     = getMetric(post)
-  const hasMedia   = !!(post.media_url || post.thumbnail_url)
-  const isVideo    = post.media_type === 'video'
+  const firstName   = getFirstName(post.userName)
+  const eyebrow     = getEyebrowText(post)
+  const title       = generateTitle(post)
+  const metric      = getMetric(post)
+  const hasMedia    = !!(post.media_url || post.thumbnail_url)
+  const isVideo     = post.media_type === 'video'
   const description = post.content
-  const sport      = post.sport_tag ?? post.type ?? null
+  const sport       = post.sport_tag ?? post.type ?? null
 
   return (
-    <article style={{ borderRadius: 20, overflow: 'hidden', position: 'relative', background: '#1E2B20' }}>
+    <article style={{ borderRadius: 4, overflow: 'hidden', position: 'relative', background: FOREST }}>
 
       {/* Giant initials ornament */}
       <div style={{ position: 'absolute', right: -10, bottom: -20, pointerEvents: 'none', userSelect: 'none', overflow: 'hidden' }}>
-        <span style={{ ...SYNE, fontWeight: 800, fontSize: 280, color: 'rgba(196,245,66,0.08)', lineHeight: 1 }}>
+        <span style={{ ...DISPLAY, fontWeight: 900, fontSize: 240, color: 'rgba(196,245,66,0.10)', lineHeight: 1 }}>
           {getInitials(post.userName)}
         </span>
       </div>
@@ -330,10 +314,10 @@ function HeroCard({ post, onLikeToggle }: {
         <div style={{ marginBottom: 14 }}>
           <button
             onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
-            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '4px 12px 4px 4px', border: 'none', cursor: 'pointer' }}
+            style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: BONE, borderRadius: 4, padding: '4px 12px 4px 4px', border: 'none', cursor: 'pointer' }}
           >
             <Avatar initials={getInitials(post.userName)} imageUrl={post.userAvatarUrl} size="sm" />
-            <span style={{ ...DM, fontSize: 11, fontWeight: 700, color: INK }}>{firstName}</span>
+            <span style={{ ...BODY, fontSize: 11, fontWeight: 700, color: FOREST }}>{firstName}</span>
           </button>
         </div>
 
@@ -341,7 +325,7 @@ function HeroCard({ post, onLikeToggle }: {
         {hasMedia && (
           <button
             onClick={() => router.push(`/dashboard/posts/${post.id}`)}
-            style={{ display: 'block', width: '100%', position: 'relative', aspectRatio: '5/3', borderRadius: 14, overflow: 'hidden', background: 'rgba(255,255,255,0.15)', border: 'none', cursor: 'pointer', marginBottom: 16 }}
+            style={{ display: 'block', width: '100%', position: 'relative', aspectRatio: '5/3', borderRadius: 4, overflow: 'hidden', background: 'rgba(255,255,255,0.08)', border: 'none', cursor: 'pointer', marginBottom: 16 }}
           >
             {isVideo ? (
               <>
@@ -350,8 +334,8 @@ function HeroCard({ post, onLikeToggle }: {
                   <img src={post.thumbnail_url} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                 )}
                 <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <div style={{ width: 44, height: 44, borderRadius: '50%', background: 'rgba(255,255,255,0.35)', backdropFilter: 'blur(8px)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                    <Play style={{ width: 18, height: 18, color: 'white', marginLeft: 2 }} />
+                  <div style={{ width: 44, height: 44, borderRadius: 4, background: 'rgba(196,245,66,0.20)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Play style={{ width: 18, height: 18, color: LIME, marginLeft: 2 }} />
                   </div>
                 </div>
               </>
@@ -359,52 +343,72 @@ function HeroCard({ post, onLikeToggle }: {
               // eslint-disable-next-line @next/next/no-img-element
               <img src={post.media_url!} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
             )}
-            <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
-              {sport && (
-                <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '3px 8px' }}>
-                  <div style={{ width: 5, height: 5, borderRadius: '50%', background: 'white' }} />
-                  <span style={{ ...DM, fontSize: 9, fontWeight: 600, color: 'white' }}>
-                    {sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase()}
-                  </span>
-                </div>
-              )}
-              {metric && (
-                <div style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(8px)', borderRadius: 999, padding: '3px 8px' }}>
-                  <span style={{ ...DM, fontSize: 9, fontWeight: 500, color: 'white' }}>{metric}</span>
-                </div>
-              )}
-            </div>
+            {(sport || metric) && (
+              <div style={{ position: 'absolute', bottom: 10, left: 10, display: 'flex', gap: 6 }}>
+                {sport && (
+                  <div style={{ display: 'inline-flex', alignItems: 'center', gap: 4, background: 'rgba(30,43,32,0.65)', backdropFilter: 'blur(8px)', borderRadius: 4, padding: '3px 8px' }}>
+                    <div style={{ width: 5, height: 5, borderRadius: '50%', background: LIME }} />
+                    <span style={{ ...BODY, fontSize: 9, fontWeight: 600, color: 'white' }}>
+                      {sport.charAt(0).toUpperCase() + sport.slice(1).toLowerCase()}
+                    </span>
+                  </div>
+                )}
+                {metric && (
+                  <div style={{ background: 'rgba(30,43,32,0.65)', backdropFilter: 'blur(8px)', borderRadius: 4, padding: '3px 8px' }}>
+                    <span style={{ ...BODY, fontSize: 9, fontWeight: 500, color: 'white' }}>{metric}</span>
+                  </div>
+                )}
+              </div>
+            )}
           </button>
         )}
 
-        {/* Eyebrow + title + description */}
-        <p style={{ ...DM, fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.75)', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 6 }}>
+        {/* Eyebrow */}
+        <p style={{ ...DISPLAY, fontSize: 9, fontWeight: 900, color: LIME, letterSpacing: '0.15em', textTransform: 'uppercase', marginBottom: 6 }}>
           {eyebrow}
         </p>
+
+        {/* Title */}
         <h2
           onClick={() => router.push(`/dashboard/posts/${post.id}`)}
-          style={{ ...SYNE, fontWeight: 800, fontSize: 22, lineHeight: 1.15, color: 'white', marginBottom: 6, cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
+          style={{ ...DISPLAY, fontWeight: 900, fontSize: 28, lineHeight: 1.1, letterSpacing: '-0.01em', textTransform: 'uppercase', color: BONE, marginBottom: 6, cursor: 'pointer', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}
         >
           {title}
         </h2>
+
+        {/* Description */}
         {description && (
-          <p style={{ ...DM, fontSize: 11, color: 'rgba(255,255,255,0.80)', lineHeight: 1.5, marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+          <p style={{ ...BODY, fontSize: 12, color: 'rgba(244,241,232,0.75)', lineHeight: 1.6, marginBottom: 16, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {description}
           </p>
         )}
 
         {/* Actions */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
-          <button onClick={() => toggleLike(supabase, post, onLikeToggle, setLiking)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-            <Heart style={{ width: 18, height: 18, color: 'white', fill: post.liked ? 'white' : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
-            <span style={{ ...SYNE, fontSize: 13, fontWeight: 700, color: 'white' }}>{post.likes_count}</span>
-          </button>
-          <button onClick={() => setShowComments(true)} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-            <MessageCircle style={{ width: 18, height: 18, color: 'white' }} />
-            <span style={{ ...SYNE, fontSize: 13, fontWeight: 700, color: 'white' }}>{commentCount}</span>
-          </button>
-          <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
-            <Send style={{ width: 17, height: 17, color: 'white' }} />
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
+            <button
+              onClick={() => toggleLike(supabase, post, onLikeToggle, setLiking)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <Heart style={{ width: 18, height: 18, color: LIME, fill: post.liked ? LIME : 'none', transition: 'transform 150ms', transform: liking ? 'scale(1.3)' : 'scale(1)' }} />
+              <span style={{ ...BODY, fontSize: 12, fontWeight: 600, color: 'white' }}>{post.likes_count}</span>
+            </button>
+            <button
+              onClick={() => setShowComments(true)}
+              style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}
+            >
+              <MessageCircle style={{ width: 18, height: 18, color: 'white' }} strokeWidth={1.75} />
+              <span style={{ ...BODY, fontSize: 12, fontWeight: 600, color: 'white' }}>{commentCount}</span>
+            </button>
+            <button style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer' }}>
+              <Send style={{ width: 17, height: 17, color: 'white' }} strokeWidth={1.75} />
+            </button>
+          </div>
+          <button
+            onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
+            style={{ ...DISPLAY, fontSize: 10, fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase', background: LIME, color: FOREST, borderRadius: 4, padding: '6px 12px', border: 'none', cursor: 'pointer' }}
+          >
+            +VOLG
           </button>
         </div>
       </div>
