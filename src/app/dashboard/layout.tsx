@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 import { Avatar, getInitials } from '@/components/Avatar'
+import { AppHeader } from '@/components/AppHeader'
 import { ProfileCardProvider } from '@/components/ProfileCardModal'
 import { CreateActionSheet } from '@/components/feed/CreateActionSheet'
 import PostComposer from './_components/PostComposer'
@@ -177,6 +178,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   return (
     <div className={`${isVideosPage ? 'bg-black' : 'bg-[#F5F0E8]'} flex flex-col h-full`}>
 
+      {/* ── Mobile header — verborgen op desktop en videos pagina ────────── */}
+      {!isVideosPage && (
+        <div className="md:hidden">
+          <AppHeader notifCount={notifCount} />
+        </div>
+      )}
+
       {/* ── Topbar — verborgen op mobile, zichtbaar op desktop ─────────── */}
       <header
         className="hidden md:block bg-white border-b border-black/8 sticky top-0 z-30"
@@ -321,51 +329,6 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         </nav>
       </div>
 
-      {/* ── Mobiele notificatie bell (niet op videos, meetup, berichten) ── */}
-      {!isVideosPage && !isMeetupPage && !isMessagesPage && (
-        <Link
-          href="/dashboard/notifications"
-          className="md:hidden"
-          style={{
-            position: 'fixed',
-            top: 'calc(env(safe-area-inset-top) + 12px)',
-            right: 16,
-            zIndex: 30,
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: 'rgba(255,255,255,0.92)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            border: '1px solid rgba(0,0,0,0.08)',
-            boxShadow: '0 2px 12px rgba(0,0,0,0.10)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            WebkitTapHighlightColor: 'transparent',
-            textDecoration: 'none',
-          }}
-        >
-          <Bell style={{ width: 18, height: 18, color: '#1A1714' }} />
-          {notifCount > 0 && (
-            <span style={{
-              position: 'absolute',
-              top: -4, right: -4,
-              minWidth: 18, height: 18,
-              background: '#C4F542',
-              color: '#1E2B20',
-              fontSize: 10, fontWeight: 900,
-              borderRadius: 4,
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              padding: '0 4px',
-              fontFamily: 'var(--font-display)',
-              border: '2px solid #F4F1E8',
-            }}>
-              {notifCount > 9 ? '9+' : notifCount}
-            </span>
-          )}
-        </Link>
-      )}
 
       {/* ── FAB create button (mobile only, niet op videos pagina) ─────── */}
       {!isVideosPage && (
