@@ -146,7 +146,7 @@ export default function CreatorDashboardPage() {
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <div className="w-8 h-8 border-2 border-[#E87722] border-t-transparent rounded-full animate-spin" />
+        <div className="w-8 h-8 border-2 border-[#C4F542] border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
@@ -155,13 +155,13 @@ export default function CreatorDashboardPage() {
   if (!creator) {
     return (
       <div className="max-w-2xl mx-auto text-center py-20">
-        <div className="w-16 h-16 bg-[#E87722]/10 rounded-full flex items-center justify-center mx-auto mb-5">
-          <Flame className="w-8 h-8 text-[#E87722]" />
+        <div className="w-16 h-16 bg-[#C4F542]/10 rounded-full flex items-center justify-center mx-auto mb-5">
+          <Flame className="w-8 h-8 text-[#C4F542]" />
         </div>
         <h1 style={{ ...SYNE, fontWeight: 800 }} className="text-2xl text-black mb-3">Je bent nog geen creator</h1>
         <p className="text-gray-500 mb-8">Meld je aan als creator om toegang te krijgen tot het dashboard, challenges en de verified badge.</p>
         <Link href="/creator/aanmelden"
-          className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#111] transition-colors">
+          className="inline-flex items-center gap-2 bg-[#C4F542] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#111] transition-colors">
           Aanmelden als creator <ChevronRight className="w-4 h-4" />
         </Link>
       </div>
@@ -176,8 +176,8 @@ export default function CreatorDashboardPage() {
 
       {/* Verificatie status balk */}
       {!isVerified && isPending && (
-        <div className="flex items-start gap-3 bg-[#E87722]/8 border border-[#E87722]/25 rounded-2xl px-5 py-4">
-          <AlertCircle className="w-5 h-5 text-[#E87722] shrink-0 mt-0.5" />
+        <div className="flex items-start gap-3 bg-[#C4F542]/8 border border-[#C4F542]/25 rounded-2xl px-5 py-4">
+          <AlertCircle className="w-5 h-5 text-[#C4F542] shrink-0 mt-0.5" />
           <p className="text-sm text-gray-700">
             <strong>Je bent nog niet geverifieerd.</strong> Ons team beoordeelt jouw aanvraag binnen 48 uur.
             Na goedkeuring verschijnt de verified badge op je profiel.
@@ -204,7 +204,7 @@ export default function CreatorDashboardPage() {
         </div>
         <button
           onClick={() => setShowModal(true)}
-          className="flex items-center gap-2 bg-[#E87722] text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-[#111] transition-colors"
+          className="flex items-center gap-2 bg-[#C4F542] text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-[#111] transition-colors"
         >
           <Plus className="w-4 h-4" /> Nieuwe challenge
         </button>
@@ -215,7 +215,7 @@ export default function CreatorDashboardPage() {
         {[
           { label: 'Totaal volgers', value: creator.total_followers.toLocaleString('nl-NL'), icon: Users, color: 'bg-blue-50 text-blue-500' },
           { label: 'Profielviews (mnd)', value: analytics.profile_views.toLocaleString('nl-NL'), icon: BarChart2, color: 'bg-purple-50 text-purple-500' },
-          { label: 'Challenge deelnemers', value: analytics.challenge_signups.toLocaleString('nl-NL'), icon: Trophy, color: 'bg-[#E87722]/10 text-[#E87722]' },
+          { label: 'Challenge deelnemers', value: analytics.challenge_signups.toLocaleString('nl-NL'), icon: Trophy, color: 'bg-[#C4F542]/10 text-[#C4F542]' },
           { label: 'Totale inkomsten', value: `€${analytics.total_revenue.toFixed(2)}`, icon: Euro, color: 'bg-green-50 text-green-600' },
         ].map(stat => (
           <div key={stat.label} className="bg-white rounded-2xl border border-[#E8E0D5] p-5">
@@ -271,7 +271,7 @@ export default function CreatorDashboardPage() {
                     {/* Voortgangsbalk */}
                     <div className="mt-3 h-1.5 bg-gray-100 rounded-full overflow-hidden w-full max-w-xs">
                       <div
-                        className="h-full bg-[#E87722] rounded-full"
+                        className="h-full bg-[#C4F542] rounded-full"
                         style={{ width: `${Math.min((ch.current_participants / ch.max_participants) * 100, 100)}%` }}
                       />
                     </div>
@@ -282,7 +282,7 @@ export default function CreatorDashboardPage() {
                     title={ch.is_active ? 'Deactiveren' : 'Activeren'}
                   >
                     {ch.is_active
-                      ? <ToggleRight className="w-6 h-6 text-[#E87722]" />
+                      ? <ToggleRight className="w-6 h-6 text-[#C4F542]" />
                       : <ToggleLeft className="w-6 h-6 text-gray-300" />
                     }
                   </button>
@@ -359,7 +359,7 @@ export default function CreatorDashboardPage() {
               <button
                 onClick={handleCreateChallenge}
                 disabled={!newTitle.trim() || !newDesc.trim() || !newStart || savingChallenge}
-                className="flex-1 bg-[#E87722] text-white font-bold py-3 rounded-xl hover:bg-[#111] disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center gap-2"
+                className="flex-1 bg-[#C4F542] text-white font-bold py-3 rounded-xl hover:bg-[#111] disabled:opacity-40 disabled:cursor-not-allowed transition-colors text-sm flex items-center justify-center gap-2"
               >
                 {savingChallenge ? 'Aanmaken...' : <><Check className="w-4 h-4" /> Challenge aanmaken</>}
               </button>

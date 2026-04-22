@@ -48,9 +48,9 @@ interface Step2PostProps {
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
 const INTEGRATIONS = [
-  { name: 'Strava',       dot: '#E87722' },
+  { name: 'Strava',       dot: '#C4F542' },
   { name: 'Garmin',       dot: '#3B82F6' },
-  { name: 'Apple Health', dot: '#111111' },
+  { name: 'Apple Health', dot: '#1E2B20' },
   { name: 'Wahoo',        dot: '#DC2626' },
 ]
 
@@ -185,7 +185,7 @@ export default function Step2Post({
           onClick={handleSubmit}
           disabled={submitting}
           className="hidden md:flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-[14px] font-semibold transition-opacity disabled:opacity-60"
-          style={{ backgroundColor: '#E87722', ...SYNE }}
+          style={{ backgroundColor: '#C4F542', ...SYNE }}
         >
           {submitting ? <Loader2 size={15} className="animate-spin" /> : null}
           Delen
@@ -224,7 +224,7 @@ export default function Step2Post({
           {sport && (
             <span
               className="absolute top-2.5 left-2.5 px-2.5 py-0.5 rounded-full text-white text-[11px] font-semibold"
-              style={{ backgroundColor: '#E87722', ...SYNE }}
+              style={{ backgroundColor: '#C4F542', ...SYNE }}
             >
               {getSportById(sport)?.label ?? sport}
             </span>
@@ -251,7 +251,7 @@ export default function Step2Post({
             </span>
             <span
               className="ml-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-semibold"
-              style={{ backgroundColor: '#E87722', ...SYNE }}
+              style={{ backgroundColor: '#C4F542', ...SYNE }}
             >
               Bericht
             </span>
@@ -375,7 +375,7 @@ export default function Step2Post({
               onClick={handleSubmit}
               disabled={submitting}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-[15px] font-semibold transition-opacity disabled:opacity-60"
-              style={{ backgroundColor: '#E87722', ...SYNE }}
+              style={{ backgroundColor: '#C4F542', ...SYNE }}
             >
               {submitting && <Loader2 size={16} className="animate-spin" />}
               Delen

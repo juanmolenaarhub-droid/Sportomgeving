@@ -23,7 +23,7 @@ export default function OverPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Over</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Over Buddys</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Over Buddys</h1>
         </div>
       </div>
 
@@ -33,7 +33,7 @@ export default function OverPage() {
           <span style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: 'white' }}>B</span>
         </div>
         <div>
-          <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Buddys</p>
+          <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Buddys</p>
           <p className="text-xs text-gray-400 mt-0.5">Versie {VERSION}</p>
         </div>
         <p className="text-sm text-gray-500 max-w-xs leading-relaxed">
@@ -47,17 +47,17 @@ export default function OverPage() {
           <Link
             key={label}
             href={href}
-            className="flex items-center justify-between px-5 py-4 hover:bg-[#F5F0E8] transition-colors group"
+            className="flex items-center justify-between px-5 py-4 hover:bg-[#F4F1E8] transition-colors group"
           >
             <span className="text-sm font-semibold text-gray-700 group-hover:text-[#111]">{label}</span>
-            <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-[#E87722] transition-colors" />
+            <ExternalLink className="w-4 h-4 text-gray-300 group-hover:text-[#C4F542] transition-colors" />
           </Link>
         ))}
       </div>
 
       {/* Social */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Volg ons</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Volg ons</p>
         <div className="flex flex-wrap gap-3">
           {[
             { label: 'Instagram', href: 'https://instagram.com/buddysnl' },
@@ -69,7 +69,7 @@ export default function OverPage() {
               href={href}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-2 px-4 py-2.5 border border-black/10 rounded-xl text-sm font-semibold text-gray-600 hover:border-[#E87722] hover:text-[#111] transition-colors"
+              className="flex items-center gap-2 px-4 py-2.5 border border-black/10 rounded-xl text-sm font-semibold text-gray-600 hover:border-[#C4F542] hover:text-[#111] transition-colors"
             >
               {label}
             </a>
@@ -78,11 +78,11 @@ export default function OverPage() {
       </div>
 
       {/* Feedback */}
-      <div className="bg-[#F5F0E8] rounded-2xl p-5 text-center space-y-2">
+      <div className="bg-[#F4F1E8] rounded-2xl p-5 text-center space-y-2">
         <p className="text-sm font-bold text-gray-800">Heb je feedback?</p>
         <p className="text-xs text-gray-500">
           Stuur ons een bericht via{' '}
-          <Link href="mailto:hallo@buddys.nl" className="text-[#E87722] font-semibold hover:underline">
+          <Link href="mailto:hallo@buddys.nl" className="text-[#C4F542] font-semibold hover:underline">
             hallo@buddys.nl
           </Link>
         </p>
@@ -91,7 +91,7 @@ export default function OverPage() {
       {/* Footer */}
       <div className="flex items-center justify-center gap-1.5 pb-2">
         <span className="text-xs text-gray-300">Gemaakt met</span>
-        <Heart className="w-3 h-3 text-[#E87722]" />
+        <Heart className="w-3 h-3 text-[#C4F542]" />
         <span className="text-xs text-gray-300">in Nederland · {VERSION}</span>
       </div>
     </div>

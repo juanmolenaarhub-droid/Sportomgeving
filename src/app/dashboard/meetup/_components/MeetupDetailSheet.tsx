@@ -21,7 +21,7 @@ const LocationPreviewMap = dynamic(() => import('./LocationPreviewMap'), { ssr: 
 
 // ─── Constanten ───────────────────────────────────────────────────────────────
 
-const ORANGE_GRADIENT = 'linear-gradient(160deg, #E87722 0%, #8B3300 100%)'
+const ORANGE_GRADIENT = 'linear-gradient(160deg, #C4F542 0%, #8B3300 100%)'
 
 // ─── Hulpfuncties ─────────────────────────────────────────────────────────────
 
@@ -55,7 +55,7 @@ const ICON_BOX: React.CSSProperties = {
   display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
 }
 const ROW_LABEL: React.CSSProperties = { fontSize: 13, color: '#9CA3AF', margin: '0 0 2px' }
-const ROW_VALUE: React.CSSProperties = { fontSize: 15, fontWeight: 500, color: '#111', margin: 0 }
+const ROW_VALUE: React.CSSProperties = { fontSize: 15, fontWeight: 500, color: '#1E2B20', margin: 0 }
 const CHIP: React.CSSProperties = {
   border: '1px solid #E5E7EB', borderRadius: 20, padding: '5px 12px',
   fontSize: 13, color: '#374151', background: '#fff',
@@ -258,7 +258,7 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
           {m?.isSpontaneous && (
             <span style={{
               position: 'absolute', top: 12, right: 12, zIndex: 5,
-              background: '#E87722', color: '#fff', fontSize: 12, fontWeight: 700,
+              background: '#C4F542', color: '#fff', fontSize: 12, fontWeight: 700,
               padding: '4px 10px', borderRadius: 20,
             }}>Nu</span>
           )}
@@ -288,9 +288,9 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
               onClick={() => setTab(t.key)}
               style={{
                 flex: 1, padding: '12px 4px', background: 'transparent', border: 'none', cursor: 'pointer',
-                borderBottom: tab === t.key ? '2px solid #E87722' : '2px solid transparent',
+                borderBottom: tab === t.key ? '2px solid #C4F542' : '2px solid transparent',
                 fontSize: 12, fontWeight: tab === t.key ? 600 : 400,
-                color: tab === t.key ? '#111' : '#9CA3AF',
+                color: tab === t.key ? '#1E2B20' : '#9CA3AF',
                 transition: 'all 0.15s', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                 display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 4,
               }}
@@ -310,11 +310,11 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
           ) : fetchError || !data ? (
             <div style={{ textAlign: 'center', padding: '60px 20px' }}>
               <p style={{ fontSize: 32, marginBottom: 12 }}>⚠️</p>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>Kon meetup niet laden</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#1E2B20', margin: '0 0 6px' }}>Kon meetup niet laden</p>
               <p style={{ fontSize: 13, color: '#9CA3AF', margin: '0 0 20px' }}>Controleer je verbinding en probeer opnieuw</p>
               <button
                 onClick={() => setRetryCount(c => c + 1)}
-                style={{ background: '#111', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
+                style={{ background: '#1E2B20', color: '#fff', border: 'none', borderRadius: 10, padding: '10px 24px', fontSize: 14, fontWeight: 700, cursor: 'pointer' }}
               >
                 Probeer opnieuw
               </button>
@@ -362,7 +362,7 @@ export default function MeetupDetailSheet({ meetupId, onClose, onInterestSuccess
       {toast && (
         <div style={{
           position: 'fixed', bottom: 100, left: '50%', transform: 'translateX(-50%)', zIndex: 210,
-          background: '#111', color: '#fff', fontSize: 13, fontWeight: 600,
+          background: '#1E2B20', color: '#fff', fontSize: 13, fontWeight: 600,
           padding: '10px 20px', borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.25)',
           whiteSpace: 'nowrap', maxWidth: '90vw', textAlign: 'center',
         }}>
@@ -455,7 +455,7 @@ function InfoTab({ data }: {
           </div>
           <div style={{ flex: 1 }}>
             <p style={ROW_LABEL}>{formatDay()}</p>
-            <p style={{ ...ROW_VALUE, color: isExpiringSoon ? '#DC2626' : '#111' }}>
+            <p style={{ ...ROW_VALUE, color: isExpiringSoon ? '#DC2626' : '#1E2B20' }}>
               {formatDateValue()}
             </p>
           </div>
@@ -497,7 +497,7 @@ function InfoTab({ data }: {
           </div>
           <div style={{ flex: 1 }}>
             <p style={ROW_LABEL}>Deelnemers</p>
-            <p style={{ ...ROW_VALUE, color: spotsLeft <= 0 ? '#DC2626' : '#111' }}>
+            <p style={{ ...ROW_VALUE, color: spotsLeft <= 0 ? '#DC2626' : '#1E2B20' }}>
               {data.acceptedParticipants.length} aanwezig
               {spotsLeft > 0 ? ` · ${spotsLeft} plekken over` : ' · Vol'}
             </p>
@@ -555,7 +555,7 @@ function AanwezigTab({ data, actionPending, onMarkAttended, onRemove }: {
             </div>
           </Link>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <Link href={`/dashboard/profile/${p.userId}`} style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
+            <Link href={`/dashboard/profile/${p.userId}`} style={{ fontSize: 14, fontWeight: 700, color: '#1E2B20', margin: '0 0 2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
               {p.name}
             </Link>
             {p.attended
@@ -633,7 +633,7 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
                 </div>
               </Link>
               <div style={{ flex: 1, minWidth: 0 }}>
-                <Link href={`/dashboard/profile/${p.userId}`} style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
+                <Link href={`/dashboard/profile/${p.userId}`} style={{ fontSize: 14, fontWeight: 700, color: '#1E2B20', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', display: 'block', textDecoration: 'none' }}>
                   {p.name}
                 </Link>
                 {p.joinedAt && (
@@ -718,7 +718,7 @@ function FooterButton({ meetup, isCreator, myStatus, myDeclinedAt, onInterest, o
 
   if (isCreator) {
     return (
-      <button onClick={onManage} style={{ ...base, background: '#111', color: '#fff' }}>
+      <button onClick={onManage} style={{ ...base, background: '#1E2B20', color: '#fff' }}>
         Beheer Meetup
       </button>
     )
@@ -748,7 +748,7 @@ function FooterButton({ meetup, isCreator, myStatus, myDeclinedAt, onInterest, o
         <div style={{ display: 'flex', gap: 8 }}>
           <button
             onClick={() => setConfirmWithdraw(false)}
-            style={{ flex: 1, background: '#F3F4F6', color: '#111', border: 'none', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
+            style={{ flex: 1, background: '#F3F4F6', color: '#1E2B20', border: 'none', borderRadius: 12, padding: '14px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}
           >
             Nee
           </button>
@@ -764,7 +764,7 @@ function FooterButton({ meetup, isCreator, myStatus, myDeclinedAt, onInterest, o
     }
     return (
       <div style={{ textAlign: 'center' }}>
-        <button disabled style={{ ...base, background: '#E87722', color: '#fff', opacity: 0.85, cursor: 'not-allowed' }}>
+        <button disabled style={{ ...base, background: '#C4F542', color: '#fff', opacity: 0.85, cursor: 'not-allowed' }}>
           Wacht op acceptatie...
         </button>
         <button
@@ -782,7 +782,7 @@ function FooterButton({ meetup, isCreator, myStatus, myDeclinedAt, onInterest, o
         onClick={onInterest}
         disabled={actionPending === 'interest'}
         style={{
-          ...base, background: '#E87722', color: '#fff',
+          ...base, background: '#C4F542', color: '#fff',
           opacity: actionPending === 'interest' ? 0.6 : 1,
           cursor: actionPending === 'interest' ? 'not-allowed' : 'pointer',
         }}

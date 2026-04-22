@@ -31,7 +31,7 @@ const LABEL: React.CSSProperties = {
   display: 'block', fontSize: 12, fontWeight: 700, color: '#6B7280', marginBottom: 4,
 }
 const BTN_PRIMARY: React.CSSProperties = {
-  width: '100%', background: '#E87722', color: '#fff', border: 'none',
+  width: '100%', background: '#C4F542', color: '#fff', border: 'none',
   borderRadius: 10, padding: '12px', fontSize: 14, fontWeight: 700,
   cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
 }
@@ -42,7 +42,7 @@ const BTN_DANGER: React.CSSProperties = {
   marginBottom: 8,
 }
 const BTN_OUTLINE: React.CSSProperties = {
-  width: '100%', background: '#fff', color: '#111',
+  width: '100%', background: '#fff', color: '#1E2B20',
   border: '1.5px solid #111', borderRadius: 10, padding: '12px',
   fontSize: 14, fontWeight: 700, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
 }
@@ -170,7 +170,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
 
   return (
     <div style={{
-      position: 'absolute', inset: 0, background: '#F5F0E8', zIndex: 10,
+      position: 'absolute', inset: 0, background: '#F4F1E8', zIndex: 10,
       display: 'flex', flexDirection: 'column',
       transform: visible ? 'translateX(0)' : 'translateX(100%)',
       transition: 'transform 0.3s ease-out',
@@ -188,9 +188,9 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
             border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}
         >
-          <ArrowLeft size={16} color="#111" />
+          <ArrowLeft size={16} color="#1E2B20" />
         </button>
-        <p style={{ ...SYNE, fontSize: 16, fontWeight: 800, color: '#111', margin: 0, flex: 1, textAlign: 'center' }}>
+        <p style={{ ...SYNE, fontSize: 16, fontWeight: 800, color: '#1E2B20', margin: 0, flex: 1, textAlign: 'center' }}>
           Meetup beheren
         </p>
         <div style={{ width: 32 }} />
@@ -308,7 +308,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
                 <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
                   <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
                 </div>
-                <p style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#111', margin: 0 }}>{p.name}</p>
+                <p style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1E2B20', margin: 0 }}>{p.name}</p>
                 <button
                   onClick={() => setRemoveConfirmId(p.userId)}
                   disabled={removePending === p.userId}
@@ -337,7 +337,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
                 <div style={{ width: 40, height: 40, borderRadius: '50%', overflow: 'hidden', flexShrink: 0 }}>
                   <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
                 </div>
-                <p style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#111', margin: 0 }}>{p.name}</p>
+                <p style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1E2B20', margin: 0 }}>{p.name}</p>
                 <label style={{ display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}>
                   <input
                     type="checkbox"
@@ -348,7 +348,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
                       else s.delete(p.userId)
                       setAttendees(s)
                     }}
-                    style={{ accentColor: '#E87722', width: 16, height: 16 }}
+                    style={{ accentColor: '#C4F542', width: 16, height: 16 }}
                   />
                   <span style={{ fontSize: 13, color: '#374151' }}>Aanwezig</span>
                 </label>
@@ -397,7 +397,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
       {showCancelConfirm && (
         <div style={OVERLAY_STYLE}>
           <div style={DIALOG_STYLE}>
-            <p style={{ ...SYNE, fontSize: 16, fontWeight: 800, color: '#111', margin: '0 0 4px' }}>
+            <p style={{ ...SYNE, fontSize: 16, fontWeight: 800, color: '#1E2B20', margin: '0 0 4px' }}>
               Meetup annuleren?
             </p>
             <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 14px', lineHeight: 1.5 }}>
@@ -429,7 +429,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
       {showDeleteConfirm && (
         <div style={OVERLAY_STYLE}>
           <div style={DIALOG_STYLE}>
-            <p style={{ ...SYNE, fontSize: 16, fontWeight: 800, color: '#111', margin: '0 0 4px' }}>
+            <p style={{ ...SYNE, fontSize: 16, fontWeight: 800, color: '#1E2B20', margin: '0 0 4px' }}>
               Meetup definitief verwijderen?
             </p>
             <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 6px', lineHeight: 1.5 }}>
@@ -467,7 +467,7 @@ export default function MeetupBeheerSheet({ data, meetupId, visible, onBack, onM
       {toast && (
         <div style={{
           position: 'absolute', bottom: 24, left: '50%', transform: 'translateX(-50%)',
-          background: '#111', color: '#fff', fontSize: 13, fontWeight: 600,
+          background: '#1E2B20', color: '#fff', fontSize: 13, fontWeight: 600,
           padding: '10px 20px', borderRadius: 20, whiteSpace: 'nowrap', zIndex: 20,
         }}>
           {toast}
@@ -499,10 +499,10 @@ function ConfirmOverlay({ title, body, confirmLabel, confirmColor, loading, onCo
   return (
     <div style={OVERLAY_STYLE}>
       <div style={DIALOG_STYLE}>
-        <p style={{ fontSize: 15, fontWeight: 700, color: '#111', margin: '0 0 6px' }}>{title}</p>
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#1E2B20', margin: '0 0 6px' }}>{title}</p>
         <p style={{ fontSize: 13, color: '#6B7280', margin: '0 0 16px', lineHeight: 1.5 }}>{body}</p>
         <div style={{ display: 'flex', gap: 8 }}>
-          <button onClick={onCancel} style={{ flex: 1, background: '#F3F4F6', color: '#111', border: 'none', borderRadius: 10, padding: '10px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
+          <button onClick={onCancel} style={{ flex: 1, background: '#F3F4F6', color: '#1E2B20', border: 'none', borderRadius: 10, padding: '10px', fontSize: 14, fontWeight: 600, cursor: 'pointer' }}>
             Nee
           </button>
           <button

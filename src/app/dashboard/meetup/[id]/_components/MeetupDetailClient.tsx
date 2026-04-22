@@ -16,7 +16,7 @@ import { createClient } from '@/lib/supabase'
 const LocationPreviewMap = dynamic(() => import('../../_components/LocationPreviewMap'), { ssr: false })
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Hardlopen': '#C4F542', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
   'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#8B5CF6', default: '#6B7280',
 }
 function getSportColor(sport: string) { return SPORT_COLORS[sport] ?? SPORT_COLORS.default }
@@ -193,7 +193,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
                 {meetup.status === 'vol' && <span className="text-xs font-bold bg-amber-50 text-amber-600 px-2.5 py-1 rounded-full">Vol</span>}
                 {meetup.status === 'geannuleerd' && <span className="text-xs font-bold bg-red-50 text-red-500 px-2.5 py-1 rounded-full">Geannuleerd</span>}
               </div>
-              <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#111', lineHeight: 1.2 }}>{meetup.title}</h1>
+              <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#1E2B20', lineHeight: 1.2 }}>{meetup.title}</h1>
             </div>
           </div>
 
@@ -207,7 +207,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
             <div>
               <p className="text-xs text-gray-500">Organisator</p>
               <p className="text-sm font-bold text-black flex items-center gap-1">
-                <Crown className="w-3 h-3 text-[#E87722]" />
+                <Crown className="w-3 h-3 text-[#C4F542]" />
                 {creator?.full_name ?? creator?.username ?? 'Onbekend'}
               </p>
             </div>
@@ -216,7 +216,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
           {/* Locatie */}
           <div className="mt-4 space-y-2">
             <div className="flex items-center gap-2 text-sm text-gray-600">
-              <MapPin className="w-4 h-4 text-[#E87722] shrink-0" />
+              <MapPin className="w-4 h-4 text-[#C4F542] shrink-0" />
               <span className="font-semibold">{meetup.location_name}</span>
               <span className="text-gray-400">· {meetup.city}</span>
             </div>
@@ -240,8 +240,8 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
           <div className="mt-4 grid grid-cols-3 gap-3">
             {[
               { label: 'Geaccepteerd', value: accepted.length, color: '#059669' },
-              { label: 'Geïnteresseerd', value: interested.length, color: '#E87722' },
-              { label: 'Plekken over', value: Math.max(0, spotsLeft), color: spotsLeft > 0 ? '#111' : '#dc2626' },
+              { label: 'Geïnteresseerd', value: interested.length, color: '#C4F542' },
+              { label: 'Plekken over', value: Math.max(0, spotsLeft), color: spotsLeft > 0 ? '#1E2B20' : '#dc2626' },
             ].map(({ label, value, color: c }) => (
               <div key={label} className="text-center bg-gray-50 rounded-xl py-3">
                 <p className="text-xl font-black" style={{ color: c }}>{value}</p>
@@ -261,7 +261,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
               <p className="text-sm text-gray-500 mb-4">Toon je interesse — de organisator beslist of je mee mag doen.</p>
               <button
                 onClick={() => setShowInterest(true)}
-                className="bg-[#E87722] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#d4691d] transition-colors"
+                className="bg-[#C4F542] text-white font-bold px-8 py-3 rounded-xl hover:bg-[#d4691d] transition-colors"
                 style={SYNE}
               >
                 Interesse tonen
@@ -270,7 +270,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
           ) : myStatus === 'interesse' ? (
             <div className="text-center">
               <div className="w-12 h-12 bg-orange-50 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Clock className="w-6 h-6 text-[#E87722]" />
+                <Clock className="w-6 h-6 text-[#C4F542]" />
               </div>
               <p className="font-bold text-gray-800">Je interesse is ontvangen</p>
               <p className="text-sm text-gray-500 mt-1">{creator?.full_name ?? 'De organisator'} beslist of je mee mag doen.</p>
@@ -303,7 +303,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
       {/* Organisator — interesse beheren */}
       {isCreator && interested.length > 0 && (
         <div className="bg-white rounded-2xl border border-black/8 p-5">
-          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 12 }}>
+          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20', marginBottom: 12 }}>
             Interesse ({interested.length})
           </h2>
           <div className="space-y-3">
@@ -340,7 +340,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
       {/* Geaccepteerde deelnemers */}
       {accepted.length > 0 && (
         <div className="bg-white rounded-2xl border border-black/8 p-5">
-          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111', marginBottom: 12 }}>
+          <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20', marginBottom: 12 }}>
             Deelnemers ({accepted.length})
           </h2>
           <div className="flex flex-wrap gap-3">
@@ -359,9 +359,9 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
         <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
           {/* Chat header */}
           <div className="px-5 py-4 border-b border-black/6 flex items-center gap-3">
-            <MessageCircle className="w-5 h-5 text-[#E87722]" />
+            <MessageCircle className="w-5 h-5 text-[#C4F542]" />
             <div>
-              <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#111' }}>Meetup chat</p>
+              <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#1E2B20' }}>Meetup chat</p>
               <p className="text-xs text-gray-500">{accepted.length + 1} deelnemers</p>
             </div>
             {/* Avatar preview */}
@@ -378,7 +378,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
           </div>
 
           {/* Berichten */}
-          <div className="h-72 overflow-y-auto px-4 py-3 space-y-3 bg-[#F5F0E8]/30">
+          <div className="h-72 overflow-y-auto px-4 py-3 space-y-3 bg-[#F4F1E8]/30">
             {chatMessages.length === 0 && (
               <div className="text-center py-8 text-gray-400 text-sm">Nog geen berichten. Stel jezelf voor!</div>
             )}
@@ -414,12 +414,12 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
               onChange={e => setNewMsg(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && !e.shiftKey && (e.preventDefault(), handleSendMessage())}
               placeholder="Stuur een bericht..."
-              className="flex-1 bg-[#F5F0E8] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722]"
+              className="flex-1 bg-[#F4F1E8] rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
             />
             <button
               onClick={handleSendMessage}
               disabled={!newMsg.trim() || isPending}
-              className="w-10 h-10 rounded-xl bg-[#E87722] flex items-center justify-center hover:bg-[#d4691d] transition-colors disabled:opacity-40"
+              className="w-10 h-10 rounded-xl bg-[#C4F542] flex items-center justify-center hover:bg-[#d4691d] transition-colors disabled:opacity-40"
             >
               <Send className="w-4 h-4 text-white" />
             </button>
@@ -442,7 +442,7 @@ export default function MeetupDetailClient({ detail: initialDetail }: Props) {
       {/* Cancel confirm */}
       {showCancel && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowCancel(false)}>
-          <div className="bg-[#F5F0E8] w-full max-w-sm rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#F4F1E8] w-full max-w-sm rounded-2xl p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
               <AlertTriangle className="w-6 h-6 text-red-500" />
             </div>

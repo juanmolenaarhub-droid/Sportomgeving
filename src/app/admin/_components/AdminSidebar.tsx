@@ -52,7 +52,7 @@ export function AdminSidebar() {
             onClick={() => setMobileOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all ${
               active
-                ? 'bg-[#111111] text-white'
+                ? 'bg-[#1E2B20] text-white'
                 : 'text-gray-500 hover:text-black hover:bg-black/5'
             }`}
           >
@@ -67,12 +67,12 @@ export function AdminSidebar() {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-56 shrink-0 min-h-screen bg-[#F5F0E8] border-r border-black/8 sticky top-0">
+      <aside className="hidden md:flex flex-col w-56 shrink-0 min-h-screen bg-[#F4F1E8] border-r border-black/8 sticky top-0">
         <div className="px-6 py-5 border-b border-black/8">
           <Link href="/admin">
             <Image src="/logo.png" alt="Buddys" height={26} width={90} className="object-contain" />
           </Link>
-          <p style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em' }} className="text-[#E87722] uppercase mt-2">
+          <p style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em' }} className="text-[#C4F542] uppercase mt-2">
             Admin
           </p>
         </div>
@@ -94,7 +94,7 @@ export function AdminSidebar() {
       </aside>
 
       {/* Mobile topbar */}
-      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8 h-14 flex items-center justify-between px-5">
+      <div className="md:hidden fixed top-0 left-0 right-0 z-50 bg-[#F4F1E8]/95 backdrop-blur-sm border-b border-black/8 h-14 flex items-center justify-between px-5">
         <Link href="/admin">
           <Image src="/logo.png" alt="Buddys" height={22} width={76} className="object-contain" />
         </Link>
@@ -110,7 +110,7 @@ export function AdminSidebar() {
       {mobileOpen && (
         <div className="md:hidden fixed inset-0 z-40 flex">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
-          <div className="relative w-64 bg-[#F5F0E8] min-h-screen pt-16 flex flex-col shadow-2xl">
+          <div className="relative w-64 bg-[#F4F1E8] min-h-screen pt-16 flex flex-col shadow-2xl">
             <nav className="flex-1 px-3 py-4 space-y-1">
               <NavLinks />
             </nav>

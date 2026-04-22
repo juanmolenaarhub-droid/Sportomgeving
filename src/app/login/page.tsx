@@ -78,7 +78,7 @@ export default function LoginPage() {
           font-weight: 500;
         }
         .li::placeholder { color: #c0bdb8; font-weight: 400; }
-        .li:focus { border-bottom-color: #E87722; }
+        .li:focus { border-bottom-color: #C4F542; }
 
         .lb {
           display: flex;
@@ -99,7 +99,7 @@ export default function LoginPage() {
           cursor: pointer;
           transition: background .2s, transform .15s;
         }
-        .lb:hover:not(:disabled) { background: #E87722; transform: translateY(-1px); }
+        .lb:hover:not(:disabled) { background: #C4F542; transform: translateY(-1px); }
         .lb:disabled { opacity: .45; cursor: not-allowed; }
 
         .lg-btn {
@@ -134,7 +134,7 @@ export default function LoginPage() {
       <div style={DM} className="min-h-screen flex">
 
         {/* ── LEFT: Black brand panel ── */}
-        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#111111' }}>
+        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#1E2B20' }}>
 
           {/* Logo */}
           <Link href="/" className="relative z-10">
@@ -146,12 +146,12 @@ export default function LoginPage() {
 
             {/* Label + Headline */}
             <div>
-              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-6">
+              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#C4F542' }} className="mb-6">
                 Welkom terug
               </p>
               <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.4vw, 64px)' }}>
                 <span style={{ color: 'white' }}>Jouw buddy</span><br />
-                <span style={{ color: '#E87722' }}>wacht</span>
+                <span style={{ color: '#C4F542' }}>wacht</span>
                 <span style={{ color: 'white' }}> op je.</span>
               </h2>
             </div>
@@ -216,7 +216,7 @@ export default function LoginPage() {
                     borderRadius: '999px',
                     fontSize: '11px',
                     fontWeight: 600,
-                    background: tag.highlight ? '#E87722' : '#222222',
+                    background: tag.highlight ? '#C4F542' : '#222222',
                     color: 'white',
                     flexShrink: 0,
                   }}>
@@ -234,7 +234,7 @@ export default function LoginPage() {
                 { quote: 'Drie reacties in twee dagen.', name: 'Marco R.', sub: 'Rotterdam' },
               ].map(t => (
                 <div key={t.name} style={{ background: '#1A1A1A', borderRadius: 14, padding: '14px' }}>
-                  <div style={{ color: '#E87722', fontSize: 10, marginBottom: 6, letterSpacing: '0.05em' }}>★★★★★</div>
+                  <div style={{ color: '#C4F542', fontSize: 10, marginBottom: 6, letterSpacing: '0.05em' }}>★★★★★</div>
                   <p style={{ color: 'white', fontSize: 11, lineHeight: 1.5, fontWeight: 500, marginBottom: 8 }}>&ldquo;{t.quote}&rdquo;</p>
                   <p style={{ color: 'rgba(255,255,255,0.35)', fontSize: 10, fontWeight: 500 }}>{t.name} · {t.sub}</p>
                 </div>
@@ -245,12 +245,12 @@ export default function LoginPage() {
           {/* Bottom link */}
           <p className="relative z-10" style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
             Nog geen account?{' '}
-            <Link href="/register" style={{ color: '#E87722', fontWeight: 700 }}>Registreer gratis →</Link>
+            <Link href="/register" style={{ color: '#C4F542', fontWeight: 700 }}>Registreer gratis →</Link>
           </p>
         </div>
 
         {/* ── RIGHT: Form ── */}
-        <div className="flex-1 bg-[#F5F0E8] flex flex-col">
+        <div className="flex-1 bg-[#F4F1E8] flex flex-col">
 
           {/* Mobile nav */}
           <div className="lg:hidden flex items-center justify-between px-6 py-4 border-b border-black/8">
@@ -263,12 +263,12 @@ export default function LoginPage() {
 
               {/* Heading */}
               <div className="l1 mb-9">
-                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#111' }}>
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#1E2B20' }}>
                   Inloggen.
                 </h1>
                 <p style={{ ...DM, fontSize: 14, color: '#999', marginTop: 10 }}>
                   Geen account?{' '}
-                  <Link href="/register" style={{ color: '#E87722', fontWeight: 700 }}>Maak er gratis een aan</Link>
+                  <Link href="/register" style={{ color: '#C4F542', fontWeight: 700 }}>Maak er gratis een aan</Link>
                 </p>
               </div>
 
@@ -367,7 +367,7 @@ export default function LoginPage() {
               {/* Mobile link */}
               <p className="lg:hidden mt-8 text-center" style={{ fontSize: 13, color: '#aaa' }}>
                 Geen account?{' '}
-                <Link href="/register" style={{ color: '#E87722', fontWeight: 700 }}>Registreer gratis</Link>
+                <Link href="/register" style={{ color: '#C4F542', fontWeight: 700 }}>Registreer gratis</Link>
               </p>
 
             </div>

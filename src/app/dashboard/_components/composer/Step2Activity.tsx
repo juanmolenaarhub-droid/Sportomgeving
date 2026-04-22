@@ -47,7 +47,7 @@ const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
 
 const GRADIENTS: Record<string, string> = {
-  hardlopen: 'linear-gradient(145deg, #E87722, #C0392B)',
+  hardlopen: 'linear-gradient(145deg, #C4F542, #C0392B)',
   fietsen:   'linear-gradient(145deg, #059669, #064E3B)',
   zwemmen:   'linear-gradient(145deg, #0284C7, #1E3A5F)',
   gym:       'linear-gradient(145deg, #292524, #111)',
@@ -56,9 +56,9 @@ const GRADIENTS: Record<string, string> = {
 }
 
 const INTEGRATIONS = [
-  { name: 'Strava',       dot: '#E87722' },
+  { name: 'Strava',       dot: '#C4F542' },
   { name: 'Garmin',       dot: '#3B82F6' },
-  { name: 'Apple Health', dot: '#111111' },
+  { name: 'Apple Health', dot: '#1E2B20' },
   { name: 'Wahoo',        dot: '#DC2626' },
 ]
 
@@ -494,7 +494,7 @@ export default function Step2Activity({
           onClick={handleSubmit}
           disabled={submitting}
           className="hidden md:flex items-center gap-1.5 px-4 py-1.5 rounded-full text-white text-[14px] font-semibold transition-opacity disabled:opacity-60"
-          style={{ backgroundColor: '#E87722', ...SYNE }}
+          style={{ backgroundColor: '#C4F542', ...SYNE }}
         >
           {submitting ? <Loader2 size={15} className="animate-spin" /> : null}
           Delen
@@ -550,7 +550,7 @@ export default function Step2Activity({
             </span>
             <span
               className="ml-1 px-2.5 py-0.5 rounded-full text-white text-[11px] font-semibold"
-              style={{ backgroundColor: '#E87722', ...SYNE }}
+              style={{ backgroundColor: '#C4F542', ...SYNE }}
             >
               Activiteit
             </span>
@@ -577,7 +577,7 @@ export default function Step2Activity({
               value={activityName}
               onChange={e => setActivityName(e.target.value)}
               placeholder="Bijv. Ochtendrun Vondelpark"
-              className="w-full border border-[#F5F2EE] rounded-lg px-3 py-2 text-[14px] text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#E87722]"
+              className="w-full border border-[#F5F2EE] rounded-lg px-3 py-2 text-[14px] text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#C4F542]"
               style={SYNE}
             />
           </div>
@@ -596,7 +596,7 @@ export default function Step2Activity({
               type="datetime-local"
               value={activityDate}
               onChange={e => setActivityDate(e.target.value)}
-              className="w-full border border-[#F5F2EE] rounded-lg px-3 py-2 text-[14px] text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-[#E87722]"
+              className="w-full border border-[#F5F2EE] rounded-lg px-3 py-2 text-[14px] text-gray-800 bg-white focus:outline-none focus:ring-1 focus:ring-[#C4F542]"
               style={SYNE}
             />
           </div>
@@ -612,7 +612,7 @@ export default function Step2Activity({
               }}
               placeholder="Hoe was je activiteit?"
               rows={3}
-              className="w-full resize-none border border-[#F5F2EE] rounded-lg px-3 py-2 text-[14px] text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#E87722] min-h-[80px]"
+              className="w-full resize-none border border-[#F5F2EE] rounded-lg px-3 py-2 text-[14px] text-gray-800 bg-white placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-[#C4F542] min-h-[80px]"
               style={SYNE}
             />
             <div className="text-right text-[11px] text-gray-400 mt-1" style={SYNE}>
@@ -676,7 +676,7 @@ export default function Step2Activity({
               onClick={handleSubmit}
               disabled={submitting}
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-white text-[15px] font-semibold transition-opacity disabled:opacity-60"
-              style={{ backgroundColor: '#E87722', ...SYNE }}
+              style={{ backgroundColor: '#C4F542', ...SYNE }}
             >
               {submitting && <Loader2 size={16} className="animate-spin" />}
               Delen

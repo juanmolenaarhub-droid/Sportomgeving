@@ -56,8 +56,8 @@ export function MessageReactions({ messageId, reactions, currentUserId, fromMe, 
           disabled={!!pending}
           className={`flex items-center gap-1 px-2 py-0.5 rounded-full text-xs transition-all border ${
             data.myReaction
-              ? 'bg-[#E87722]/15 border-[#E87722]/40 text-[#E87722]'
-              : 'bg-white border-black/10 text-gray-600 hover:border-[#E87722]/40'
+              ? 'bg-[#C4F542]/15 border-[#C4F542]/40 text-[#C4F542]'
+              : 'bg-white border-black/10 text-gray-600 hover:border-[#C4F542]/40'
           } disabled:opacity-60`}
         >
           <span>{emoji}</span>
@@ -69,7 +69,7 @@ export function MessageReactions({ messageId, reactions, currentUserId, fromMe, 
       <div className="relative">
         <button
           onClick={() => setShowPicker(v => !v)}
-          className={`w-6 h-6 rounded-full border border-black/10 bg-white flex items-center justify-center hover:border-[#E87722]/40 hover:text-[#E87722] transition-all text-gray-400 ${hasReactions ? '' : 'opacity-0 group-hover:opacity-100'}`}
+          className={`w-6 h-6 rounded-full border border-black/10 bg-white flex items-center justify-center hover:border-[#C4F542]/40 hover:text-[#C4F542] transition-all text-gray-400 ${hasReactions ? '' : 'opacity-0 group-hover:opacity-100'}`}
         >
           <Plus className="w-3 h-3" />
         </button>
@@ -85,7 +85,7 @@ export function MessageReactions({ messageId, reactions, currentUserId, fromMe, 
                 key={emoji}
                 onClick={() => handleToggle(emoji)}
                 disabled={!!pending}
-                className="text-lg w-9 h-9 rounded-xl hover:bg-[#F5F0E8] transition-colors flex items-center justify-center"
+                className="text-lg w-9 h-9 rounded-xl hover:bg-[#F4F1E8] transition-colors flex items-center justify-center"
               >
                 {emoji}
               </button>

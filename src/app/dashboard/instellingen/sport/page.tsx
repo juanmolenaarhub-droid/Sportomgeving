@@ -122,7 +122,7 @@ export default function SportInstellingenPage() {
 
   if (loading) return (
     <div className="max-w-2xl mx-auto py-12 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
     </div>
   )
 
@@ -138,7 +138,7 @@ export default function SportInstellingenPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Sport</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Sport & beschikbaarheid</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Sport & beschikbaarheid</h1>
         </div>
       </div>
 
@@ -149,7 +149,7 @@ export default function SportInstellingenPage() {
       {/* Sport selecteren */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Jouw sporten & niveaus</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Jouw sporten & niveaus</p>
           <p className="text-xs text-gray-400 mt-0.5">Selecteer alle sporten die je doet.</p>
         </div>
 
@@ -168,13 +168,13 @@ export default function SportInstellingenPage() {
       {/* Niveau per geselecteerde sport */}
       {selectedSports.length > 0 && (
         <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Niveau per sport</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Niveau per sport</p>
           <div className="space-y-3">
             {selectedSports.map(entry => {
               const sport = getSportById(entry.sportId)
               return (
                 <div key={entry.sportId} className="flex items-center justify-between gap-4">
-                  <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111', minWidth: 80 }}>
+                  <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20', minWidth: 80 }}>
                     {sport?.label ?? entry.sportId}
                   </span>
                   <div className="flex gap-1.5">
@@ -186,7 +186,7 @@ export default function SportInstellingenPage() {
                           onClick={() => setNiveau(entry.sportId, n.value)}
                           className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                           style={{
-                            background: active ? '#E87722' : '#F3F4F6',
+                            background: active ? '#C4F542' : '#F3F4F6',
                             color: active ? 'white' : '#6B7280',
                           }}
                         >
@@ -205,7 +205,7 @@ export default function SportInstellingenPage() {
       {/* Weekrooster */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
         <div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Beschikbaarheid</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Beschikbaarheid</p>
           <p className="text-xs text-gray-400 mt-0.5">Selecteer wanneer je kunt sporten</p>
         </div>
         <div className="overflow-x-auto -mx-1">
@@ -230,7 +230,7 @@ export default function SportInstellingenPage() {
                           onClick={() => toggleSlot(day, time)}
                           className="w-9 h-9 rounded-lg text-[11px] font-bold transition-all"
                           style={{
-                            background: active ? '#E87722' : 'rgba(0,0,0,0.05)',
+                            background: active ? '#C4F542' : 'rgba(0,0,0,0.05)',
                             color: active ? 'white' : '#D1D5DB',
                             transform: active ? 'scale(1.05)' : 'scale(1)',
                           }}
@@ -253,7 +253,7 @@ export default function SportInstellingenPage() {
         onClick={handleSave}
         disabled={isPending}
         className="w-full py-4 font-black text-sm rounded-2xl transition-colors disabled:opacity-40"
-        style={{ ...SYNE, background: '#E87722', color: 'white' }}
+        style={{ ...SYNE, background: '#C4F542', color: 'white' }}
       >
         {isPending ? 'Opslaan...' : 'Opslaan'}
       </button>

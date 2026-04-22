@@ -36,17 +36,17 @@ const perks = [
 
 export default function CreatorLandingPage() {
   return (
-    <div style={DM} className="bg-[#F5F0E8] min-h-screen overflow-x-hidden">
+    <div style={DM} className="bg-[#F4F1E8] min-h-screen overflow-x-hidden">
 
       {/* ── NAVBAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F4F1E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
           </Link>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>
-            <Link href="/creator/aanmelden" className="bg-[#111111] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#E87722] transition-all duration-200 flex items-center gap-1.5">
+            <Link href="/creator/aanmelden" className="bg-[#1E2B20] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#C4F542] transition-all duration-200 flex items-center gap-1.5">
               Aanmelden als creator <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -54,7 +54,7 @@ export default function CreatorLandingPage() {
       </header>
 
       {/* ── HERO — zwarte achtergrond ── */}
-      <section className="pt-32 pb-24 bg-[#111111] relative overflow-hidden">
+      <section className="pt-32 pb-24 bg-[#1E2B20] relative overflow-hidden">
         {/* Subtiel grid */}
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
@@ -63,15 +63,15 @@ export default function CreatorLandingPage() {
           style={{ background: 'radial-gradient(circle, rgba(232,119,34,0.12) 0%, transparent 65%)' }} />
 
         <div className="relative max-w-5xl mx-auto px-8 text-center">
-          <div className="inline-flex items-center gap-2 border border-[#E87722]/30 bg-[#E87722]/10 rounded-full px-4 py-1.5 mb-8">
-            <span className="w-1.5 h-1.5 bg-[#E87722] rounded-full" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
-            <span className="text-xs font-bold text-[#E87722] uppercase tracking-widest">Voor Creators & Trainers</span>
+          <div className="inline-flex items-center gap-2 border border-[#C4F542]/30 bg-[#C4F542]/10 rounded-full px-4 py-1.5 mb-8">
+            <span className="w-1.5 h-1.5 bg-[#C4F542] rounded-full" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+            <span className="text-xs font-bold text-[#C4F542] uppercase tracking-widest">Voor Creators & Trainers</span>
           </div>
 
           <h1 style={{ ...SYNE, fontWeight: 800, lineHeight: 0.95, letterSpacing: '-0.02em' }}
             className="text-[clamp(48px,7vw,96px)] text-white mb-6">
             Bouw je<br />
-            <span className="text-[#E87722]">sport-community</span><br />
+            <span className="text-[#C4F542]">sport-community</span><br />
             op Buddys.
           </h1>
 
@@ -81,7 +81,7 @@ export default function CreatorLandingPage() {
 
           <div className="flex flex-wrap gap-4 justify-center">
             <Link href="/creator/aanmelden"
-              className="group inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-10 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-base">
+              className="group inline-flex items-center gap-2 bg-[#C4F542] text-white font-bold px-10 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-base">
               Aanmelden als creator
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
             </Link>
@@ -96,10 +96,10 @@ export default function CreatorLandingPage() {
       </section>
 
       {/* ── VOORDELEN ── */}
-      <section className="py-28 bg-[#F5F0E8]">
+      <section className="py-28 bg-[#F4F1E8]">
         <div className="max-w-6xl mx-auto px-8">
           <div className="text-center mb-16">
-            <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-4">Wat je krijgt</p>
+            <p className="text-xs font-bold text-[#C4F542] uppercase tracking-widest mb-4">Wat je krijgt</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(36px,5vw,64px)] text-black">
               Alles voor serieuze creators.
@@ -109,8 +109,8 @@ export default function CreatorLandingPage() {
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             {benefits.map((b) => (
               <div key={b.title} className="bg-white rounded-2xl border border-[#E8E0D5] p-8 hover:border-[#111]/20 hover:shadow-md transition-all">
-                <div className="w-12 h-12 bg-[#E87722]/10 rounded-2xl flex items-center justify-center mb-5">
-                  <b.icon className="w-6 h-6 text-[#E87722]" />
+                <div className="w-12 h-12 bg-[#C4F542]/10 rounded-2xl flex items-center justify-center mb-5">
+                  <b.icon className="w-6 h-6 text-[#C4F542]" />
                 </div>
                 <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-xl text-black mb-2">{b.title}</h3>
                 <p className="text-gray-500 leading-relaxed font-light">{b.desc}</p>
@@ -123,7 +123,7 @@ export default function CreatorLandingPage() {
             <div className="grid md:grid-cols-2 gap-x-16 gap-y-4">
               {perks.map(perk => (
                 <div key={perk} className="flex items-center gap-3">
-                  <div className="w-5 h-5 bg-[#111111] rounded-full flex items-center justify-center shrink-0">
+                  <div className="w-5 h-5 bg-[#1E2B20] rounded-full flex items-center justify-center shrink-0">
                     <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
                       <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                     </svg>
@@ -137,7 +137,7 @@ export default function CreatorLandingPage() {
       </section>
 
       {/* ── SOCIAL PROOF ── */}
-      <section className="py-16 bg-[#111111]">
+      <section className="py-16 bg-[#1E2B20]">
         <div className="max-w-4xl mx-auto px-8">
           <div className="grid md:grid-cols-3 gap-8 text-center">
             {[
@@ -146,7 +146,7 @@ export default function CreatorLandingPage() {
               { val: '48u', lbl: 'Beoordeling aanvraag' },
             ].map(s => (
               <div key={s.lbl}>
-                <p style={{ ...SYNE, fontWeight: 800 }} className="text-[clamp(36px,4vw,52px)] text-[#E87722]">{s.val}</p>
+                <p style={{ ...SYNE, fontWeight: 800 }} className="text-[clamp(36px,4vw,52px)] text-[#C4F542]">{s.val}</p>
                 <p className="text-gray-500 text-sm mt-1 font-medium">{s.lbl}</p>
               </div>
             ))}
@@ -155,7 +155,7 @@ export default function CreatorLandingPage() {
       </section>
 
       {/* ── FINAL CTA ── */}
-      <section className="py-28 bg-[#F5F0E8]">
+      <section className="py-28 bg-[#F4F1E8]">
         <div className="max-w-3xl mx-auto px-8 text-center">
           <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
             className="text-[clamp(40px,5vw,72px)] text-black mb-5">
@@ -165,7 +165,7 @@ export default function CreatorLandingPage() {
             Meld je aan als creator en bereik duizenden sporters die al actief zijn op Buddys.
           </p>
           <Link href="/creator/aanmelden"
-            className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-10 py-5 rounded-2xl hover:bg-[#111111] transition-all duration-200 text-base">
+            className="inline-flex items-center gap-2 bg-[#C4F542] text-white font-bold px-10 py-5 rounded-2xl hover:bg-[#1E2B20] transition-all duration-200 text-base">
             Start je creator profiel <ArrowRight className="w-5 h-5" />
           </Link>
           <p className="text-gray-400 text-sm mt-5">Gratis · Geen creditcard nodig · Binnen 48 uur live</p>

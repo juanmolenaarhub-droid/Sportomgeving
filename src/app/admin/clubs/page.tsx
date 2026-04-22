@@ -62,7 +62,7 @@ export default async function ClubsPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Clubs</h1>
         <p className="text-sm text-gray-400 mt-1">Overzicht van clubpagina&apos;s en groepen · {total} clubs</p>
       </div>
@@ -84,7 +84,7 @@ export default async function ClubsPage() {
         ].map(({ label, value, sub, highlight }) => (
           <div key={label} className="bg-white rounded-2xl border border-black/8 p-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, lineHeight: 1, color: highlight ? '#E87722' : '#111' }}>{value}</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, lineHeight: 1, color: highlight ? '#C4F542' : '#1E2B20' }}>{value}</p>
             <p className="text-xs text-gray-400 mt-2">{sub}</p>
           </div>
         ))}
@@ -103,7 +103,7 @@ export default async function ClubsPage() {
         <div className="bg-white rounded-2xl border border-black/8 p-6">
           <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black mb-1">Clubgrootte verdeling</p>
           <p className="text-xs text-gray-400 mb-5">Aantal leden per club</p>
-          <BarChart data={sizeChart} color="#111111" />
+          <BarChart data={sizeChart} color="#1E2B20" />
         </div>
       </div>
 
@@ -135,15 +135,15 @@ export default async function ClubsPage() {
               {topClubs.length === 0 ? (
                 <tr><td colSpan={6} className="px-4 py-8 text-center text-gray-300 text-xs">Geen clubs gevonden</td></tr>
               ) : topClubs.map((g, i) => (
-                <tr key={g.id} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
+                <tr key={g.id} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
                   <td className="px-4 py-3 font-semibold text-gray-900 max-w-[160px] truncate">{g.name}</td>
                   <td className="px-4 py-3 text-gray-600">{g.sport ?? '—'}</td>
                   <td className="px-4 py-3 text-gray-600">{g.region ?? '—'}</td>
                   <td className="px-4 py-3">
-                    <span style={{ ...SYNE, fontWeight: 700, color: '#E87722' }}>{g.member_count ?? 0}</span>
+                    <span style={{ ...SYNE, fontWeight: 700, color: '#C4F542' }}>{g.member_count ?? 0}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${g.private ? 'bg-gray-100 text-gray-500' : 'bg-orange-50 text-[#E87722]'}`}>
+                    <span className={`inline-block text-[10px] font-bold px-2 py-0.5 rounded-full ${g.private ? 'bg-gray-100 text-gray-500' : 'bg-orange-50 text-[#C4F542]'}`}>
                       {g.private ? 'Privé' : 'Publiek'}
                     </span>
                   </td>

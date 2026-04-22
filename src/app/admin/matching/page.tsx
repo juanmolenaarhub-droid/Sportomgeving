@@ -10,7 +10,7 @@ function StatCard({ label, value, sub, color }: { label: string; value: string |
   return (
     <div className="bg-white rounded-2xl border border-black/8 p-6">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-      <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: color ?? '#E87722', lineHeight: 1 }}>{value}</p>
+      <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: color ?? '#C4F542', lineHeight: 1 }}>{value}</p>
       {sub && <p className="text-xs text-gray-400 mt-2">{sub}</p>}
     </div>
   )
@@ -91,7 +91,7 @@ export default async function MatchingPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div className="mb-2">
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Matching</h1>
       </div>
 
@@ -120,7 +120,7 @@ export default async function MatchingPage() {
               body={`Van alle verstuurde buddy-aanvragen: hoeveel procent wordt geaccepteerd?\n\n50%+ is gezond → de helft van alle aanvragen leidt tot een echte buddy.\nOnder 50% → mensen sturen aanvragen maar worden vaak afgewezen. Misschien zijn de profielen te vaag of te weinig overeenkomst.`}
             />
           </div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 48, lineHeight: 1, color: acceptRatio >= 50 ? '#22c55e' : '#E87722' }}>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 48, lineHeight: 1, color: acceptRatio >= 50 ? '#22c55e' : '#C4F542' }}>
             {acceptRatio}%
           </p>
           <p className="text-xs text-gray-400 mt-2">{acceptRatio >= 50 ? '✓ Gezond' : '⚠ Lager dan gemiddeld'}</p>
@@ -133,7 +133,7 @@ export default async function MatchingPage() {
               body={`Hoeveel uur het gemiddeld duurt voordat iemand een buddy-aanvraag beantwoordt.\n\nKort (< 24u) → mensen reageren snel, goede betrokkenheid.\nLang (> 48u) → aanvragen blijven hangen. Misschien push notificaties verbeteren.`}
             />
           </div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 48, lineHeight: 1, color: '#E87722' }}>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 48, lineHeight: 1, color: '#C4F542' }}>
             {avgWait !== null ? `${avgWait}u` : '—'}
           </p>
           <p className="text-xs text-gray-400 mt-2">van verzoek tot acceptatie</p>
@@ -150,7 +150,7 @@ export default async function MatchingPage() {
           />
         </div>
         <p className="text-xs text-gray-400 mb-6">Afgelopen 30 dagen</p>
-        <BarChart data={matchChartData} color="#111111" />
+        <BarChart data={matchChartData} color="#1E2B20" />
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
@@ -176,7 +176,7 @@ export default async function MatchingPage() {
                 {sportRows.length === 0 ? (
                   <tr><td colSpan={4} className="px-4 py-6 text-center text-gray-300 text-xs">Geen data</td></tr>
                 ) : sportRows.map((row, i) => (
-                  <tr key={i} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
+                  <tr key={i} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
                     {row.map((cell, j) => <td key={j} className="px-4 py-3 text-gray-700">{cell}</td>)}
                   </tr>
                 ))}
@@ -207,7 +207,7 @@ export default async function MatchingPage() {
                 {topMatchers.length === 0 ? (
                   <tr><td colSpan={3} className="px-4 py-6 text-center text-gray-300 text-xs">Geen data</td></tr>
                 ) : topMatchers.map((row, i) => (
-                  <tr key={i} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
+                  <tr key={i} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
                     <td className="px-4 py-3 text-gray-400 text-xs">{i + 1}</td>
                     {row.map((cell, j) => <td key={j} className="px-4 py-3 text-gray-700 font-mono text-xs">{cell}</td>)}
                   </tr>

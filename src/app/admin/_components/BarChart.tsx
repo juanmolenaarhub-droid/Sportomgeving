@@ -4,7 +4,7 @@ const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 
 type BarData = { label: string; value: number }
 
-export function BarChart({ data, title, color = '#E87722' }: { data: BarData[]; title?: string; color?: string }) {
+export function BarChart({ data, title, color = '#C4F542' }: { data: BarData[]; title?: string; color?: string }) {
   const max = Math.max(...data.map(d => d.value), 1)
 
   return (

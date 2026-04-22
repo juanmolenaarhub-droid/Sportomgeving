@@ -20,7 +20,7 @@ const CATEGORIES = [
 ]
 
 const STATUS_LABELS: Record<string, { label: string; cls: string }> = {
-  open:       { label: 'Open',       cls: 'bg-[#E87722]/15 text-[#E87722]' },
+  open:       { label: 'Open',       cls: 'bg-[#C4F542]/15 text-[#C4F542]' },
   in_review:  { label: 'In review',  cls: 'bg-blue-100 text-blue-700' },
   resolved:   { label: 'Opgelost',   cls: 'bg-green-100 text-green-700' },
   dismissed:  { label: 'Gesloten',   cls: 'bg-gray-100 text-gray-500' },
@@ -69,7 +69,7 @@ function ReportPanel({ report, onUpdate }: { report: ReportRow; onUpdate: () => 
   }
 
   return (
-    <div className="bg-[#F5F0E8] border-t border-black/8 px-6 py-5 space-y-4">
+    <div className="bg-[#F4F1E8] border-t border-black/8 px-6 py-5 space-y-4">
       {/* Volledige beschrijving */}
       {report.description && (
         <div>
@@ -85,7 +85,7 @@ function ReportPanel({ report, onUpdate }: { report: ReportRow; onUpdate: () => 
           <select
             value={status}
             onChange={e => setStatus(e.target.value as ReportRow['status'])}
-            className="w-full bg-white border border-black/10 rounded-xl px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/40"
+            className="w-full bg-white border border-black/10 rounded-xl px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/40"
           >
             <option value="open">Open</option>
             <option value="in_review">In review</option>
@@ -127,7 +127,7 @@ function ReportPanel({ report, onUpdate }: { report: ReportRow; onUpdate: () => 
           onChange={e => setNote(e.target.value)}
           rows={2}
           placeholder="Interne notitie (niet zichtbaar voor gebruikers)..."
-          className="w-full bg-white border border-black/10 rounded-xl px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/40 resize-none"
+          className="w-full bg-white border border-black/10 rounded-xl px-3 py-2.5 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/40 resize-none"
         />
       </div>
 
@@ -203,18 +203,18 @@ export function IssuesClient({ reports, blocked }: { reports: ReportRow[]; block
       {tab === 'reports' && (
         <>
           {/* Filters */}
-          <div className="px-6 py-4 border-b border-black/5 flex flex-wrap gap-3 bg-[#F5F0E8]/50">
+          <div className="px-6 py-4 border-b border-black/5 flex flex-wrap gap-3 bg-[#F4F1E8]/50">
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Zoek op gebruikersnaam..."
-              className="bg-white border border-black/10 rounded-xl px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/40 w-48"
+              className="bg-white border border-black/10 rounded-xl px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/40 w-48"
             />
             <select
               value={filterStatus}
               onChange={e => setFilterStatus(e.target.value)}
-              className="bg-white border border-black/10 rounded-xl px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/40"
+              className="bg-white border border-black/10 rounded-xl px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/40"
             >
               {['alle', 'open', 'in_review', 'resolved', 'dismissed'].map(s => (
                 <option key={s} value={s}>{s === 'alle' ? 'Alle statussen' : STATUS_LABELS[s]?.label ?? s}</option>
@@ -223,7 +223,7 @@ export function IssuesClient({ reports, blocked }: { reports: ReportRow[]; block
             <select
               value={filterCategory}
               onChange={e => setFilterCategory(e.target.value)}
-              className="bg-white border border-black/10 rounded-xl px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/40 max-w-[220px]"
+              className="bg-white border border-black/10 rounded-xl px-3 py-2 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/40 max-w-[220px]"
             >
               {CATEGORIES.map(c => <option key={c}>{c}</option>)}
             </select>
@@ -239,7 +239,7 @@ export function IssuesClient({ reports, blocked }: { reports: ReportRow[]; block
               {filteredReports.map(report => (
                 <div key={report.id}>
                   <div
-                    className={`px-6 py-4 flex items-center gap-4 cursor-pointer hover:bg-[#F5F0E8]/40 transition-colors ${expandedId === report.id ? 'bg-[#F5F0E8]/60' : ''}`}
+                    className={`px-6 py-4 flex items-center gap-4 cursor-pointer hover:bg-[#F4F1E8]/40 transition-colors ${expandedId === report.id ? 'bg-[#F4F1E8]/60' : ''}`}
                     onClick={() => setExpandedId(expandedId === report.id ? null : report.id)}
                   >
                     {/* Datum */}
@@ -253,7 +253,7 @@ export function IssuesClient({ reports, blocked }: { reports: ReportRow[]; block
                       <Link
                         href={`/dashboard/profile/${report.reported_user_id}`}
                         onClick={e => e.stopPropagation()}
-                        className="text-sm font-bold text-black hover:text-[#E87722] transition-colors"
+                        className="text-sm font-bold text-black hover:text-[#C4F542] transition-colors"
                       >
                         {report.reported_user_name}
                       </Link>
@@ -307,7 +307,7 @@ export function IssuesClient({ reports, blocked }: { reports: ReportRow[]; block
                 <div className="flex-1 min-w-0">
                   <Link
                     href={`/dashboard/profile/${row.blocked_id}`}
-                    className="text-sm font-bold text-black hover:text-[#E87722] transition-colors"
+                    className="text-sm font-bold text-black hover:text-[#C4F542] transition-colors"
                   >
                     {row.blocked_name}
                   </Link>

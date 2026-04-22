@@ -23,7 +23,7 @@ function GroupCard({ group, onJoin, onLeave }: { group: Group; onJoin: () => voi
     <div className="bg-white rounded-2xl border border-[#E8E0D5] p-5 hover:border-[#111]/20 hover:shadow-sm transition-all">
       <div className="flex items-start justify-between mb-3">
         <div className="w-12 h-12 bg-orange-50 rounded-xl flex items-center justify-center">
-          <Users className="w-6 h-6 text-[#E87722]" />
+          <Users className="w-6 h-6 text-[#C4F542]" />
         </div>
         <div className="flex items-center gap-1.5 text-xs text-gray-400">
           {group.private ? <Lock className="w-3 h-3" /> : <Globe className="w-3 h-3" />}
@@ -39,7 +39,7 @@ function GroupCard({ group, onJoin, onLeave }: { group: Group; onJoin: () => voi
       {group.sport && (() => {
         const s = getSportById(group.sport!) ?? { emoji: '🏅', label: group.sport! }
         return (
-          <span className="inline-block text-[10px] font-bold bg-orange-50 text-[#E87722] px-2 py-0.5 rounded-full mb-2">
+          <span className="inline-block text-[10px] font-bold bg-orange-50 text-[#C4F542] px-2 py-0.5 rounded-full mb-2">
             {s.label}
           </span>
         )
@@ -50,14 +50,14 @@ function GroupCard({ group, onJoin, onLeave }: { group: Group; onJoin: () => voi
         {group.joined ? (
           <button
             onClick={onLeave}
-            className="flex items-center gap-1 text-xs font-bold text-[#E87722] bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
+            className="flex items-center gap-1 text-xs font-bold text-[#C4F542] bg-orange-50 px-3 py-1.5 rounded-lg hover:bg-orange-100 transition-colors"
           >
             <Check className="w-3 h-3" /> Lid
           </button>
         ) : (
           <button
             onClick={onJoin}
-            className="text-xs font-bold text-white bg-[#111111] px-3 py-1.5 rounded-lg hover:bg-[#333] transition-colors"
+            className="text-xs font-bold text-white bg-[#1E2B20] px-3 py-1.5 rounded-lg hover:bg-[#333] transition-colors"
           >
             Aansluiten
           </button>
@@ -167,7 +167,7 @@ export default function GroupsPage() {
         </div>
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-2 bg-[#111111] text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-[#333] transition-colors"
+          className="flex items-center gap-2 bg-[#1E2B20] text-white font-bold text-sm px-4 py-2.5 rounded-xl hover:bg-[#333] transition-colors"
         >
           <Plus className="w-4 h-4" /> Groep aanmaken
         </button>
@@ -185,9 +185,9 @@ export default function GroupsPage() {
             </div>
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-bold text-gray-600 mb-1.5">Naam <span className="text-[#E87722]">*</span></label>
+                <label className="block text-xs font-bold text-gray-600 mb-1.5">Naam <span className="text-[#C4F542]">*</span></label>
                 <input type="text" value={newName} onChange={e => setNewName(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722]"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
                   placeholder="Bijv. Running Rotterdam" />
               </div>
               <div className="grid grid-cols-2 gap-3">
@@ -203,14 +203,14 @@ export default function GroupsPage() {
                 <div>
                   <label className="block text-xs font-bold text-gray-600 mb-1.5">Stad</label>
                   <input type="text" value={newRegion} onChange={e => setNewRegion(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722]"
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
                     placeholder="Amsterdam" />
                 </div>
               </div>
               <div>
                 <label className="block text-xs font-bold text-gray-600 mb-1.5">Beschrijving</label>
                 <textarea rows={3} value={newDesc} onChange={e => setNewDesc(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] resize-none"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542] resize-none"
                   placeholder="Waar gaat de groep over?" />
               </div>
               <label className="flex items-center gap-3 cursor-pointer">
@@ -227,7 +227,7 @@ export default function GroupsPage() {
                   Annuleren
                 </button>
                 <button onClick={createGroup} disabled={!newName.trim() || creating}
-                  className="flex-1 bg-[#111111] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#333] transition-colors disabled:opacity-40">
+                  className="flex-1 bg-[#1E2B20] text-white font-bold py-3 rounded-xl text-sm hover:bg-[#333] transition-colors disabled:opacity-40">
                   {creating ? 'Aanmaken...' : 'Aanmaken'}
                 </button>
               </div>
@@ -268,7 +268,7 @@ export default function GroupsPage() {
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder="Zoek op naam, sport of stad..."
-              className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white w-64"
+              className="pl-9 pr-4 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542] bg-white w-64"
             />
           </div>
         </div>

@@ -56,7 +56,7 @@ const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 
 // ── Sport kleuren ─────────────────────────────────────────────────────────────
 const SPORT_COLORS: Record<string, string> = {
-  Tennis: '#E87722', Hardlopen: '#E87722', Voetbal: '#E87722', Triathlon: '#E87722',
+  Tennis: '#C4F542', Hardlopen: '#C4F542', Voetbal: '#C4F542', Triathlon: '#C4F542',
   Fietsen: '#1D9E75', Yoga: '#1D9E75',
   Zwemmen: '#3A7AC4',
   Gym: '#7F77DD',
@@ -64,11 +64,11 @@ const SPORT_COLORS: Record<string, string> = {
   Golf: '#D4A87A',
 }
 function getSportColor(sport: string | null): string {
-  return sport ? (SPORT_COLORS[sport] ?? '#E87722') : '#E87722'
+  return sport ? (SPORT_COLORS[sport] ?? '#C4F542') : '#C4F542'
 }
 
 // ── Gebruiker kleur (consistent per userId) ───────────────────────────────────
-const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#E87722','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
+const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#C4F542','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
 function getUserColor(userId: string): string {
   const hash = userId.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0)
   return USER_COLORS[hash % USER_COLORS.length]
@@ -112,8 +112,8 @@ function lastSeenLabel(lastSeen: string | null | undefined, isOnline: boolean): 
 function DeleteDialog({ onClose, onConfirm, isPending }: { onClose: () => void; onConfirm: () => void; isPending: boolean }) {
   return (
     <div className="fixed inset-0 z-[70] bg-black/60 flex items-center justify-center p-4" onClick={onClose}>
-      <div className="bg-[#F5F0E8] w-full max-w-sm rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
-        <h3 style={{ ...SYNE, fontWeight: 800, fontSize: 17, color: '#111' }} className="mb-2">Chat verwijderen?</h3>
+      <div className="bg-[#F4F1E8] w-full max-w-sm rounded-2xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
+        <h3 style={{ ...SYNE, fontWeight: 800, fontSize: 17, color: '#1E2B20' }} className="mb-2">Chat verwijderen?</h3>
         <p className="text-sm text-gray-600 leading-relaxed mb-6">
           Weet je zeker dat je deze chat wilt verwijderen? De berichten verdwijnen alleen bij jou. De andere persoon kan de chat nog steeds zien.
         </p>
@@ -138,8 +138,8 @@ function ChatMenu({ onReport, onDelete, onClose }: { onReport: () => void; onDel
   }, [onClose])
   return (
     <div ref={ref} className="absolute right-4 top-14 z-50 bg-white rounded-xl shadow-xl border border-black/8 overflow-hidden w-52">
-      <button onClick={() => { onReport(); onClose() }} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors text-left">
-        <Flag className="w-4 h-4 text-[#E87722]" /> Gebruiker rapporteren
+      <button onClick={() => { onReport(); onClose() }} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F4F1E8] transition-colors text-left">
+        <Flag className="w-4 h-4 text-[#C4F542]" /> Gebruiker rapporteren
       </button>
       <div className="border-t border-black/5" />
       <button onClick={() => { onDelete(); onClose() }} className="w-full flex items-center gap-3 px-4 py-3 text-sm font-semibold text-red-500 hover:bg-red-50 transition-colors text-left">
@@ -164,12 +164,12 @@ function TabPill({ label, count, active, onClick }: { label: string; count: numb
   return (
     <button
       onClick={onClick}
-      style={active ? { background: '#111111' } : { background: 'rgba(255,255,255,0.70)', border: '1px solid rgba(17,17,17,0.10)' }}
+      style={active ? { background: '#1E2B20' } : { background: 'rgba(255,255,255,0.70)', border: '1px solid rgba(17,17,17,0.10)' }}
       className="flex items-center gap-1.5 px-4 py-2 rounded-full whitespace-nowrap flex-shrink-0 active:scale-95 transition-all"
     >
       <span style={{ ...DM, fontSize: 13, fontWeight: 600, color: active ? 'white' : 'rgba(17,17,17,0.70)' }}>{label}</span>
       {count > 0 && (
-        <span style={{ background: '#E87722', minWidth: 20, height: 20, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px' }}>
+        <span style={{ background: '#C4F542', minWidth: 20, height: 20, borderRadius: 999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '0 6px' }}>
           <span style={{ ...DM, fontSize: 11, fontWeight: 700, color: 'white' }}>{count}</span>
         </span>
       )}
@@ -658,23 +658,23 @@ export default function MessagesClient({
           top: 0, left: 0, right: 0,
           bottom: 'calc(env(safe-area-inset-bottom) + 60px)',
           paddingTop: 'env(safe-area-inset-top)',
-          background: '#F5F0E8',
+          background: '#F4F1E8',
         }}
       >
 
         {/* ══ LINKER KOLOM — nieuw editorial design ══════════════════════════════ */}
         <div
           className={`w-full md:w-80 lg:w-96 flex flex-col ${(selected || activeMeetupId) ? 'hidden md:flex' : 'flex'}`}
-          style={{ background: '#F5F0E8' }}
+          style={{ background: '#F4F1E8' }}
         >
           {/* Editorial header */}
           <div style={{ padding: '16px 20px 0' }}>
             <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 16 }}>
               <div>
-                <p style={{ ...DM, fontSize: 11, fontWeight: 600, color: '#E87722', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2 }}>
+                <p style={{ ...DM, fontSize: 11, fontWeight: 600, color: '#C4F542', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: 2 }}>
                   VANDAAG
                 </p>
-                <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, lineHeight: 1.1, color: '#111111' }}>
+                <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, lineHeight: 1.1, color: '#1E2B20' }}>
                   Berichten
                 </h1>
               </div>
@@ -682,7 +682,7 @@ export default function MessagesClient({
                 onClick={() => router.push('/dashboard/find')}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 6,
-                  background: '#111111', borderRadius: 999,
+                  background: '#1E2B20', borderRadius: 999,
                   padding: '8px 14px', border: 'none', cursor: 'pointer', marginTop: 4,
                 }}
               >
@@ -738,10 +738,10 @@ export default function MessagesClient({
                         <div style={{ width: 44, height: 44, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                           <span style={{ ...SYNE, fontSize: 13, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
                         </div>
-                        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 13, height: 13, borderRadius: '50%', background: '#E87722', border: '2px solid #F5F0E8' }} />
+                        <div style={{ position: 'absolute', bottom: 0, right: 0, width: 13, height: 13, borderRadius: '50%', background: '#C4F542', border: '2px solid #F4F1E8' }} />
                       </div>
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <p style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#111111', marginBottom: 2 }}>{conv.otherUserName}</p>
+                        <p style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#1E2B20', marginBottom: 2 }}>{conv.otherUserName}</p>
                         <p style={{ ...DM, fontSize: 12, color: 'rgba(17,17,17,0.55)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {conv.message ?? 'Wil jouw sportbuddy worden'}
                         </p>
@@ -759,13 +759,13 @@ export default function MessagesClient({
                 {/* Empty state */}
                 {acceptedSorted.length === 0 && (
                   <div style={{ margin: '32px 16px', background: 'white', borderRadius: 24, padding: '32px 24px', textAlign: 'center' }}>
-                    <p style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#111111', marginBottom: 8 }}>Nog geen berichten</p>
+                    <p style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#1E2B20', marginBottom: 8 }}>Nog geen berichten</p>
                     <p style={{ ...DM, fontSize: 13, color: 'rgba(17,17,17,0.55)', marginBottom: 20, lineHeight: 1.5 }}>
                       Start een gesprek via de Zoek pagina
                     </p>
                     <button
                       onClick={() => router.push('/dashboard/find')}
-                      style={{ background: '#111111', color: 'white', borderRadius: 999, padding: '10px 20px', border: 'none', cursor: 'pointer', ...DM, fontSize: 13, fontWeight: 600 }}
+                      style={{ background: '#1E2B20', color: 'white', borderRadius: 999, padding: '10px 20px', border: 'none', cursor: 'pointer', ...DM, fontSize: 13, fontWeight: 600 }}
                     >
                       Vind een buddy
                     </button>
@@ -804,7 +804,7 @@ export default function MessagesClient({
                           {isHeroOnline ? (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '6px 10px' }}>
                               <div style={{ width: 7, height: 7, borderRadius: '50%', background: '#1D9E75' }} />
-                              <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: '#111111' }}>Online nu</span>
+                              <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: '#1E2B20' }}>Online nu</span>
                             </div>
                           ) : (
                             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.15)', borderRadius: 999, padding: '6px 10px' }}>
@@ -854,9 +854,9 @@ export default function MessagesClient({
                               <div style={{ width: 56, height: 56, borderRadius: '50%', background: color, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                                 <span style={{ ...SYNE, fontSize: 14, fontWeight: 800, color: 'white' }}>{getInitials(conv.otherUserName)}</span>
                               </div>
-                              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 14, height: 14, borderRadius: '50%', background: '#1D9E75', border: '2px solid #F5F0E8' }} />
+                              <div style={{ position: 'absolute', bottom: 1, right: 1, width: 14, height: 14, borderRadius: '50%', background: '#1D9E75', border: '2px solid #F4F1E8' }} />
                             </div>
-                            <span style={{ ...DM, fontSize: 10, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }}>
+                            <span style={{ ...DM, fontSize: 10, color: '#1E2B20', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', width: '100%', textAlign: 'center' }}>
                               {conv.otherUserName.split(' ')[0]}
                             </span>
                           </button>
@@ -903,7 +903,7 @@ export default function MessagesClient({
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 3 }}>
-                                <span style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#111111', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                <span style={{ ...DM, fontSize: 14, fontWeight: 700, color: '#1E2B20', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                                   {conv.otherUserName}
                                 </span>
                                 <span style={{ ...DM, fontSize: 10, color: 'rgba(17,17,17,0.40)', flexShrink: 0 }}>{timeAgo(conv.createdAt)}</span>
@@ -951,7 +951,7 @@ export default function MessagesClient({
 
         {activeMeetupId && loadingMeetupChat && (
           <div className="flex-1 flex items-center justify-center">
-            <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
+            <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
           </div>
         )}
 
@@ -968,7 +968,7 @@ export default function MessagesClient({
                 )}
               </Link>
               <div className="flex-1">
-                <Link href={`/dashboard/profile/${selected.otherUserId}`} className="font-black text-black text-sm hover:text-[#E87722] transition-colors">{selected.otherUserName}</Link>
+                <Link href={`/dashboard/profile/${selected.otherUserId}`} className="font-black text-black text-sm hover:text-[#C4F542] transition-colors">{selected.otherUserName}</Link>
                 <p className="text-xs font-medium" style={{ color: onlineUsers.has(selected.otherUserId) ? '#22c55e' : '#9ca3af' }}>
                   {lastSeenLabel(selected.otherUserLastSeen, onlineUsers.has(selected.otherUserId))}
                 </p>
@@ -1018,7 +1018,7 @@ export default function MessagesClient({
                 <div className="flex justify-start items-end gap-2 mb-2">
                   <Avatar name={selected.otherUserName} size="xs" />
                   <div className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
-                    style={{ background: '#FFFFFF', color: '#111111', borderRadius: '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
+                    style={{ background: '#FFFFFF', color: '#1E2B20', borderRadius: '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
                     <p className="text-xs font-semibold mb-0.5" style={{ color: '#3B82F6' }}>{selected.otherUserName}</p>
                     {selected.message}
                     <p className="text-[10px] mt-1 text-gray-400">{timeAgo(selected.createdAt)} geleden</p>
@@ -1061,15 +1061,15 @@ export default function MessagesClient({
                         </button>
                       ) : (
                         <div className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
-                          style={{ background: fromMe ? '#FFF4ED' : '#FFFFFF', color: '#111111', borderRadius: fromMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
-                          <p className="text-xs font-semibold mb-0.5" style={{ color: fromMe ? '#E87722' : '#3B82F6' }}>
+                          style={{ background: fromMe ? '#FFF4ED' : '#FFFFFF', color: '#1E2B20', borderRadius: fromMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px', boxShadow: '0 1px 2px rgba(0,0,0,0.06)' }}>
+                          <p className="text-xs font-semibold mb-0.5" style={{ color: fromMe ? '#C4F542' : '#3B82F6' }}>
                             {fromMe ? 'Jij' : selected.otherUserName}
                           </p>
                           {msg.content}
                           <div className={`flex items-center gap-1 mt-1 ${fromMe ? 'justify-end' : 'justify-start'}`}>
                             <span className="text-[10px] text-gray-400">{formatTime(msg.created_at)}</span>
                             {readStatus && (
-                              <span style={{ fontSize: 10 }} className={readStatus === 'read' ? 'text-[#E87722]' : 'text-gray-300'}>
+                              <span style={{ fontSize: 10 }} className={readStatus === 'read' ? 'text-[#C4F542]' : 'text-gray-300'}>
                                 {readStatus === 'read' ? '✓✓' : '✓'}
                               </span>
                             )}
@@ -1146,16 +1146,16 @@ export default function MessagesClient({
 
             {/* Telefoonwaarschuwing */}
             {showPhoneWarning && (
-              <div className="mx-4 mb-2 bg-[#FFF8F2] border-l-4 border-[#E87722] rounded-r-xl px-4 py-3">
+              <div className="mx-4 mb-2 bg-[#FFF8F2] border-l-4 border-[#C4F542] rounded-r-xl px-4 py-3">
                 <div className="flex items-start gap-3 mb-3">
-                  <AlertTriangle className="w-4 h-4 text-[#E87722] shrink-0 mt-0.5" />
+                  <AlertTriangle className="w-4 h-4 text-[#C4F542] shrink-0 mt-0.5" />
                   <p className="text-xs text-gray-700 leading-relaxed">
-                    <span className="font-bold text-[#E87722]">Wacht even — </span>
+                    <span className="font-bold text-[#C4F542]">Wacht even — </span>
                     je staat op het punt je telefoonnummer te delen. Ken je deze persoon al goed genoeg? Je kunt altijd verder chatten voordat je persoonlijke gegevens deelt.
                   </p>
                 </div>
                 <div className="flex justify-end">
-                  <button onClick={() => setPhoneWarningDismissed(true)} className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] transition-colors px-4 py-1.5 rounded-lg">
+                  <button onClick={() => setPhoneWarningDismissed(true)} className="text-xs font-bold text-white bg-[#C4F542] hover:bg-[#d06a1a] transition-colors px-4 py-1.5 rounded-lg">
                     Akkoord
                   </button>
                 </div>
@@ -1173,7 +1173,7 @@ export default function MessagesClient({
                 <div className="flex gap-2 shrink-0">
                   <button onClick={cancelImage} className="text-xs font-bold text-gray-400 hover:text-red-500 transition-colors">Annuleer</button>
                   <button onClick={sendImage} disabled={uploadingImage}
-                    className="text-xs font-bold text-white bg-[#E87722] hover:bg-[#d06a1a] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
+                    className="text-xs font-bold text-white bg-[#C4F542] hover:bg-[#d06a1a] px-3 py-1.5 rounded-lg transition-colors disabled:opacity-50">
                     {uploadingImage ? 'Sturen...' : 'Verzenden'}
                   </button>
                 </div>
@@ -1185,12 +1185,12 @@ export default function MessagesClient({
               <div className="p-4 border-t border-gray-100">
                 <div className="flex items-center gap-2 bg-gray-50 rounded-2xl px-3 py-2">
                   <button onClick={() => fileInputRef.current?.click()} disabled={!!pendingImage}
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all disabled:opacity-30 shrink-0">
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#C4F542] hover:bg-white transition-all disabled:opacity-30 shrink-0">
                     <ImageIcon className="w-4 h-4" />
                   </button>
                   <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp,image/gif" className="hidden" onChange={handleImageSelect} />
                   <button onClick={() => setShowAfspraakModal(true)}
-                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#E87722] hover:bg-white transition-all shrink-0">
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-gray-400 hover:text-[#C4F542] hover:bg-white transition-all shrink-0">
                     <CalendarDays className="w-4 h-4" />
                   </button>
                   <input
@@ -1202,7 +1202,7 @@ export default function MessagesClient({
                     className="flex-1 bg-transparent text-sm text-black focus:outline-none"
                   />
                   <button onClick={sendMessage} disabled={!newMessage.trim() || showPhoneWarning}
-                    className="w-8 h-8 bg-[#111111] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0">
+                    className="w-8 h-8 bg-[#1E2B20] rounded-full flex items-center justify-center disabled:opacity-40 hover:bg-[#333] transition-colors shrink-0">
                     <Send className="w-3.5 h-3.5 text-white" />
                   </button>
                 </div>
@@ -1267,7 +1267,7 @@ export default function MessagesClient({
               </div>
               <div className="flex-1 min-w-0">
                 <p className="font-black text-black text-base">{previewConv.otherUserName}</p>
-                {previewConv.sport && <p className="text-xs font-semibold text-[#E87722]">{previewConv.sport}</p>}
+                {previewConv.sport && <p className="text-xs font-semibold text-[#C4F542]">{previewConv.sport}</p>}
               </div>
               <p className="text-xs text-gray-400">{timeAgo(previewConv.createdAt)}</p>
             </div>

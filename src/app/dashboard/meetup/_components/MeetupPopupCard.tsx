@@ -200,8 +200,8 @@ export default function MeetupPopupCard({
               border: '1px solid rgba(232,119,34,0.20)',
               borderRadius: 999, padding: '5px 12px',
             }}>
-              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E87722', flexShrink: 0 }} />
-              <span style={{ ...DM, fontSize: 12, fontWeight: 700, color: '#E87722', letterSpacing: '0.04em' }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#C4F542', flexShrink: 0 }} />
+              <span style={{ ...DM, fontSize: 12, fontWeight: 700, color: '#C4F542', letterSpacing: '0.04em' }}>
                 LIVE NU
               </span>
             </div>
@@ -230,7 +230,7 @@ export default function MeetupPopupCard({
         <h2 style={{
           ...SYNE,
           fontWeight: 800, fontSize: 22, lineHeight: 1.15,
-          color: '#111111', margin: '0 0 14px',
+          color: '#1E2B20', margin: '0 0 14px',
           paddingRight: 20,
         }}>
           {meetup.title}
@@ -278,7 +278,7 @@ export default function MeetupPopupCard({
           <p style={{ ...DM, fontSize: 10, fontWeight: 700, color: '#9CA3AF', letterSpacing: '0.10em', textTransform: 'uppercase', margin: '0 0 2px' }}>
             Tijd
           </p>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: '#111111', margin: 0, lineHeight: 1.1 }}>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: '#1E2B20', margin: 0, lineHeight: 1.1 }}>
             {startTime}
           </p>
           {/* Locatie onder tijd */}
@@ -294,7 +294,7 @@ export default function MeetupPopupCard({
             disabled={ctaDisabled()}
             style={{
               ...SYNE,
-              background: ctaDisabled() ? '#E5E7EB' : '#E87722',
+              background: ctaDisabled() ? '#E5E7EB' : '#C4F542',
               color: ctaDisabled() ? '#9CA3AF' : '#FFFFFF',
               border: 'none',
               borderRadius: 16,
@@ -328,11 +328,11 @@ export default function MeetupPopupCard({
       {/* ── Interesse overlay ─────────────────────────────────────────────── */}
       {showOverlay && (
         <div style={{
-          position: 'absolute', inset: 0, background: '#F5F0E8', zIndex: 20,
+          position: 'absolute', inset: 0, background: '#F4F1E8', zIndex: 20,
           display: 'flex', flexDirection: 'column', padding: '18px 18px 16px',
           borderRadius: 20,
         }}>
-          <p style={{ ...SYNE, fontSize: 15, fontWeight: 800, color: '#111', margin: '0 0 2px' }}>
+          <p style={{ ...SYNE, fontSize: 15, fontWeight: 800, color: '#1E2B20', margin: '0 0 2px' }}>
             Laat {meetup.creatorName.split(' ')[0]} weten wie je bent
           </p>
           <p style={{ ...DM, fontSize: 12, color: '#9CA3AF', margin: '0 0 12px' }}>Optioneel berichtje</p>
@@ -379,7 +379,7 @@ export default function MeetupPopupCard({
               onClick={handleInterestSubmit}
               disabled={isPending}
               style={{
-                flex: 1, background: '#E87722', color: '#fff', border: 'none',
+                flex: 1, background: '#C4F542', color: '#fff', border: 'none',
                 borderRadius: 12, padding: '10px 0', fontSize: 13, fontWeight: 700,
                 cursor: isPending ? 'not-allowed' : 'pointer',
                 opacity: isPending ? 0.6 : 1,

@@ -24,8 +24,8 @@ export default function ToggleRow({ label, description, value, onChange }: Toggl
         role="switch"
         aria-checked={value}
         onClick={() => onChange(!value)}
-        className="relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E87722] focus-visible:ring-offset-2"
-        style={{ backgroundColor: value ? '#E87722' : '#E0DDD8' }}
+        className="relative w-11 h-6 rounded-full transition-colors duration-200 flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4F542] focus-visible:ring-offset-2"
+        style={{ backgroundColor: value ? '#C4F542' : '#E0DDD8' }}
       >
         <span
           className="absolute top-[3px] w-[18px] h-[18px] rounded-full bg-white transition-transform duration-200"

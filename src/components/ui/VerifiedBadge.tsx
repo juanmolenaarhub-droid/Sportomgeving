@@ -6,7 +6,7 @@ export function VerifiedBadge({ size = 'sm' }: { size?: 'sm' | 'md' }) {
   return (
     <span
       title="Verified creator"
-      className={`${dim} bg-[#E87722] rounded-full flex items-center justify-center shrink-0`}
+      className={`${dim} bg-[#C4F542] rounded-full flex items-center justify-center shrink-0`}
     >
       <Check className={`${icon} text-white`} strokeWidth={3} />
     </span>

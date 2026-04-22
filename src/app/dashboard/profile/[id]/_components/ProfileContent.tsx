@@ -76,8 +76,8 @@ type UserRow = { id: string; full_name: string | null; username: string | null; 
 
 function levelBadge(level: string) {
   const l = level?.toLowerCase()
-  if (l === 'gevorderd' || l === 'advanced')    return { label: 'Gevorderd', bg: '#111',     color: 'white'   }
-  if (l === 'gemiddeld' || l === 'intermediate') return { label: 'Gemiddeld', bg: '#E87722', color: 'white'   }
+  if (l === 'gevorderd' || l === 'advanced')    return { label: 'Gevorderd', bg: '#1E2B20',     color: 'white'   }
+  if (l === 'gemiddeld' || l === 'intermediate') return { label: 'Gemiddeld', bg: '#C4F542', color: 'white'   }
   return { label: 'Beginner', bg: '#F3F4F6', color: '#6B7280' }
 }
 
@@ -91,7 +91,7 @@ function formatNumber(n: number): string {
 }
 
 const SPORT_GRADIENTS: Record<string, string> = {
-  hardlopen: 'linear-gradient(145deg, #E87722, #C0392B)',
+  hardlopen: 'linear-gradient(145deg, #C4F542, #C0392B)',
   fietsen:   'linear-gradient(145deg, #059669, #064E3B)',
   zwemmen:   'linear-gradient(145deg, #0284C7, #1E3A5F)',
   gym:       'linear-gradient(145deg, #292524, #111)',
@@ -168,7 +168,7 @@ function RequestModal({ name, toUserId, currentUserId, sport, onClose, onSent }:
             onChange={e => setMessage(e.target.value.slice(0, MAX))}
             placeholder={`Hoi ${name.split(' ')[0]}, ik zou graag met je sporten...`}
             rows={4}
-            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#E87722] resize-none transition-colors"
+            className="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C4F542] resize-none transition-colors"
           />
           <div className="flex justify-end mt-1"><span className="text-xs text-gray-300">{message.length}/{MAX}</span></div>
         </div>
@@ -256,7 +256,7 @@ function StatsModal({ title, profileId, onClose }: {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Zoeken..."
-            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#E87722] transition-colors"
+            className="w-full text-sm border border-gray-200 rounded-xl px-3 py-2 focus:outline-none focus:border-[#C4F542] transition-colors"
           />
         </div>
         <div className="overflow-y-auto flex-1">
@@ -283,17 +283,17 @@ function StatsModal({ title, profileId, onClose }: {
               onClick={onClose}
               className="flex items-center gap-3 px-4 py-3 hover:bg-[#FAFAF7] transition-colors"
             >
-              <div className="w-10 h-10 rounded-full bg-[#F5F0E8] shrink-0 overflow-hidden flex items-center justify-center">
+              <div className="w-10 h-10 rounded-full bg-[#F4F1E8] shrink-0 overflow-hidden flex items-center justify-center">
                 {u.avatar_url
                   ? <img src={u.avatar_url} className="w-full h-full object-cover" alt="" />
-                  : <span style={{ ...SYNE, fontWeight: 900, fontSize: 14, color: '#E87722' }}>{(u.full_name ?? '?').charAt(0).toUpperCase()}</span>
+                  : <span style={{ ...SYNE, fontWeight: 900, fontSize: 14, color: '#C4F542' }}>{(u.full_name ?? '?').charAt(0).toUpperCase()}</span>
                 }
               </div>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-bold text-gray-900 truncate">{u.full_name ?? u.username ?? 'Onbekend'}</p>
                 {u.username && <p className="text-xs text-gray-400">@{u.username}</p>}
               </div>
-              <span className="text-xs text-[#E87722] font-semibold shrink-0">Bekijk →</span>
+              <span className="text-xs text-[#C4F542] font-semibold shrink-0">Bekijk →</span>
             </Link>
           ))}
         </div>
@@ -318,10 +318,10 @@ function HighlightsRow({ isOwnProfile, sports }: {
         {isOwnProfile && (
           <Link href="/dashboard/instellingen/profiel" className="flex flex-col items-center gap-1.5 shrink-0 group">
             <div
-              className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-[#E87722] transition-colors"
+              className="w-[72px] h-[72px] rounded-full flex items-center justify-center border-2 border-dashed border-gray-300 group-hover:border-[#C4F542] transition-colors"
               style={{ background: '#FAFAF7' }}
             >
-              <Plus className="w-5 h-5 text-gray-400 group-hover:text-[#E87722] transition-colors" />
+              <Plus className="w-5 h-5 text-gray-400 group-hover:text-[#C4F542] transition-colors" />
             </div>
             <span className="text-[11px] text-gray-400 font-semibold text-center max-w-[72px] truncate">Nieuw</span>
           </Link>
@@ -329,7 +329,7 @@ function HighlightsRow({ isOwnProfile, sports }: {
         {autoHighlights.map(h => (
           <button key={h.id} className="flex flex-col items-center gap-1.5 shrink-0 group">
             <div
-              className="w-[72px] h-[72px] rounded-full flex items-center justify-center ring-2 ring-[#E87722] ring-offset-2"
+              className="w-[72px] h-[72px] rounded-full flex items-center justify-center ring-2 ring-[#C4F542] ring-offset-2"
               style={{ background: sportGradient(h.sport) }}
             >
               <span className="text-white text-lg font-black">{h.title.charAt(0)}</span>
@@ -345,7 +345,7 @@ function HighlightsRow({ isOwnProfile, sports }: {
 // ── Tab: Posts ────────────────────────────────────────────────────────────────
 
 const TYPE_BADGE: Record<string, { label: string; color: string; bg: string }> = {
-  activity:  { label: 'Activiteit', color: '#E87722', bg: '#FFF0E5' },
+  activity:  { label: 'Activiteit', color: '#C4F542', bg: '#FFF0E5' },
   meetup:    { label: 'Meetup',     color: '#3B82F6', bg: '#EFF6FF' },
   challenge: { label: 'Challenge',  color: '#F59E0B', bg: '#FFF7ED' },
   question:  { label: 'Vraag',      color: '#8B5CF6', bg: '#FAF5FF' },
@@ -418,7 +418,7 @@ function PostsTab({ profileId, isLocked }: { profileId: string; isLocked: boolea
                 {img(post) ? (
                   <img src={img(post)!} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="" />
                 ) : (
-                  <div className="w-full h-full flex flex-col p-3 justify-between" style={{ background: post.type === 'activity' ? sportGradient(post.sport) : '#F5F0E8' }}>
+                  <div className="w-full h-full flex flex-col p-3 justify-between" style={{ background: post.type === 'activity' ? sportGradient(post.sport) : '#F4F1E8' }}>
                     {post.sport && (
                       <span className="text-[10px] font-bold text-white bg-white/20 px-2 py-0.5 rounded-full self-start">{post.sport}</span>
                     )}
@@ -625,14 +625,14 @@ function SavedTab({ currentUserId }: { currentUserId: string }) {
             {imgUrl ? (
               <img src={imgUrl} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" alt="" />
             ) : (
-              <div className="w-full h-full flex flex-col p-3 justify-between" style={{ background: post?.type === 'activity' ? sportGradient(post?.sport) : '#F5F0E8' }}>
+              <div className="w-full h-full flex flex-col p-3 justify-between" style={{ background: post?.type === 'activity' ? sportGradient(post?.sport) : '#F4F1E8' }}>
                 <p className="text-xs text-gray-600 line-clamp-4">{post?.content}</p>
               </div>
             )}
             {/* Author overlay */}
             {author && post?.user_id && (
               <Link href={`/dashboard/profile/${post.user_id}`} className="absolute bottom-2 left-2 flex items-center gap-1.5 bg-black/60 rounded-full px-2 py-1 hover:bg-black/80 transition-colors">
-                <div className="w-4 h-4 rounded-full bg-[#E87722] overflow-hidden shrink-0">
+                <div className="w-4 h-4 rounded-full bg-[#C4F542] overflow-hidden shrink-0">
                   {author.avatar_url && <img src={author.avatar_url} className="w-full h-full object-cover" alt="" />}
                 </div>
                 <span className="text-[10px] text-white font-semibold truncate max-w-[80px]">
@@ -705,7 +705,7 @@ function ActivitiesTab({ profileId, isLocked }: { profileId: string; isLocked: b
           <button key={v} onClick={() => setPeriod(v)}
             className="px-3 py-1.5 rounded-full text-[12px] font-bold transition-all"
             style={{
-              background: period === v ? '#E87722' : '#F5F2EE',
+              background: period === v ? '#C4F542' : '#F5F2EE',
               color:      period === v ? 'white'   : '#6B7280',
             }}
           >
@@ -723,7 +723,7 @@ function ActivitiesTab({ profileId, isLocked }: { profileId: string; isLocked: b
             { label: 'Totaal tijd',  value: totalMin > 0 ? formatTime(totalMin) : '--' },
           ].map(s => (
             <div key={s.label} className="bg-[#FAFAF7] rounded-xl p-3 text-center">
-              <p style={{ ...SYNE, fontWeight: 900, fontSize: 18, color: '#E87722' }}>{s.value}</p>
+              <p style={{ ...SYNE, fontWeight: 900, fontSize: 18, color: '#C4F542' }}>{s.value}</p>
               <p className="text-[11px] text-gray-400 font-medium mt-0.5">{s.label}</p>
             </div>
           ))}
@@ -755,7 +755,7 @@ function ActivitiesTab({ profileId, isLocked }: { profileId: string; isLocked: b
             return (
               <div key={a.id} className="relative">
                 {/* Timeline dot */}
-                <div className="absolute -left-6 w-4 h-4 rounded-full border-2 border-white top-4 shrink-0" style={{ background: '#E87722' }} />
+                <div className="absolute -left-6 w-4 h-4 rounded-full border-2 border-white top-4 shrink-0" style={{ background: '#C4F542' }} />
 
                 {/* Date label */}
                 <p className="text-[11px] text-gray-400 font-semibold mb-1.5">
@@ -878,7 +878,7 @@ function MeetupsTab({ profileId, isLocked }: { profileId: string; isLocked: bool
     if (!m.date) return null
     const isPast = new Date(m.date) < new Date()
     if (isPast) return { label: 'Afgelopen', bg: '#F3F4F6', color: '#6B7280' }
-    return { label: 'Gepland', bg: '#FFF0E5', color: '#E87722' }
+    return { label: 'Gepland', bg: '#FFF0E5', color: '#C4F542' }
   }
 
   return (
@@ -889,7 +889,7 @@ function MeetupsTab({ profileId, isLocked }: { profileId: string; isLocked: bool
           <button key={v} onClick={() => setSubTab(v)}
             className="flex-1 py-2 rounded-full text-[13px] font-bold transition-all"
             style={{
-              background: subTab === v ? '#E87722' : '#F5F2EE',
+              background: subTab === v ? '#C4F542' : '#F5F2EE',
               color:      subTab === v ? 'white'   : '#6B7280',
             }}
           >
@@ -918,7 +918,7 @@ function MeetupsTab({ profileId, isLocked }: { profileId: string; isLocked: bool
               <Link
                 key={m.id}
                 href={`/dashboard/meetup/${m.id}`}
-                className="block bg-[#FAFAF7] rounded-xl p-4 border border-[#F0EDE8] hover:border-[#E87722]/30 transition-colors"
+                className="block bg-[#FAFAF7] rounded-xl p-4 border border-[#F0EDE8] hover:border-[#C4F542]/30 transition-colors"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
@@ -1010,7 +1010,7 @@ function AboutTab({ profile }: { profile: ProfileData }) {
               if (!meta) return null
               return (
                 <span key={slot} className="text-xs font-bold px-3 py-1.5 rounded-full"
-                  style={{ background: '#FFF5EE', color: '#E87722', border: '1px solid #FDDCBD' }}>
+                  style={{ background: '#FFF5EE', color: '#C4F542', border: '1px solid #FDDCBD' }}>
                   {meta.label} <span className="font-normal" style={{ color: '#FDBA74' }}>{meta.sub}</span>
                 </span>
               )
@@ -1119,7 +1119,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
       style={{
         position: 'fixed', inset: 0,
         overflowY: 'auto', WebkitOverflowScrolling: 'touch' as never,
-        background: '#F5F0E8',
+        background: '#F4F1E8',
         paddingTop: 'env(safe-area-inset-top)',
         paddingBottom: 'calc(72px + env(safe-area-inset-bottom))',
       }}
@@ -1141,7 +1141,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
         <div className="relative h-[140px] sm:h-[200px] bg-gray-100 overflow-hidden rounded-t-2xl">
           {profile.bannerUrl
             ? <img src={profile.bannerUrl} className="w-full h-full object-cover" alt="" />
-            : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #F5F0E8 0%, #e0d8cc 100%)' }} />
+            : <div className="w-full h-full" style={{ background: 'linear-gradient(135deg, #F4F1E8 0%, #e0d8cc 100%)' }} />
           }
           {isOwnProfile && (
             <Link href="/dashboard/instellingen/profiel"
@@ -1161,10 +1161,10 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
               <div className="relative z-10 -mt-12 mb-3">
                 {isOwnProfile ? (
                   <Link href="/dashboard/instellingen/profiel" className="block relative group w-fit">
-                    <div className="w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-[#F5F0E8] flex items-center justify-center">
+                    <div className="w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-[#F4F1E8] flex items-center justify-center">
                       {profile.avatarUrl
                         ? <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="" />
-                        : <span style={{ ...SYNE, fontWeight: 900, fontSize: 28, color: '#E87722' }}>{profile.name.charAt(0).toUpperCase()}</span>
+                        : <span style={{ ...SYNE, fontWeight: 900, fontSize: 28, color: '#C4F542' }}>{profile.name.charAt(0).toUpperCase()}</span>
                       }
                     </div>
                     <div className="absolute inset-0 rounded-full bg-black/0 group-hover:bg-black/40 transition-all flex items-center justify-center">
@@ -1172,10 +1172,10 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
                     </div>
                   </Link>
                 ) : (
-                  <div className="w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-[#F5F0E8] flex items-center justify-center">
+                  <div className="w-24 h-24 rounded-full ring-4 ring-white overflow-hidden bg-[#F4F1E8] flex items-center justify-center">
                     {profile.avatarUrl
                       ? <img src={profile.avatarUrl} className="w-full h-full object-cover" alt="" />
-                      : <span style={{ ...SYNE, fontWeight: 900, fontSize: 28, color: '#E87722' }}>{profile.name.charAt(0).toUpperCase()}</span>
+                      : <span style={{ ...SYNE, fontWeight: 900, fontSize: 28, color: '#C4F542' }}>{profile.name.charAt(0).toUpperCase()}</span>
                     }
                   </div>
                 )}
@@ -1183,9 +1183,9 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
 
               {/* Name + username */}
               <div className="flex items-center gap-2 flex-wrap">
-                <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#111', lineHeight: 1.2 }}>{profile.name}</h1>
+                <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#1E2B20', lineHeight: 1.2 }}>{profile.name}</h1>
                 {profile.isVerified && (
-                  <span className="flex items-center gap-1 text-[10px] font-bold text-[#E87722] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">
+                  <span className="flex items-center gap-1 text-[10px] font-bold text-[#C4F542] bg-orange-50 px-2 py-0.5 rounded-full border border-orange-100">
                     <ShieldCheck className="w-3 h-3" /> Verified
                   </span>
                 )}
@@ -1225,7 +1225,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
                     disabled={followStatus === 'pending'}
                     className="flex items-center gap-1.5 font-bold text-sm px-4 py-2 rounded-xl transition-colors whitespace-nowrap"
                     style={{
-                      background: isAccepted ? 'transparent' : followStatus === 'pending' ? '#F3F4F6' : '#E87722',
+                      background: isAccepted ? 'transparent' : followStatus === 'pending' ? '#F3F4F6' : '#C4F542',
                       color:      isAccepted ? '#22C55E' : followStatus === 'pending' ? '#9CA3AF' : 'white',
                       border:     isAccepted ? '1.5px solid #22C55E' : 'none',
                     }}
@@ -1275,7 +1275,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
                 return (
                   <div key={s.label} className="flex items-center gap-1.5 shrink-0 px-3 py-1.5 rounded-full"
                     style={{ border: '1.5px solid #FDDCBD', background: '#FFF5EE' }}>
-                    <span className="text-sm font-bold text-[#E87722]">{s.label}</span>
+                    <span className="text-sm font-bold text-[#C4F542]">{s.label}</span>
                     <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full"
                       style={{ background: badge.bg, color: badge.color }}>{badge.label}</span>
                   </div>
@@ -1301,7 +1301,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
               >
                 {s.value === null
                   ? <Lock className="w-4 h-4 text-gray-300 mx-auto mb-1" />
-                  : <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#E87722' }}>{formatNumber(s.value)}</p>
+                  : <p style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#C4F542' }}>{formatNumber(s.value)}</p>
                 }
                 <p className="text-xs text-gray-400 font-medium mt-0.5">{s.label}</p>
               </button>
@@ -1316,14 +1316,14 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
                   {profile.bio}
                 </p>
                 {isOwnProfile && (
-                  <Link href="/dashboard/instellingen/profiel" className="text-gray-400 hover:text-[#E87722] transition-colors shrink-0 mt-0.5">
+                  <Link href="/dashboard/instellingen/profiel" className="text-gray-400 hover:text-[#C4F542] transition-colors shrink-0 mt-0.5">
                     <Pencil className="w-3.5 h-3.5" />
                   </Link>
                 )}
               </div>
               {bioLong && (
                 <button onClick={() => setBioExpanded(v => !v)}
-                  className="flex items-center gap-1 text-xs text-[#E87722] font-semibold mt-1.5 hover:underline">
+                  className="flex items-center gap-1 text-xs text-[#C4F542] font-semibold mt-1.5 hover:underline">
                   {bioExpanded
                     ? <><ChevronDown className="w-3.5 h-3.5 rotate-180" /> Minder</>
                     : <><ChevronDown className="w-3.5 h-3.5" /> Meer lezen</>
@@ -1350,7 +1350,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
             <Lock className="w-6 h-6 text-gray-400" />
           </div>
           <div>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#111' }}>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#1E2B20' }}>
               {followStatus === 'pending' ? 'Verzoek verzonden' : `Stuur ${firstName} een buddy verzoek`}
             </p>
             <p className="text-sm text-gray-400 mt-1.5 max-w-xs mx-auto leading-relaxed">
@@ -1362,7 +1362,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
           </div>
           {followStatus === 'none' && (
             <button onClick={() => setShowRequest(true)}
-              className="px-6 py-2.5 bg-[#E87722] text-white font-bold text-sm rounded-xl hover:bg-[#d06a1a] transition-colors">
+              className="px-6 py-2.5 bg-[#C4F542] text-white font-bold text-sm rounded-xl hover:bg-[#d06a1a] transition-colors">
               Buddy verzoek sturen
             </button>
           )}
@@ -1377,11 +1377,11 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
             {TABS.map(tab => (
               <button key={tab.key} onClick={() => setActiveTab(tab.key)}
                 className="relative flex-shrink-0 px-5 py-4 text-sm font-semibold transition-colors whitespace-nowrap"
-                style={{ color: activeTab === tab.key ? '#111' : '#9CA3AF' }}
+                style={{ color: activeTab === tab.key ? '#1E2B20' : '#9CA3AF' }}
               >
                 {tab.label}
                 {activeTab === tab.key && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#E87722]" />
+                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-[#C4F542]" />
                 )}
               </button>
             ))}
@@ -1424,7 +1424,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>Rapporteer gebruiker</h2>
+              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }}>Rapporteer gebruiker</h2>
               <button onClick={() => setReportModal(false)} className="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
             </div>
 
@@ -1441,10 +1441,10 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
                   key={val}
                   onClick={() => setReportReason(val)}
                   className="w-full flex items-center gap-3 px-4 py-2.5 rounded-xl border-2 text-left transition-all"
-                  style={{ borderColor: reportReason === val ? '#E87722' : '#F3F4F6', background: reportReason === val ? '#FFF5EE' : 'white' }}
+                  style={{ borderColor: reportReason === val ? '#C4F542' : '#F3F4F6', background: reportReason === val ? '#FFF5EE' : 'white' }}
                 >
-                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${reportReason === val ? 'border-[#E87722]' : 'border-gray-300'}`}>
-                    {reportReason === val && <span className="w-2 h-2 rounded-full bg-[#E87722]" />}
+                  <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center shrink-0 ${reportReason === val ? 'border-[#C4F542]' : 'border-gray-300'}`}>
+                    {reportReason === val && <span className="w-2 h-2 rounded-full bg-[#C4F542]" />}
                   </span>
                   <span className="text-sm font-semibold text-gray-800">{label}</span>
                 </button>
@@ -1455,7 +1455,7 @@ export default function ProfileContent({ profile, followStatus: initialStatus, c
               value={reportDesc}
               onChange={e => setReportDesc(e.target.value.slice(0, 500))}
               rows={3}
-              className="w-full px-3 py-2.5 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722] resize-none"
+              className="w-full px-3 py-2.5 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#C4F542] resize-none"
               placeholder="Optionele toelichting (max 500 tekens)..."
             />
 

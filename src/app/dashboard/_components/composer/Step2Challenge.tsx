@@ -215,7 +215,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
           onClick={onBack}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
         >
-          <ArrowLeft size={20} color="#111" />
+          <ArrowLeft size={20} color="#1E2B20" />
         </button>
         <span className="text-[15px] font-semibold text-gray-900" style={SYNE}>
           Nieuwe challenge
@@ -224,7 +224,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
           onClick={handleSubmit}
           disabled={submitting}
           className="px-4 py-1.5 rounded-full text-white text-[13px] font-semibold transition-opacity disabled:opacity-50"
-          style={{ background: '#E87722', ...SYNE }}
+          style={{ background: '#C4F542', ...SYNE }}
         >
           {submitting ? 'Bezig…' : 'Delen'}
         </button>
@@ -239,7 +239,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
             className="flex-1 py-2 rounded-full text-[13px] font-semibold transition-all"
             style={{
               ...SYNE,
-              background: mode === m ? '#E87722' : '#F5F2EE',
+              background: mode === m ? '#C4F542' : '#F5F2EE',
               color: mode === m ? '#fff' : '#6B7280',
             }}
           >
@@ -321,7 +321,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                 value={challengeName}
                 onChange={(e) => setChallengeName(e.target.value)}
                 placeholder="Challenge naam *"
-                className="w-full bg-transparent border-b text-[16px] font-semibold text-gray-900 placeholder-gray-300 outline-none pb-2 focus:border-[#E87722] transition-colors"
+                className="w-full bg-transparent border-b text-[16px] font-semibold text-gray-900 placeholder-gray-300 outline-none pb-2 focus:border-[#C4F542] transition-colors"
                 style={{ borderColor: errors.challengeName ? '#EF4444' : '#E0DDD8', ...SYNE }}
               />
               {errors.challengeName && (
@@ -354,7 +354,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                     className="px-3 py-1.5 rounded-full text-[13px] font-medium transition-all whitespace-nowrap flex-shrink-0"
                     style={{
                       ...SYNE,
-                      background: challengeType === ct ? '#E87722' : '#F5F2EE',
+                      background: challengeType === ct ? '#C4F542' : '#F5F2EE',
                       color: challengeType === ct ? '#fff' : '#6B7280',
                     }}
                   >
@@ -377,7 +377,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                     onChange={(e) => setGoalNumeric(e.target.value)}
                     placeholder="0"
                     min={0}
-                    className="flex-1 px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white"
+                    className="flex-1 px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white"
                     style={{ borderColor: '#F5F2EE', ...SYNE }}
                   />
                   {unit && (
@@ -392,8 +392,8 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                   onChange={(e) => setGoalText(e.target.value)}
                   placeholder="Beschrijf het doel vrij…"
                   rows={3}
-                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-700 outline-none focus:border-[#E87722] transition-colors bg-white resize-none placeholder-gray-300"
-                  style={{ borderColor: '#F5F2EE', caretColor: '#E87722', ...SYNE }}
+                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-700 outline-none focus:border-[#C4F542] transition-colors bg-white resize-none placeholder-gray-300"
+                  style={{ borderColor: '#F5F2EE', caretColor: '#C4F542', ...SYNE }}
                 />
               )}
             </div>
@@ -408,7 +408,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                   type="date"
                   value={startDate}
                   onChange={(e) => setStartDate(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white"
                   style={{ borderColor: '#F5F2EE', ...SYNE }}
                 />
               </div>
@@ -420,7 +420,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                   type="date"
                   value={endDate}
                   onChange={(e) => setEndDate(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white"
                   style={{ borderColor: '#F5F2EE', ...SYNE }}
                 />
               </div>
@@ -436,8 +436,8 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Vertel meer over deze challenge…"
                 rows={3}
-                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-700 outline-none focus:border-[#E87722] transition-colors bg-white resize-none placeholder-gray-300"
-                style={{ borderColor: '#F5F2EE', caretColor: '#E87722', ...SYNE }}
+                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-700 outline-none focus:border-[#C4F542] transition-colors bg-white resize-none placeholder-gray-300"
+                style={{ borderColor: '#F5F2EE', caretColor: '#C4F542', ...SYNE }}
               />
             </div>
 
@@ -483,7 +483,7 @@ export default function Step2Challenge({ onBack, onSubmit, userName, avatarUrl, 
             {/* Live preview card */}
             <div
               className="rounded-2xl p-4 mt-2"
-              style={{ border: '1.5px solid #E87722', borderRadius: 16, background: '#fff' }}
+              style={{ border: '1.5px solid #C4F542', borderRadius: 16, background: '#fff' }}
             >
               <p className="text-[12px] text-gray-400 mb-2 uppercase tracking-wide" style={SYNE}>
                 Voorbeeld

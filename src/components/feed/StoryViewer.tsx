@@ -214,7 +214,7 @@ export function StoryViewer({
         ) : (
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: '#E87722', border: '2px solid white',
+            background: '#C4F542', border: '2px solid white',
             display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}>
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 12, fontWeight: 700, color: 'white' }}>

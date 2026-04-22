@@ -257,7 +257,7 @@ export default function FeedPage() {
   // ─── Render ──────────────────────────────────────────────────────────────────
 
   return (
-    <div style={{ background: '#F5F0E8', minHeight: '100vh' }}>
+    <div style={{ background: '#F4F1E8', minHeight: '100vh' }}>
 
       {/* ── Editorial titelsectie ─────────────────────────────────────────── */}
       <div style={{ padding: '16px 20px 24px' }}>
@@ -368,7 +368,7 @@ export default function FeedPage() {
           <div style={{
             width: 44, height: 44, borderRadius: '50%',
             border: '3px solid rgba(255,255,255,0.2)',
-            borderTopColor: '#E87722',
+            borderTopColor: '#C4F542',
             animation: 'spin 0.8s linear infinite',
           }} />
           <style>{`@keyframes spin { to { transform: rotate(360deg) } }`}</style>

@@ -144,7 +144,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
           onClick={onBack}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
         >
-          <ArrowLeft size={20} color="#111" />
+          <ArrowLeft size={20} color="#1E2B20" />
         </button>
         <span className="text-[15px] font-semibold text-gray-900" style={SYNE}>
           Nieuwe vraag
@@ -153,7 +153,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
           onClick={handleSubmit}
           disabled={submitting}
           className="px-4 py-1.5 rounded-full text-white text-[13px] font-semibold transition-opacity disabled:opacity-50"
-          style={{ background: '#E87722', ...SYNE }}
+          style={{ background: '#C4F542', ...SYNE }}
         >
           {submitting ? 'Bezig…' : 'Delen'}
         </button>
@@ -185,7 +185,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
             placeholder="Stel je vraag..."
             rows={4}
             className="w-full bg-transparent text-[20px] font-semibold text-gray-900 placeholder-gray-300 outline-none resize-none leading-snug"
-            style={{ caretColor: '#E87722', minHeight: 120, ...SYNE }}
+            style={{ caretColor: '#C4F542', minHeight: 120, ...SYNE }}
           />
           {errors.question && (
             <p className="text-red-500 text-[11px] mt-1">{errors.question}</p>
@@ -199,7 +199,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
           placeholder="Meer context (optioneel)..."
           rows={2}
           className="w-full bg-transparent text-[14px] text-gray-500 placeholder-gray-300 outline-none resize-none"
-          style={{ caretColor: '#E87722', ...SYNE }}
+          style={{ caretColor: '#C4F542', ...SYNE }}
         />
 
         {/* Divider */}
@@ -232,7 +232,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
                 className="flex-1 py-2.5 text-[13px] font-semibold transition-all"
                 style={{
                   ...SYNE,
-                  background: answerType === type ? '#E87722' : 'transparent',
+                  background: answerType === type ? '#C4F542' : 'transparent',
                   color: answerType === type ? '#fff' : '#6B7280',
                 }}
               >
@@ -253,8 +253,8 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
                 key={i}
                 className="flex items-center gap-2 rounded-xl px-3 py-2.5 bg-white transition-all"
                 style={{
-                  border: focusedOption === i ? '1.5px solid #E87722' : '1.5px solid #F5F2EE',
-                  borderLeft: focusedOption === i ? '3px solid #E87722' : '1.5px solid #F5F2EE',
+                  border: focusedOption === i ? '1.5px solid #C4F542' : '1.5px solid #F5F2EE',
+                  borderLeft: focusedOption === i ? '3px solid #C4F542' : '1.5px solid #F5F2EE',
                 }}
               >
                 <input
@@ -265,7 +265,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
                   onBlur={() => setFocusedOption(null)}
                   placeholder={`Optie ${i + 1}`}
                   className="flex-1 bg-transparent text-[14px] text-gray-900 placeholder-gray-300 outline-none"
-                  style={{ caretColor: '#E87722', ...SYNE }}
+                  style={{ caretColor: '#C4F542', ...SYNE }}
                 />
                 {pollOptions.length > 2 && (
                   <button
@@ -305,7 +305,7 @@ export default function Step2Question({ onBack, onSubmit, userName, avatarUrl, u
               <select
                 value={pollDurationDays}
                 onChange={(e) => setPollDurationDays(Number(e.target.value))}
-                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white appearance-none cursor-pointer"
+                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white appearance-none cursor-pointer"
                 style={{ borderColor: '#F5F2EE', ...SYNE }}
               >
                 {POLL_DURATIONS.map((d) => (

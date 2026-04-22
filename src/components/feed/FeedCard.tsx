@@ -39,13 +39,13 @@ export type FeedPostData = {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
-const ORANGE = '#E87722'
-const INK    = '#111111'
+const ORANGE = '#C4F542'
+const INK    = '#1E2B20'
 
 // ─── User color (deterministic from userId) ────────────────────────────────────
 
 const USER_COLORS = [
-  '#D4538C', '#7F77DD', '#1D9E75', '#E87722',
+  '#D4538C', '#7F77DD', '#1D9E75', '#C4F542',
   '#3A7AC4', '#D4A87A', '#E8A560', '#5B4A8B',
 ]
 
@@ -57,19 +57,19 @@ function getUserColor(id: string): string {
 // ─── Sport color mapping ────────────────────────────────────────────────────────
 
 const SPORT_COLORS: Record<string, string> = {
-  tennis:     '#E87722',
-  hardlopen:  '#E87722',
+  tennis:     '#C4F542',
+  hardlopen:  '#C4F542',
   fietsen:    '#1D9E75',
   wielrennen: '#1D9E75',
   zwemmen:    '#3A7AC4',
   gym:        '#7F77DD',
   fitness:    '#7F77DD',
   yoga:       '#1D9E75',
-  voetbal:    '#E87722',
+  voetbal:    '#C4F542',
   padel:      '#5B4A8B',
   golf:       '#D4A87A',
-  triathlon:  '#E87722',
-  basketbal:  '#E87722',
+  triathlon:  '#C4F542',
+  basketbal:  '#C4F542',
   hockey:     '#1D9E75',
   boksen:     '#D4538C',
 }
@@ -157,7 +157,7 @@ async function toggleLike(
 export function FeedCardSkeleton() {
   return (
     <div style={{ background: 'white', borderRadius: 20, overflow: 'hidden' }}>
-      <div style={{ margin: '14px 14px 0', aspectRatio: '5/4', borderRadius: 14, background: 'linear-gradient(90deg, #EDE7DD 25%, #F5F0E8 50%, #EDE7DD 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
+      <div style={{ margin: '14px 14px 0', aspectRatio: '5/4', borderRadius: 14, background: 'linear-gradient(90deg, #EDE7DD 25%, #F4F1E8 50%, #EDE7DD 75%)', backgroundSize: '200% 100%', animation: 'shimmer 1.5s infinite' }} />
       <div style={{ padding: '16px 16px' }}>
         <div style={{ width: 80, height: 9, borderRadius: 6, background: '#EDE7DD', marginBottom: 10 }} />
         <div style={{ width: '75%', height: 18, borderRadius: 6, background: '#EDE7DD', marginBottom: 6 }} />

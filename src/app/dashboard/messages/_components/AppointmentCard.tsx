@@ -83,7 +83,7 @@ export function AppointmentCard({ appointment, currentUserId, otherUserName, fro
       }`}
       style={{
         backgroundColor: '#FFFAF5',
-        borderColor: status === 'accepted' ? '#22c55e40' : status === 'declined' ? '#ef444440' : '#E8772240',
+        borderColor: status === 'accepted' ? '#22c55e40' : status === 'declined' ? '#ef444440' : '#C4F54240',
       }}
     >
       {/* Header */}
@@ -91,12 +91,12 @@ export function AppointmentCard({ appointment, currentUserId, otherUserName, fro
         className="px-4 py-2.5 flex items-center gap-2"
         style={{
           backgroundColor: status === 'accepted' ? '#f0fdf4' : status === 'declined' ? '#fef2f2' : '#FFF8F2',
-          borderBottom: `1px solid ${status === 'accepted' ? '#22c55e20' : status === 'declined' ? '#ef444420' : '#E8772220'}`,
+          borderBottom: `1px solid ${status === 'accepted' ? '#22c55e20' : status === 'declined' ? '#ef444420' : '#C4F54220'}`,
         }}
       >
         <CalendarDays
           className="w-4 h-4 shrink-0"
-          style={{ color: status === 'accepted' ? '#22c55e' : status === 'declined' ? '#ef4444' : '#E87722' }}
+          style={{ color: status === 'accepted' ? '#22c55e' : status === 'declined' ? '#ef4444' : '#C4F542' }}
         />
         <span style={{ ...SYNE, fontSize: 12, fontWeight: 800 }} className="text-gray-800">
           {fromMe ? `Afspraak voorstel aan ${otherUserName}` : `Afspraak voorstel van ${otherUserName}`}
@@ -107,7 +107,7 @@ export function AppointmentCard({ appointment, currentUserId, otherUserName, fro
       <div className="px-4 py-3 space-y-2">
         {/* Sport */}
         {appointment.sport && (
-          <p className="text-xs font-bold text-[#E87722]">{appointment.sport}</p>
+          <p className="text-xs font-bold text-[#C4F542]">{appointment.sport}</p>
         )}
 
         {/* Datum */}

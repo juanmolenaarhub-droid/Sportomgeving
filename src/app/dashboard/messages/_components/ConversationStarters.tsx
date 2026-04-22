@@ -35,7 +35,7 @@ export function ConversationStarters({ sport, onSelect }: Props) {
   return (
     <div className="px-4 pb-3">
       <div className="flex items-center gap-1.5 mb-2.5">
-        <Zap className="w-3 h-3 text-[#E87722]" />
+        <Zap className="w-3 h-3 text-[#C4F542]" />
         <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest">
           Gespreksopeners
         </span>
@@ -46,7 +46,7 @@ export function ConversationStarters({ sport, onSelect }: Props) {
             key={starter}
             type="button"
             onClick={() => onSelect(starter)}
-            className="text-xs font-medium text-gray-700 bg-white border border-black/10 rounded-full px-3 py-1.5 hover:border-[#E87722] hover:text-[#E87722] transition-colors"
+            className="text-xs font-medium text-gray-700 bg-white border border-black/10 rounded-full px-3 py-1.5 hover:border-[#C4F542] hover:text-[#C4F542] transition-colors"
           >
             {starter}
           </button>

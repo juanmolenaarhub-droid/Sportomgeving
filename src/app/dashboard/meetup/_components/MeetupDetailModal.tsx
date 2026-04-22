@@ -17,14 +17,14 @@ import {
 const LocationPreviewMap = dynamic(() => import('./LocationPreviewMap'), { ssr: false })
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Hardlopen': '#C4F542', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
   'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#EC4899',
-  'Voetbal': '#10B981', default: '#111111',
+  'Voetbal': '#10B981', default: '#1E2B20',
 }
 const SPORT_DARK: Record<string, string> = {
-  '#E87722': '#b85a12', '#3B82F6': '#2563eb', '#06B6D4': '#0891b2',
+  '#C4F542': '#b85a12', '#3B82F6': '#2563eb', '#06B6D4': '#0891b2',
   '#22C55E': '#16a34a', '#8B5CF6': '#7c3aed', '#EC4899': '#db2777',
-  '#10B981': '#059669', '#111111': '#000000',
+  '#10B981': '#059669', '#1E2B20': '#000000',
 }
 function getSportColor(s: string) { return SPORT_COLORS[s] ?? SPORT_COLORS.default }
 function darken(c: string) { return SPORT_DARK[c] ?? '#000' }
@@ -140,7 +140,7 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
 
   const m = data?.meetup
   const c = data?.creator
-  const color = m ? getSportColor(m.sport) : '#111'
+  const color = m ? getSportColor(m.sport) : '#1E2B20'
   const darkColor = darken(color)
 
   const coverBg = c?.bannerUrl
@@ -165,7 +165,7 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
         style={{
           position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
           height: '91vh', borderRadius: '20px 20px 0 0',
-          background: '#F5F0E8', overflow: 'hidden', display: 'flex', flexDirection: 'column',
+          background: '#F4F1E8', overflow: 'hidden', display: 'flex', flexDirection: 'column',
           transform: visible ? 'translateY(0)' : 'translateY(100%)',
           transition: 'transform 0.32s cubic-bezier(.32,.72,0,1)',
           fontFamily: "'DM Sans', sans-serif",
@@ -192,7 +192,7 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
           {/* Badges rechts */}
           <div style={{ position: 'absolute', top: 14, right: 14, display: 'flex', gap: 6 }}>
             {m?.isSpontaneous && (
-              <span style={{ background: '#E87722', color: '#fff', fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 999 }}>⚡ Spontaan</span>
+              <span style={{ background: '#C4F542', color: '#fff', fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 999 }}>⚡ Spontaan</span>
             )}
             {m?.status === 'vol' && (
               <span style={{ background: '#f59e0b', color: '#fff', fontSize: 10, fontWeight: 800, padding: '3px 8px', borderRadius: 999 }}>Vol</span>
@@ -213,7 +213,7 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
         </div>
 
         {/* ── TABS ── */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(0,0,0,0.06)', background: '#F5F0E8', flexShrink: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(0,0,0,0.06)', background: '#F4F1E8', flexShrink: 0 }}>
           {([
             { key: 'info', label: 'Info' },
             { key: 'aanwezig', label: `Aanwezig ${data ? `(${data.acceptedParticipants.length})` : ''}` },
@@ -224,9 +224,9 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
               onClick={() => setTab(t.key)}
               style={{
                 flex: 1, padding: '12px 4px', background: 'transparent', border: 'none',
-                borderBottom: tab === t.key ? `2.5px solid #E87722` : '2.5px solid transparent',
+                borderBottom: tab === t.key ? `2.5px solid #C4F542` : '2.5px solid transparent',
                 fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                color: tab === t.key ? '#111' : '#9ca3af',
+                color: tab === t.key ? '#1E2B20' : '#9ca3af',
                 transition: 'all 0.15s',
               }}
             >
@@ -261,10 +261,10 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
 
         {/* Review knop (als geaccepteerde deelnemer + meetup afgerond/in verleden) */}
         {data && !data.isCreator && data.myStatus === 'geaccepteerd' && !data.myReviewSubmitted && (
-          <div style={{ padding: '12px 16px 20px', borderTop: '1px solid rgba(0,0,0,0.06)', background: '#F5F0E8' }}>
+          <div style={{ padding: '12px 16px 20px', borderTop: '1px solid rgba(0,0,0,0.06)', background: '#F4F1E8' }}>
             {showReview ? (
               <div>
-                <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#111', marginBottom: 8 }}>Beoordeel de organisator</p>
+                <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#1E2B20', marginBottom: 8 }}>Beoordeel de organisator</p>
                 <div style={{ display: 'flex', gap: 6, marginBottom: 10 }}>
                   {[1, 2, 3, 4, 5].map(s => (
                     <button
@@ -276,7 +276,7 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
                 </div>
                 <div style={{ display: 'flex', gap: 8 }}>
                   <button onClick={() => setShowReview(false)} style={{ flex: 1, padding: '9px 0', borderRadius: 10, border: '1.5px solid rgba(0,0,0,0.10)', background: 'transparent', fontSize: 13, fontWeight: 700, color: '#6b7280', cursor: 'pointer' }}>Annuleer</button>
-                  <button onClick={handleReview} disabled={rating === 0} style={{ flex: 2, padding: '9px 0', borderRadius: 10, background: rating > 0 ? '#E87722' : '#e5e7eb', color: rating > 0 ? '#fff' : '#9ca3af', border: 'none', fontSize: 13, fontWeight: 700, cursor: rating > 0 ? 'pointer' : 'default' }}>Verstuur beoordeling</button>
+                  <button onClick={handleReview} disabled={rating === 0} style={{ flex: 2, padding: '9px 0', borderRadius: 10, background: rating > 0 ? '#C4F542' : '#e5e7eb', color: rating > 0 ? '#fff' : '#9ca3af', border: 'none', fontSize: 13, fontWeight: 700, cursor: rating > 0 ? 'pointer' : 'default' }}>Verstuur beoordeling</button>
                 </div>
               </div>
             ) : (
@@ -290,7 +290,7 @@ export default function MeetupDetailModal({ meetupId, onClose, onInterestSuccess
 
       {/* Toast */}
       {toast && (
-        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#111', color: '#fff', fontSize: 13, fontWeight: 600, padding: '10px 20px', borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.25)' }}>
+        <div style={{ position: 'fixed', bottom: 24, left: '50%', transform: 'translateX(-50%)', zIndex: 60, background: '#1E2B20', color: '#fff', fontSize: 13, fontWeight: 600, padding: '10px 20px', borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.25)' }}>
           {toast}
         </div>
       )}
@@ -345,7 +345,7 @@ function InfoTab({ data, onInterestSuccess }: { data: MeetupModalDetail; onInter
         <DetailRow icon={<Users size={14} color={color} />} label={
           <>
             <span style={{ fontWeight: 700 }}>{data.acceptedParticipants.length}</span> aanwezig
-            {interestedCount > 0 && <> · <span style={{ color: '#E87722', fontWeight: 700 }}>{interestedCount}</span> geïnteresseerd</>}
+            {interestedCount > 0 && <> · <span style={{ color: '#C4F542', fontWeight: 700 }}>{interestedCount}</span> geïnteresseerd</>}
             {spotsLeft > 0 && <> · <span style={{ color: '#059669', fontWeight: 700 }}>{spotsLeft} plekken</span> over</>}
           </>
         } />
@@ -376,7 +376,7 @@ function InfoTab({ data, onInterestSuccess }: { data: MeetupModalDetail; onInter
           href={`https://maps.apple.com/?q=${encodeURIComponent(m.locationName)}&ll=${m.latitude},${m.longitude}`}
           target="_blank"
           rel="noopener noreferrer"
-          style={{ display: 'block', textAlign: 'center', fontSize: 12, color: '#E87722', fontWeight: 700, textDecoration: 'none', marginTop: -8 }}
+          style={{ display: 'block', textAlign: 'center', fontSize: 12, color: '#C4F542', fontWeight: 700, textDecoration: 'none', marginTop: -8 }}
         >
           Open in Maps →
         </a>
@@ -384,7 +384,7 @@ function InfoTab({ data, onInterestSuccess }: { data: MeetupModalDetail; onInter
 
       {/* Host profiel kaart */}
       <div>
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#111', marginBottom: 10 }}>Organisator</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#1E2B20', marginBottom: 10 }}>Organisator</p>
         <HostTrustCard creator={data.creator} />
       </div>
 
@@ -417,7 +417,7 @@ function ActionButton({
     return (
       <a
         href={`/dashboard/meetup/${meetup.id}`}
-        style={{ display: 'block', textAlign: 'center', background: '#111', color: '#fff', borderRadius: 14, padding: '13px 0', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
+        style={{ display: 'block', textAlign: 'center', background: '#1E2B20', color: '#fff', borderRadius: 14, padding: '13px 0', fontSize: 14, fontWeight: 700, textDecoration: 'none' }}
       >
         Beheer Meetup
       </a>
@@ -471,7 +471,7 @@ function AanwezigTab({ data, actionPending, onMarkAttended, onRemove }: {
         <div key={p.userId} style={{ background: '#fff', borderRadius: 14, padding: '12px 14px', display: 'flex', alignItems: 'center', gap: 12 }}>
           <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
           <div style={{ flex: 1 }}>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: '0 0 2px' }}>{p.name}</p>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#1E2B20', margin: '0 0 2px' }}>{p.name}</p>
             {p.attended ? (
               <span style={{ fontSize: 11, color: '#22C55E', fontWeight: 700 }}>✓ Aanwezigheid bevestigd</span>
             ) : (
@@ -536,7 +536,7 @@ function GeinteresseerdTab({ data, actionPending, onRespond }: {
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: p.message ? 8 : 6 }}>
               <Avatar name={p.name} imageUrl={p.avatarUrl} size="sm" />
               <div style={{ flex: 1 }}>
-                <p style={{ fontSize: 14, fontWeight: 700, color: '#111', margin: 0 }}>{p.name}</p>
+                <p style={{ fontSize: 14, fontWeight: 700, color: '#1E2B20', margin: 0 }}>{p.name}</p>
                 <p style={{ fontSize: 11, color: '#9ca3af', margin: '1px 0 0' }}>
                   {p.joinedAt ? timeAgo(p.joinedAt) : ''}
                 </p>

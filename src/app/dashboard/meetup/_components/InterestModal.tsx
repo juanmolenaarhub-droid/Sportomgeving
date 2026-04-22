@@ -40,12 +40,12 @@ export default function InterestModal({ meetupId, meetupTitle, creatorName, spor
   return (
     <div className="fixed inset-0 z-50 bg-black/50 flex items-end sm:items-center justify-center p-4" onClick={onClose}>
       <div
-        className="bg-[#F5F0E8] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
+        className="bg-[#F4F1E8] w-full max-w-md rounded-2xl shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         <div className="flex items-center justify-between px-5 pt-5 pb-3 border-b border-black/8">
           <div>
-            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: '#111' }}>
+            <h2 style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 17, color: '#1E2B20' }}>
               Laat {creatorName} weten wie je bent
             </h2>
             <p className="text-xs text-gray-500 mt-0.5">{meetupTitle}</p>
@@ -64,8 +64,8 @@ export default function InterestModal({ meetupId, meetupTitle, creatorName, spor
                 onClick={() => setMessage(chip)}
                 className={`text-xs px-3 py-1.5 rounded-full font-semibold border transition-all ${
                   message === chip
-                    ? 'bg-[#E87722] text-white border-[#E87722]'
-                    : 'bg-white text-gray-600 border-black/10 hover:border-[#E87722] hover:text-[#E87722]'
+                    ? 'bg-[#C4F542] text-white border-[#C4F542]'
+                    : 'bg-white text-gray-600 border-black/10 hover:border-[#C4F542] hover:text-[#C4F542]'
                 }`}
               >
                 {chip}
@@ -80,7 +80,7 @@ export default function InterestModal({ meetupId, meetupTitle, creatorName, spor
               value={message}
               onChange={e => setMessage(e.target.value.slice(0, 200))}
               placeholder={`Hey! Ik train ook ${sport} en ben op zoek naar een trainingsmaatje...`}
-              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#E87722]"
+              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
             />
             <p className="text-right text-xs text-gray-400 mt-1">{message.length}/200</p>
           </div>
@@ -95,7 +95,7 @@ export default function InterestModal({ meetupId, meetupTitle, creatorName, spor
             <button
               onClick={handleSend}
               disabled={isPending}
-              className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#d4691d] transition-colors disabled:opacity-50"
+              className="flex-1 py-3 rounded-xl bg-[#C4F542] text-white text-sm font-bold flex items-center justify-center gap-2 hover:bg-[#d4691d] transition-colors disabled:opacity-50"
             >
               <Send className="w-4 h-4" />
               {isPending ? 'Versturen...' : 'Stuur interesse'}

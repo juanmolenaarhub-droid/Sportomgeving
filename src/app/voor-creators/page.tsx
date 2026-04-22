@@ -12,10 +12,10 @@ export default function VoorCreatorsPage() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
   return (
-    <div style={DM} className="bg-[#F5F0E8] min-h-screen">
+    <div style={DM} className="bg-[#F4F1E8] min-h-screen">
 
       {/* ── NAVBAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F4F1E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
@@ -27,7 +27,7 @@ export default function VoorCreatorsPage() {
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login" className="hidden md:block text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>
-            <Link href="/register?type=creator" className="hidden md:flex bg-[#E87722] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-black transition-all duration-200 items-center gap-1.5">
+            <Link href="/register?type=creator" className="hidden md:flex bg-[#C4F542] text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-black transition-all duration-200 items-center gap-1.5">
               Start als creator <ArrowRight className="w-3.5 h-3.5" />
             </Link>
             {/* Hamburger */}
@@ -43,12 +43,12 @@ export default function VoorCreatorsPage() {
 
         {/* Mobile menu */}
         {mobileOpen && (
-          <div className="md:hidden bg-[#F5F0E8] border-t border-black/8 px-8 py-5 space-y-4">
+          <div className="md:hidden bg-[#F4F1E8] border-t border-black/8 px-8 py-5 space-y-4">
             <Link href="/#hoe-het-werkt" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600 hover:text-black transition-colors">Hoe het werkt</Link>
             <Link href="/voor-bedrijven" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600 hover:text-black transition-colors">Voor bedrijven</Link>
             <Link href="/voor-creators" onClick={() => setMobileOpen(false)} className="block text-sm font-bold text-black">Voor creators</Link>
             <Link href="/login" onClick={() => setMobileOpen(false)} className="block text-sm font-medium text-gray-600 hover:text-black transition-colors">Inloggen</Link>
-            <Link href="/register?type=creator" onClick={() => setMobileOpen(false)} className="block w-full text-center bg-[#E87722] text-white font-semibold px-5 py-3 rounded-xl text-sm">
+            <Link href="/register?type=creator" onClick={() => setMobileOpen(false)} className="block w-full text-center bg-[#C4F542] text-white font-semibold px-5 py-3 rounded-xl text-sm">
               Start als creator →
             </Link>
           </div>
@@ -56,7 +56,7 @@ export default function VoorCreatorsPage() {
       </header>
 
       {/* ── SECTIE 1: HERO (zwart) ── */}
-      <section className="bg-[#111111] pt-32 pb-28 relative overflow-hidden">
+      <section className="bg-[#1E2B20] pt-32 pb-28 relative overflow-hidden">
         {/* Subtle grid */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
@@ -66,20 +66,20 @@ export default function VoorCreatorsPage() {
 
         <div className="relative max-w-5xl mx-auto px-8 text-center">
           <span style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.2em' }}
-            className="inline-block text-[#E87722] uppercase mb-6">
+            className="inline-block text-[#C4F542] uppercase mb-6">
             Voor personal trainers &amp; sport influencers
           </span>
           <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.95, letterSpacing: '-0.02em' }}
             className="text-[clamp(40px,6vw,88px)] text-white mb-6">
             Jouw expertise.<br />Jouw community.<br />
-            <span className="text-[#E87722]">Jouw inkomen.</span>
+            <span className="text-[#C4F542]">Jouw inkomen.</span>
           </h1>
           <p className="text-gray-400 text-lg font-light max-w-2xl mx-auto mb-10 leading-relaxed">
             Buddys geeft sport creators de tools om een loyale community te bouwen, challenges te hosten en te verdienen aan hun passie.
           </p>
           <div className="flex flex-wrap items-center justify-center gap-4">
             <Link href="/register?type=creator"
-              className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-8 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-[15px]">
+              className="inline-flex items-center gap-2 bg-[#C4F542] text-white font-bold px-8 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-[15px]">
               Start als creator <ArrowRight className="w-4 h-4" />
             </Link>
             <a href="#uitleg"
@@ -91,10 +91,10 @@ export default function VoorCreatorsPage() {
       </section>
 
       {/* ── SECTIE 2: VOORDELEN (crème) ── */}
-      <section className="py-24 bg-[#F5F0E8]">
+      <section className="py-24 bg-[#F4F1E8]">
         <div className="max-w-6xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Creator voordelen</p>
+            <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Creator voordelen</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(32px,4.5vw,60px)] text-black">
               Alles wat je nodig hebt als creator
@@ -119,8 +119,8 @@ export default function VoorCreatorsPage() {
               },
             ].map(({ icon: Icon, title, desc }) => (
               <div key={title} className="bg-white rounded-2xl p-8 border border-[#E8E0D5] hover:border-black/20 hover:shadow-md transition-all">
-                <div className="w-12 h-12 bg-[#E87722]/10 rounded-xl flex items-center justify-center mb-5">
-                  <Icon className="w-6 h-6 text-[#E87722]" />
+                <div className="w-12 h-12 bg-[#C4F542]/10 rounded-xl flex items-center justify-center mb-5">
+                  <Icon className="w-6 h-6 text-[#C4F542]" />
                 </div>
                 <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-lg text-black mb-3">{title}</h3>
                 <p className="text-gray-500 text-sm leading-relaxed font-light">{desc}</p>
@@ -134,7 +134,7 @@ export default function VoorCreatorsPage() {
       <section id="uitleg" className="py-24 bg-white">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Stappenplan</p>
+            <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Stappenplan</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(32px,4.5vw,60px)] text-black">
               In 3 stappen live als creator
@@ -159,10 +159,10 @@ export default function VoorCreatorsPage() {
               },
             ].map(step => (
               <div key={step.num} className="relative">
-                <span style={{ ...SYNE, fontWeight: 900 }} className="text-[80px] leading-none text-[#E87722]/12 block -mb-4">
+                <span style={{ ...SYNE, fontWeight: 900 }} className="text-[80px] leading-none text-[#C4F542]/12 block -mb-4">
                   {step.num}
                 </span>
-                <div className="w-10 h-10 bg-[#111111] rounded-xl flex items-center justify-center mb-4">
+                <div className="w-10 h-10 bg-[#1E2B20] rounded-xl flex items-center justify-center mb-4">
                   <Check className="w-5 h-5 text-white" strokeWidth={2.5} />
                 </div>
                 <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-xl text-black mb-2">{step.title}</h3>
@@ -172,7 +172,7 @@ export default function VoorCreatorsPage() {
           </div>
           <div className="text-center mt-12">
             <Link href="/register?type=creator"
-              className="inline-flex items-center gap-2 bg-[#111111] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#E87722] transition-all duration-200">
+              className="inline-flex items-center gap-2 bg-[#1E2B20] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#C4F542] transition-all duration-200">
               Begin nu <ArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -180,9 +180,9 @@ export default function VoorCreatorsPage() {
       </section>
 
       {/* ── SECTIE 4: VOOR WIE (crème) ── */}
-      <section className="py-24 bg-[#F5F0E8]">
+      <section className="py-24 bg-[#F4F1E8]">
         <div className="max-w-4xl mx-auto px-8 text-center">
-          <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Doelgroep</p>
+          <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Doelgroep</p>
           <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
             className="text-[clamp(32px,4.5vw,60px)] text-black mb-10">
             Voor wie is Buddys Creator?
@@ -193,7 +193,7 @@ export default function VoorCreatorsPage() {
               'Fysiotherapeut', 'Voedingscoach', 'Yoga instructeur', 'Zwemcoach',
             ].map(label => (
               <span key={label}
-                className="px-5 py-2.5 bg-white border-2 border-[#E8E0D5] rounded-full text-sm font-semibold text-[#111111] hover:border-[#E87722] hover:text-[#E87722] transition-colors cursor-default">
+                className="px-5 py-2.5 bg-white border-2 border-[#E8E0D5] rounded-full text-sm font-semibold text-[#1E2B20] hover:border-[#C4F542] hover:text-[#C4F542] transition-colors cursor-default">
                 {label}
               </span>
             ))}
@@ -208,7 +208,7 @@ export default function VoorCreatorsPage() {
       <section className="py-24 bg-white">
         <div className="max-w-4xl mx-auto px-8">
           <div className="text-center mb-14">
-            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Pricing</p>
+            <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Pricing</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(32px,4.5vw,60px)] text-black mb-3">
               Wat kost het?
@@ -218,7 +218,7 @@ export default function VoorCreatorsPage() {
 
           <div className="grid md:grid-cols-2 gap-6 items-center">
             {/* Starter */}
-            <div className="bg-[#F5F0E8] rounded-3xl p-8 border border-[#E8E0D5] flex flex-col">
+            <div className="bg-[#F4F1E8] rounded-3xl p-8 border border-[#E8E0D5] flex flex-col">
               <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-black mb-1">Creator Starter</h3>
               <p className="text-gray-400 text-sm mb-7">Gratis beginnen als creator</p>
               <div className="mb-8">
@@ -234,7 +234,7 @@ export default function VoorCreatorsPage() {
                   'Zichtbaar in zoekresultaten',
                 ].map(f => (
                   <li key={f} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-[#111111] flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-[#1E2B20] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {f}
@@ -248,14 +248,14 @@ export default function VoorCreatorsPage() {
             </div>
 
             {/* Pro — uitgelicht */}
-            <div className="bg-[#111111] rounded-3xl p-8 flex flex-col shadow-2xl relative">
+            <div className="bg-[#1E2B20] rounded-3xl p-8 flex flex-col shadow-2xl relative">
               <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                <span className="bg-[#E87722] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">Meest gekozen</span>
+                <span className="bg-[#C4F542] text-white text-xs font-bold px-4 py-1.5 rounded-full whitespace-nowrap">Meest gekozen</span>
               </div>
               <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Creator Pro</h3>
               <p className="text-white/40 text-sm mb-7">Voor de serieuze creator</p>
               <div className="mb-8">
-                <span style={{ ...SYNE, fontWeight: 900 }} className="text-5xl text-[#E87722]">€19,99</span>
+                <span style={{ ...SYNE, fontWeight: 900 }} className="text-5xl text-[#C4F542]">€19,99</span>
                 <span className="text-white/40 text-sm ml-1">/ maand</span>
               </div>
               <ul className="space-y-3.5 mb-8 text-sm text-white/80 flex-1">
@@ -269,7 +269,7 @@ export default function VoorCreatorsPage() {
                   'Directe chat met deelnemers',
                 ].map(f => (
                   <li key={f} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-[#C4F542] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {f}
@@ -277,7 +277,7 @@ export default function VoorCreatorsPage() {
                 ))}
               </ul>
               <Link href="/register?type=creator"
-                className="block text-center bg-[#E87722] text-white font-bold py-3.5 rounded-2xl hover:bg-white hover:text-black transition-all">
+                className="block text-center bg-[#C4F542] text-white font-bold py-3.5 rounded-2xl hover:bg-white hover:text-black transition-all">
                 Start met Pro
               </Link>
             </div>
@@ -290,7 +290,7 @@ export default function VoorCreatorsPage() {
       </section>
 
       {/* ── SECTIE 6: CTA (zwart) ── */}
-      <section className="bg-[#111111] py-28 relative overflow-hidden">
+      <section className="bg-[#1E2B20] py-28 relative overflow-hidden">
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none"
           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
         <div className="relative max-w-3xl mx-auto px-8 text-center">
@@ -302,7 +302,7 @@ export default function VoorCreatorsPage() {
             Gratis starten. Verified badge aanvragen. Vandaag nog live.
           </p>
           <Link href="/register?type=creator"
-            className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-10 py-5 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-lg">
+            className="inline-flex items-center gap-2 bg-[#C4F542] text-white font-bold px-10 py-5 rounded-2xl hover:bg-white hover:text-black transition-all duration-200 text-lg">
             Start als creator <ArrowRight className="w-5 h-5" />
           </Link>
           <p className="text-gray-600 text-sm mt-6">

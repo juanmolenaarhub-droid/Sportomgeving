@@ -21,7 +21,7 @@ function Table({ headers, rows }: { headers: string[]; rows: (string | number)[]
           {rows.length === 0 ? (
             <tr><td colSpan={headers.length} className="px-4 py-8 text-center text-gray-300 text-xs">Geen data</td></tr>
           ) : rows.map((row, i) => (
-            <tr key={i} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
+            <tr key={i} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
               {row.map((cell, j) => (
                 <td key={j} className="px-4 py-3 text-gray-700">{cell}</td>
               ))}
@@ -97,7 +97,7 @@ export default async function SportenPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Sporten &amp; Regio&apos;s</h1>
         <p className="text-sm text-gray-400 mt-1">Sportverdeling en regionale spreiding · {total} gebruikers</p>
       </div>
@@ -119,7 +119,7 @@ export default async function SportenPage() {
         ].map(({ label, value, sub }) => (
           <div key={label} className="bg-white rounded-2xl border border-black/8 p-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 28, color: '#E87722', lineHeight: 1 }} className="truncate">{value}</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 28, color: '#C4F542', lineHeight: 1 }} className="truncate">{value}</p>
             <p className="text-xs text-gray-400 mt-2">{sub}</p>
           </div>
         ))}
@@ -146,7 +146,7 @@ export default async function SportenPage() {
         <div className="bg-white rounded-2xl border border-black/8 p-6">
           <p style={{ ...SYNE, fontWeight: 700, fontSize: 16 }} className="text-black mb-1">Meetups per sport</p>
           <p className="text-xs text-gray-400 mb-6">Aangemelde meetups per sportcategorie</p>
-          <BarChart data={meetupChartData} color="#111111" />
+          <BarChart data={meetupChartData} color="#1E2B20" />
         </div>
       )}
 

@@ -208,7 +208,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
           onClick={onBack}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
         >
-          <ArrowLeft size={20} color="#111" />
+          <ArrowLeft size={20} color="#1E2B20" />
         </button>
         <span className="text-[15px] font-semibold text-gray-900" style={SYNE}>
           Nieuwe meetup
@@ -217,7 +217,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
           onClick={handleSubmit}
           disabled={submitting}
           className="px-4 py-1.5 rounded-full text-white text-[13px] font-semibold transition-opacity disabled:opacity-50"
-          style={{ background: '#E87722', ...SYNE }}
+          style={{ background: '#C4F542', ...SYNE }}
         >
           {submitting ? 'Bezig…' : 'Delen'}
         </button>
@@ -232,7 +232,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
             className="flex-1 py-2 rounded-full text-[13px] font-semibold transition-all"
             style={{
               ...SYNE,
-              background: mode === m ? '#E87722' : '#F5F2EE',
+              background: mode === m ? '#C4F542' : '#F5F2EE',
               color: mode === m ? '#fff' : '#6B7280',
             }}
           >
@@ -263,7 +263,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                   className="w-full text-left p-4 rounded-2xl border transition-all"
                   style={{
                     background: selectedExistingId === m.id ? '#FFF0E5' : '#fff',
-                    borderColor: selectedExistingId === m.id ? '#E87722' : '#F5F2EE',
+                    borderColor: selectedExistingId === m.id ? '#C4F542' : '#F5F2EE',
                   }}
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -320,7 +320,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                 value={meetupName}
                 onChange={(e) => setMeetupName(e.target.value)}
                 placeholder="Meetup naam *"
-                className="w-full bg-transparent border-b text-[16px] font-semibold text-gray-900 placeholder-gray-300 outline-none pb-2 focus:border-[#E87722] transition-colors"
+                className="w-full bg-transparent border-b text-[16px] font-semibold text-gray-900 placeholder-gray-300 outline-none pb-2 focus:border-[#C4F542] transition-colors"
                 style={{ borderColor: errors.meetupName ? '#EF4444' : '#E0DDD8', ...SYNE }}
               />
               {errors.meetupName && (
@@ -352,7 +352,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                 type="date"
                 value={date}
                 onChange={(e) => setDate(e.target.value)}
-                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white"
+                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white"
                 style={{ borderColor: '#F5F2EE', ...SYNE }}
               />
             </div>
@@ -367,7 +367,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white"
                   style={{ borderColor: '#F5F2EE', ...SYNE }}
                 />
               </div>
@@ -379,7 +379,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
-                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#E87722] transition-colors bg-white"
+                  className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-900 outline-none focus:border-[#C4F542] transition-colors bg-white"
                   style={{ borderColor: '#F5F2EE', ...SYNE }}
                 />
               </div>
@@ -422,11 +422,11 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                   max={50}
                   value={maxParticipants}
                   onChange={(e) => setMaxParticipants(Number(e.target.value))}
-                  className="flex-1 accent-[#E87722]"
+                  className="flex-1 accent-[#C4F542]"
                 />
                 <span
                   className="w-10 h-10 rounded-full flex items-center justify-center text-white text-[14px] font-bold flex-shrink-0"
-                  style={{ background: '#E87722', ...SYNE }}
+                  style={{ background: '#C4F542', ...SYNE }}
                 >
                   {maxParticipants}
                 </span>
@@ -446,7 +446,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                     className="px-3 py-1.5 rounded-full text-[13px] font-medium transition-all"
                     style={{
                       ...SYNE,
-                      background: skillLevel === lvl ? '#E87722' : '#F5F2EE',
+                      background: skillLevel === lvl ? '#C4F542' : '#F5F2EE',
                       color: skillLevel === lvl ? '#fff' : '#6B7280',
                     }}
                   >
@@ -466,8 +466,8 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="Vertel meer over deze meetup…"
                 rows={3}
-                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-700 outline-none focus:border-[#E87722] transition-colors bg-white resize-none placeholder-gray-300"
-                style={{ borderColor: '#F5F2EE', caretColor: '#E87722', ...SYNE }}
+                className="w-full px-3 py-2.5 rounded-xl border text-[14px] text-gray-700 outline-none focus:border-[#C4F542] transition-colors bg-white resize-none placeholder-gray-300"
+                style={{ borderColor: '#F5F2EE', caretColor: '#C4F542', ...SYNE }}
               />
             </div>
 
@@ -514,7 +514,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
             <div
               className="rounded-2xl p-4 mt-2"
               style={{
-                border: '1.5px solid #E87722',
+                border: '1.5px solid #C4F542',
                 borderRadius: 16,
                 background: '#fff',
               }}
@@ -539,7 +539,7 @@ export default function Step2Meetup({ onBack, onSubmit, userName, avatarUrl, use
               )}
               {locationName && (
                 <p className="text-[13px] text-gray-500 flex items-center gap-1 mb-1">
-                  <MapPin size={12} color="#E87722" />
+                  <MapPin size={12} color="#C4F542" />
                   {locationName}
                 </p>
               )}

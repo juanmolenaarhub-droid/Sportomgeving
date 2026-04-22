@@ -117,12 +117,12 @@ function ParticipantsOverlay({
               {isMe ? (
                 <p className="flex-1 text-sm font-semibold text-black truncate">{p.name}</p>
               ) : (
-                <Link href={`/dashboard/profile/${p.userId}`} className="flex-1 text-sm font-semibold text-black truncate hover:text-[#E87722] transition-colors">{p.name}</Link>
+                <Link href={`/dashboard/profile/${p.userId}`} className="flex-1 text-sm font-semibold text-black truncate hover:text-[#C4F542] transition-colors">{p.name}</Link>
               )}
               <div className="flex items-center gap-1 shrink-0">
                 <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                 {p.isHost && (
-                  <span className="text-[10px] font-bold text-[#E87722] bg-orange-50 px-1.5 py-0.5 rounded-full">host</span>
+                  <span className="text-[10px] font-bold text-[#C4F542] bg-orange-50 px-1.5 py-0.5 rounded-full">host</span>
                 )}
                 {p.userId === currentUserId && (
                   <span className="text-[10px] font-bold text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded-full">jij</span>
@@ -310,11 +310,11 @@ export default function MeetupChatView({
         ref={messagesAreaRef}
         onScroll={handleScroll}
         className="flex-1 overflow-y-auto p-4 space-y-1"
-        style={{ background: '#F5F0E8' }}
+        style={{ background: '#F4F1E8' }}
       >
         {loading && (
           <div className="flex justify-center py-8">
-            <div className="w-5 h-5 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
           </div>
         )}
 
@@ -358,7 +358,7 @@ export default function MeetupChatView({
                         {msg.senderName}
                       </span>
                       {isHost && (
-                        <span className="text-[10px] font-bold text-[#E87722] bg-orange-50 px-1 py-0.5 rounded-full flex items-center gap-0.5">
+                        <span className="text-[10px] font-bold text-[#C4F542] bg-orange-50 px-1 py-0.5 rounded-full flex items-center gap-0.5">
                           <Crown className="w-2.5 h-2.5" /> host
                         </span>
                       )}
@@ -380,14 +380,14 @@ export default function MeetupChatView({
                       className="max-w-[75%] px-4 py-2.5 text-sm leading-relaxed"
                       style={{
                         background: fromMe ? '#FFF4ED' : '#FFFFFF',
-                        color: '#111111',
+                        color: '#1E2B20',
                         borderRadius: fromMe ? '16px 16px 4px 16px' : '16px 16px 16px 4px',
                         boxShadow: '0 1px 2px rgba(0,0,0,0.06)',
                       }}
                     >
                       {/* Naam in eigen ballon rechts */}
                       {fromMe && (
-                        <p className="text-xs font-semibold mb-0.5" style={{ color: '#E87722' }}>Jij</p>
+                        <p className="text-xs font-semibold mb-0.5" style={{ color: '#C4F542' }}>Jij</p>
                       )}
                       {msg.content}
                       <p className="text-[10px] mt-1" style={{ color: fromMe ? '#D1855A' : '#9CA3AF' }}>
@@ -407,7 +407,7 @@ export default function MeetupChatView({
       {!isAtBottom && newCount > 0 && (
         <button
           onClick={() => { scrollToBottom(true); setNewCount(0) }}
-          className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 bg-[#111] text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg hover:bg-[#E87722] transition-colors"
+          className="absolute bottom-24 left-1/2 -translate-x-1/2 z-20 bg-[#111] text-white text-xs font-bold px-4 py-2 rounded-full shadow-lg hover:bg-[#C4F542] transition-colors"
         >
           {newCount} nieuwe bericht{newCount !== 1 ? 'en' : ''} ↓
         </button>
@@ -423,7 +423,7 @@ export default function MeetupChatView({
             onKeyDown={handleKeyDown}
             placeholder="Stuur een bericht..."
             rows={1}
-            className="flex-1 bg-white border border-gray-200 rounded-[20px] px-4 py-2.5 text-sm text-black focus:outline-none focus:border-[#E87722] resize-none overflow-hidden leading-snug"
+            className="flex-1 bg-white border border-gray-200 rounded-[20px] px-4 py-2.5 text-sm text-black focus:outline-none focus:border-[#C4F542] resize-none overflow-hidden leading-snug"
             style={{ minHeight: 40, maxHeight: 96 }}
           />
           <button
@@ -431,7 +431,7 @@ export default function MeetupChatView({
             disabled={!newMessage.trim() || sending}
             className="w-10 h-10 rounded-full flex items-center justify-center shrink-0 transition-colors"
             style={{
-              background: newMessage.trim() ? '#E87722' : '#E5E7EB',
+              background: newMessage.trim() ? '#C4F542' : '#E5E7EB',
               cursor: newMessage.trim() ? 'pointer' : 'not-allowed',
             }}
           >

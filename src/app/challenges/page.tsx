@@ -88,7 +88,7 @@ function ChallengeCard({ challenge, onJoin, joined }: { challenge: Challenge; on
       {/* Sport label */}
       <div className="px-5 pt-5 pb-3 border-b border-gray-50">
         <div className="flex items-center justify-between mb-3">
-          <span className="text-xs font-bold bg-[#E87722]/10 text-[#E87722] px-2.5 py-1 rounded-full">
+          <span className="text-xs font-bold bg-[#C4F542]/10 text-[#C4F542] px-2.5 py-1 rounded-full">
             {challenge.sport_tag}
           </span>
           <span className={`text-xs font-bold px-2.5 py-1 rounded-full ${
@@ -116,7 +116,7 @@ function ChallengeCard({ challenge, onJoin, joined }: { challenge: Challenge; on
             <span className="font-semibold text-black">{challenge.current_participants}/{challenge.max_participants}</span>
           </div>
           <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
-            <div className="h-full bg-[#E87722] rounded-full transition-all" style={{ width: `${pct}%` }} />
+            <div className="h-full bg-[#C4F542] rounded-full transition-all" style={{ width: `${pct}%` }} />
           </div>
           <div className="flex items-center justify-between">
             <span className="flex items-center gap-1.5"><Calendar className="w-3 h-3" /> Duur</span>
@@ -142,14 +142,14 @@ function ChallengeCard({ challenge, onJoin, joined }: { challenge: Challenge; on
         ) : (
           <button
             onClick={onJoin}
-            className="w-full py-2.5 bg-[#111111] text-white text-sm font-bold rounded-xl hover:bg-[#E87722] transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-[#1E2B20] text-white text-sm font-bold rounded-xl hover:bg-[#C4F542] transition-colors flex items-center justify-center gap-2"
           >
             {challenge.price === 0 ? 'Gratis deelnemen' : `Deelnemen — €${challenge.price}`}
             <ArrowRight className="w-3.5 h-3.5" />
           </button>
         )}
         {!isFull && !joined && spotsLeft <= 10 && (
-          <p className="text-center text-[10px] text-[#E87722] font-semibold mt-1.5">
+          <p className="text-center text-[10px] text-[#C4F542] font-semibold mt-1.5">
             Nog {spotsLeft} plekken beschikbaar!
           </p>
         )}
@@ -189,10 +189,10 @@ export default function ChallengesPage() {
   }
 
   return (
-    <div style={DM} className="bg-[#F5F0E8] min-h-screen">
+    <div style={DM} className="bg-[#F4F1E8] min-h-screen">
 
       {/* Navbar */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F4F1E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/dashboard">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
@@ -203,7 +203,7 @@ export default function ChallengesPage() {
             <Link href="/dashboard/find" className="hover:text-black transition-colors">Zoek buddies</Link>
           </nav>
           <Link href="/dashboard/creator"
-            className="bg-[#111111] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#E87722] transition-colors flex items-center gap-1.5">
+            className="bg-[#1E2B20] text-white text-sm font-semibold px-4 py-2 rounded-xl hover:bg-[#C4F542] transition-colors flex items-center gap-1.5">
             <Trophy className="w-3.5 h-3.5" /> Creator Studio
           </Link>
         </div>
@@ -213,7 +213,7 @@ export default function ChallengesPage() {
 
         {/* Hero */}
         <div className="mb-10">
-          <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-3">Sport challenges</p>
+          <p className="text-xs font-bold text-[#C4F542] uppercase tracking-widest mb-3">Sport challenges</p>
           <h1 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
             className="text-[clamp(36px,5vw,64px)] text-black mb-3">
             Doe mee aan een challenge.
@@ -230,7 +230,7 @@ export default function ChallengesPage() {
             <button key={f.value} onClick={() => setSportFilter(f.value)}
               className={`px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border-2 transition-all shrink-0 ${
                 sportFilter === f.value
-                  ? 'bg-[#111111] text-white border-[#111111]'
+                  ? 'bg-[#1E2B20] text-white border-[#1E2B20]'
                   : 'bg-white border-gray-200 text-gray-500 hover:border-gray-400'
               }`}>
               {f.label}
@@ -259,8 +259,8 @@ export default function ChallengesPage() {
         )}
 
         {/* Creator CTA */}
-        <div className="mt-14 bg-[#111111] rounded-3xl p-10 text-center">
-          <p className="text-xs font-bold text-[#E87722] uppercase tracking-widest mb-4">Ben jij een trainer of creator?</p>
+        <div className="mt-14 bg-[#1E2B20] rounded-3xl p-10 text-center">
+          <p className="text-xs font-bold text-[#C4F542] uppercase tracking-widest mb-4">Ben jij een trainer of creator?</p>
           <h2 style={{ ...SYNE, fontWeight: 800 }} className="text-3xl text-white mb-3">
             Host jouw eigen challenge
           </h2>
@@ -268,7 +268,7 @@ export default function ChallengesPage() {
             Bereik duizenden sporters en verdien aan jouw expertise. Gratis aanmelden als creator.
           </p>
           <Link href="/creator/aanmelden"
-            className="inline-flex items-center gap-2 bg-[#E87722] text-white font-bold px-8 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200">
+            className="inline-flex items-center gap-2 bg-[#C4F542] text-white font-bold px-8 py-4 rounded-2xl hover:bg-white hover:text-black transition-all duration-200">
             Aanmelden als creator <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -279,17 +279,17 @@ export default function ChallengesPage() {
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setShowPayModal(null)}>
           <div className="bg-white w-full max-w-sm rounded-3xl shadow-2xl p-6" onClick={e => e.stopPropagation()}>
             <div className="text-center mb-5">
-              <div className="w-12 h-12 bg-[#E87722]/10 rounded-full flex items-center justify-center mx-auto mb-3">
-                <Euro className="w-6 h-6 text-[#E87722]" />
+              <div className="w-12 h-12 bg-[#C4F542]/10 rounded-full flex items-center justify-center mx-auto mb-3">
+                <Euro className="w-6 h-6 text-[#C4F542]" />
               </div>
               <h3 style={SYNE} className="text-xl font-black text-black mb-1">{showPayModal.title}</h3>
-              <p className="text-2xl font-black text-[#E87722]" style={SYNE}>€{showPayModal.price}</p>
+              <p className="text-2xl font-black text-[#C4F542]" style={SYNE}>€{showPayModal.price}</p>
             </div>
             <p className="text-sm text-gray-500 text-center mb-6 leading-relaxed">
               Betaling via iDEAL, creditcard of andere methode. Veilig en direct.
             </p>
             <button
-              className="w-full bg-[#111111] text-white font-bold py-3.5 rounded-2xl hover:bg-[#E87722] transition-colors text-sm mb-3"
+              className="w-full bg-[#1E2B20] text-white font-bold py-3.5 rounded-2xl hover:bg-[#C4F542] transition-colors text-sm mb-3"
               onClick={() => { setJoinedIds(prev => new Set([...prev, showPayModal.id])); setShowPayModal(null) }}
             >
               Betalen — €{showPayModal.price} <span className="text-white/60 font-normal">(demo)</span>

@@ -38,7 +38,7 @@ function FunnelBar({ step, isFirst }: { step: FunnelStep; isFirst: boolean }) {
           </div>
         </div>
         <div className="shrink-0">
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#111' }}>{step.pctTotal}%</p>
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#1E2B20' }}>{step.pctTotal}%</p>
           <p className="text-xs text-gray-400">{step.description}</p>
         </div>
       </div>
@@ -90,7 +90,7 @@ export default async function FunnelPage() {
       pct: 100,
       pctTotal: 100,
       dropoff: 0,
-      color: '#E87722',
+      color: '#C4F542',
     },
     {
       label: 'Sport ingevuld',
@@ -135,7 +135,7 @@ export default async function FunnelPage() {
   return (
     <div className="p-6 md:p-10 max-w-5xl space-y-8">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Conversie Funnel</h1>
         <p className="text-sm text-gray-400 mt-1">Van registratie naar actief gebruiker met buddy · totale conversie: <strong>{overallConversion}%</strong></p>
       </div>
@@ -158,7 +158,7 @@ export default async function FunnelPage() {
           ].map(({ label, value }, i) => (
             <div key={label} className="bg-white rounded-2xl border border-black/8 p-6">
               <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-              <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, lineHeight: 1, color: i === 0 ? '#111' : '#E87722' }}>{value}</p>
+              <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, lineHeight: 1, color: i === 0 ? '#1E2B20' : '#C4F542' }}>{value}</p>
             </div>
           ))}
         </div>
@@ -201,7 +201,7 @@ export default async function FunnelPage() {
             </thead>
             <tbody>
               {steps.map((step, i) => (
-                <tr key={step.label} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
+                <tr key={step.label} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
                   <td className="px-4 py-3">
                     <div className="flex items-center gap-2">
                       <div className="w-3 h-3 rounded-full shrink-0" style={{ background: step.color }} />
@@ -213,7 +213,7 @@ export default async function FunnelPage() {
                     <span style={{ ...SYNE, fontWeight: 700 }}>{step.count.toLocaleString('nl-NL')}</span>
                   </td>
                   <td className="px-4 py-3">
-                    <span style={{ color: '#E87722', ...SYNE, fontWeight: 700 }}>{step.pctTotal}%</span>
+                    <span style={{ color: '#C4F542', ...SYNE, fontWeight: 700 }}>{step.pctTotal}%</span>
                   </td>
                   <td className="px-4 py-3">
                     <span className="text-gray-700">{i === 0 ? '—' : `${step.pct}%`}</span>
@@ -235,7 +235,7 @@ export default async function FunnelPage() {
       </div>
 
       {/* Improvement tips */}
-      <div className="bg-[#F5F0E8] rounded-2xl p-6">
+      <div className="bg-[#F4F1E8] rounded-2xl p-6">
         <div className="flex items-center gap-2 mb-4">
           <p style={{ ...SYNE, fontWeight: 700, fontSize: 14 }} className="text-black">Verbeterpunten</p>
           <InfoButton
@@ -246,7 +246,7 @@ export default async function FunnelPage() {
         <div className="space-y-2">
           {steps.slice(1).filter(s => s.dropoff > 30).map(s => (
             <div key={s.label} className="flex items-start gap-2">
-              <span className="text-[#E87722] mt-0.5">⚠</span>
+              <span className="text-[#C4F542] mt-0.5">⚠</span>
               <p className="text-sm text-gray-600">
                 <strong>{s.label}</strong> heeft een uitval van {s.dropoff}% — overweeg verbeteringen in deze stap van de gebruikersreis.
               </p>

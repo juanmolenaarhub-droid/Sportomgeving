@@ -64,7 +64,7 @@ export function VerticalFeed({
               fontFamily: "'Syne', sans-serif",
               fontWeight: 800,
               fontSize: 18,
-              color: '#F5F0E8',
+              color: '#F4F1E8',
               marginBottom: 8,
             }}>{emptyTitle}</p>
             <p style={{

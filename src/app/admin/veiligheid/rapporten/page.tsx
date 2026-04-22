@@ -136,7 +136,7 @@ export default function RapportenPage() {
 
   if (loading) return (
     <div className="p-6 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
     </div>
   )
 
@@ -146,7 +146,7 @@ export default function RapportenPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <AlertTriangle className="w-5 h-5 text-red-500" />
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Misbruikrapporten</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Misbruikrapporten</h1>
           <span className="text-xs font-bold bg-red-100 text-red-700 px-2.5 py-1 rounded-full">{filtered.length}</span>
         </div>
         <button
@@ -178,7 +178,7 @@ export default function RapportenPage() {
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Zoek op gebruikersnaam..."
-          className="px-3 py-2 rounded-xl border border-black/10 text-sm bg-white focus:outline-none focus:border-[#E87722] flex-1 min-w-40"
+          className="px-3 py-2 rounded-xl border border-black/10 text-sm bg-white focus:outline-none focus:border-[#C4F542] flex-1 min-w-40"
           style={SYNE}
         />
       </div>
@@ -223,7 +223,7 @@ export default function RapportenPage() {
                   <td className="px-4 py-3">
                     <button
                       onClick={() => openDetail(r)}
-                      className="text-xs font-bold text-[#E87722] border border-[#E87722]/30 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors"
+                      className="text-xs font-bold text-[#C4F542] border border-[#C4F542]/30 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors"
                     >
                       Bekijk
                     </button>
@@ -240,7 +240,7 @@ export default function RapportenPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>Rapport details</h2>
+              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }}>Rapport details</h2>
               <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
             </div>
 
@@ -267,7 +267,7 @@ export default function RapportenPage() {
                 <select
                   value={statusInput}
                   onChange={e => setStatusInput(e.target.value)}
-                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722]"
+                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#C4F542]"
                 >
                   {Object.entries(STATUS_LABELS).map(([v, l]) => (
                     <option key={v} value={v}>{l}</option>
@@ -280,7 +280,7 @@ export default function RapportenPage() {
                   value={noteInput}
                   onChange={e => setNoteInput(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722] resize-none"
+                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#C4F542] resize-none"
                   placeholder="Interne notitie..."
                 />
               </div>

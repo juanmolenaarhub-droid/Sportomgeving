@@ -25,15 +25,15 @@ const PRO_FEATURES = [
 
 export default function PricingPage() {
   return (
-    <div className="min-h-screen bg-[#F5F0E8] flex flex-col items-center justify-center px-4 py-16">
+    <div className="min-h-screen bg-[#F4F1E8] flex flex-col items-center justify-center px-4 py-16">
       <div className="max-w-3xl w-full">
 
         {/* Header */}
         <div className="text-center mb-12">
-          <Link href="/dashboard" style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#111' }} className="inline-block mb-8">
+          <Link href="/dashboard" style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#1E2B20' }} className="inline-block mb-8">
             Buddys
           </Link>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 36, color: '#111', lineHeight: 1.1 }} className="mb-4">
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 36, color: '#1E2B20', lineHeight: 1.1 }} className="mb-4">
             Kies jouw plan
           </h1>
           <p className="text-gray-500 text-base max-w-md mx-auto">
@@ -51,7 +51,7 @@ export default function PricingPage() {
                 <Zap className="w-5 h-5 text-gray-500" />
               </div>
               <div>
-                <p style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#111' }}>Gratis</p>
+                <p style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#1E2B20' }}>Gratis</p>
                 <p className="text-2xl font-black text-black">€0 <span className="text-sm font-normal text-gray-400">/ maand</span></p>
               </div>
             </div>
@@ -76,10 +76,10 @@ export default function PricingPage() {
 
           {/* Pro */}
           <div className="bg-[#111] rounded-3xl p-8 relative overflow-hidden">
-            <div className="absolute top-0 right-0 w-40 h-40 bg-[#E87722]/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
+            <div className="absolute top-0 right-0 w-40 h-40 bg-[#C4F542]/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-3xl" />
 
             <div className="flex items-center gap-3 mb-6 relative">
-              <div className="w-10 h-10 bg-[#E87722] rounded-xl flex items-center justify-center">
+              <div className="w-10 h-10 bg-[#C4F542] rounded-xl flex items-center justify-center">
                 <Crown className="w-5 h-5 text-white" />
               </div>
               <div>
@@ -91,14 +91,14 @@ export default function PricingPage() {
             <ul className="space-y-3 mb-8 relative">
               {PRO_FEATURES.map(f => (
                 <li key={f} className="flex items-start gap-2.5 text-sm text-white/80">
-                  <Check className="w-4 h-4 text-[#E87722] mt-0.5 shrink-0" />
+                  <Check className="w-4 h-4 text-[#C4F542] mt-0.5 shrink-0" />
                   {f}
                 </li>
               ))}
             </ul>
 
             <button
-              className="relative w-full py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold hover:bg-[#d06a1a] transition-colors"
+              className="relative w-full py-3 rounded-xl bg-[#C4F542] text-white text-sm font-bold hover:bg-[#d06a1a] transition-colors"
               style={SYNE}
               onClick={() => alert('Pro-abonnementen komen binnenkort beschikbaar!')}
             >
@@ -109,7 +109,7 @@ export default function PricingPage() {
 
         <p className="text-center text-xs text-gray-400 mt-8">
           Vragen? Mail naar{' '}
-          <a href="mailto:hallo@buddys.nl" className="text-[#E87722] hover:underline font-semibold">
+          <a href="mailto:hallo@buddys.nl" className="text-[#C4F542] hover:underline font-semibold">
             hallo@buddys.nl
           </a>
         </p>

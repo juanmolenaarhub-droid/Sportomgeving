@@ -5,7 +5,7 @@ import { MapPin, Crown, Users } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Hardlopen': '#C4F542', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
   'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#8B5CF6', default: '#6B7280',
 }
 function getSportColor(sport: string) { return SPORT_COLORS[sport] ?? SPORT_COLORS.default }
@@ -177,7 +177,7 @@ export default function MeetupChatList({ currentUserId, onSelect }: { currentUse
       <div className="flex flex-col items-center justify-center h-full text-center p-8">
         <MapPin className="w-10 h-10 text-gray-200 mb-3" />
         <p className="text-sm font-semibold text-gray-400">Geen actieve meetups</p>
-        <a href="/dashboard/meetup" className="mt-3 text-xs font-bold text-[#E87722] hover:underline">
+        <a href="/dashboard/meetup" className="mt-3 text-xs font-bold text-[#C4F542] hover:underline">
           Ontdek meetups →
         </a>
       </div>
@@ -213,7 +213,7 @@ export default function MeetupChatList({ currentUserId, onSelect }: { currentUse
 
                 <p className="text-xs text-gray-500 mb-1 flex items-center gap-1">
                   {m.isCreator ? (
-                    <><Crown className="w-3 h-3 text-[#E87722]" /> Jij organiseert</>
+                    <><Crown className="w-3 h-3 text-[#C4F542]" /> Jij organiseert</>
                   ) : (
                     <><Users className="w-3 h-3" /> {m.creatorName}</>
                   )}
@@ -231,7 +231,7 @@ export default function MeetupChatList({ currentUserId, onSelect }: { currentUse
 
                   {/* Badge: nieuwe interesse-meldingen voor organisator */}
                   {m.isCreator && m.interestedCount > 0 && (
-                    <span className="ml-2 bg-[#E87722] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shrink-0">
+                    <span className="ml-2 bg-[#C4F542] text-white text-[10px] font-black px-1.5 py-0.5 rounded-full shrink-0">
                       {m.interestedCount}
                     </span>
                   )}

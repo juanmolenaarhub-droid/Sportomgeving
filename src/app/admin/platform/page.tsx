@@ -67,7 +67,7 @@ export default function PlatformPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Platform</h1>
       </div>
 
@@ -90,8 +90,8 @@ export default function PlatformPage() {
         ) : (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-0 divide-x divide-y divide-black/5">
             {TABLES.map((table, i) => (
-              <div key={table} className={`p-5 ${i % 2 === 1 ? 'bg-[#F5F0E8]/40' : ''}`}>
-                <p style={{ ...SYNE, fontWeight: 800, fontSize: 24, color: '#E87722' }}>{tableStats[table] ?? 0}</p>
+              <div key={table} className={`p-5 ${i % 2 === 1 ? 'bg-[#F4F1E8]/40' : ''}`}>
+                <p style={{ ...SYNE, fontWeight: 800, fontSize: 24, color: '#C4F542' }}>{tableStats[table] ?? 0}</p>
                 <p className="text-xs text-gray-400 mt-1 font-mono">{table}</p>
               </div>
             ))}
@@ -121,7 +121,7 @@ export default function PlatformPage() {
           <button
             onClick={sendNotification}
             disabled={notifSending || !notifMessage.trim()}
-            className="flex items-center gap-2 bg-[#111111] text-white font-bold px-5 py-3 rounded-xl text-sm hover:bg-[#E87722] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+            className="flex items-center gap-2 bg-[#1E2B20] text-white font-bold px-5 py-3 rounded-xl text-sm hover:bg-[#C4F542] transition-all disabled:opacity-40 disabled:cursor-not-allowed"
           >
             <Send className="w-4 h-4" />
             {notifSending ? 'Bezig…' : notifSent ? '✓ Verstuurd!' : 'Stuur'}
@@ -147,7 +147,7 @@ export default function PlatformPage() {
         <button
           onClick={exportEmails}
           disabled={exportLoading}
-          className="flex items-center gap-2 bg-[#F5F0E8] border border-black/10 text-black font-bold px-6 py-3 rounded-xl text-sm hover:bg-[#111111] hover:text-white transition-all disabled:opacity-40"
+          className="flex items-center gap-2 bg-[#F4F1E8] border border-black/10 text-black font-bold px-6 py-3 rounded-xl text-sm hover:bg-[#1E2B20] hover:text-white transition-all disabled:opacity-40"
         >
           <Download className="w-4 h-4" />
           {exportLoading ? 'Bezig…' : 'Download CSV'}

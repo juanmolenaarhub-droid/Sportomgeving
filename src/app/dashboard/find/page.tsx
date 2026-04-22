@@ -5,8 +5,8 @@ import { ArrowRight, Search, X, Send, UserPlus } from 'lucide-react'
 import { createClient } from '@/lib/supabase'
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const ACCENT = '#E87722'
-const INK    = '#111111'
+const ACCENT = '#C4F542'
+const INK    = '#1E2B20'
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 
@@ -484,7 +484,7 @@ export default function FindPage() {
   const visibleRest = showAll ? rest : rest.slice(0, 8)
 
   return (
-    <div style={{ position: 'fixed', inset: 0, background: '#F5F0E8', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
+    <div style={{ position: 'fixed', inset: 0, background: '#F4F1E8', overflowY: 'auto', WebkitOverflowScrolling: 'touch' }}>
       <div style={{ paddingTop: 'max(24px, env(safe-area-inset-top))', paddingBottom: 'calc(120px + env(safe-area-inset-bottom))' }}>
 
         {/* ── Header ─────────────────────────────────────────────────────── */}

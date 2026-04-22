@@ -77,14 +77,14 @@ export default function VeiligheidPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Veiligheid</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Veiligheid</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Veiligheid</h1>
         </div>
       </div>
 
       {/* Actieve sessies */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Actieve sessies</p>
-        <div className="flex items-center gap-4 p-4 bg-[#F5F0E8] rounded-xl">
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Actieve sessies</p>
+        <div className="flex items-center gap-4 p-4 bg-[#F4F1E8] rounded-xl">
           <div className="w-10 h-10 bg-white rounded-xl flex items-center justify-center shadow-sm shrink-0">
             <Monitor className="w-5 h-5 text-gray-500" />
           </div>
@@ -106,7 +106,7 @@ export default function VeiligheidPage() {
 
       {/* Rapporteer een probleem */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Rapporteer een probleem</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Rapporteer een probleem</p>
 
         {reportSent ? (
           <div className="flex flex-col items-center py-6 gap-3 text-center">
@@ -117,7 +117,7 @@ export default function VeiligheidPage() {
             <p className="text-xs text-gray-400">Bedankt voor je melding. We kijken er zo snel mogelijk naar.</p>
             <button
               onClick={() => setReportSent(false)}
-              className="text-xs text-[#E87722] font-semibold hover:underline"
+              className="text-xs text-[#C4F542] font-semibold hover:underline"
             >
               Nieuw rapport
             </button>
@@ -130,7 +130,7 @@ export default function VeiligheidPage() {
               <div className="relative">
                 <button
                   onClick={() => setShowCats(v => !v)}
-                  className="w-full flex items-center justify-between border border-black/10 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 hover:border-[#E87722] transition-colors"
+                  className="w-full flex items-center justify-between border border-black/10 rounded-xl px-4 py-3 text-sm font-semibold text-gray-700 hover:border-[#C4F542] transition-colors"
                 >
                   {category}
                   <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform ${showCats ? 'rotate-180' : ''}`} />
@@ -141,10 +141,10 @@ export default function VeiligheidPage() {
                       <button
                         key={cat}
                         onClick={() => { setCategory(cat); setShowCats(false) }}
-                        className="w-full text-left px-4 py-3 text-sm hover:bg-[#F5F0E8] transition-colors flex items-center justify-between"
+                        className="w-full text-left px-4 py-3 text-sm hover:bg-[#F4F1E8] transition-colors flex items-center justify-between"
                       >
                         {cat}
-                        {category === cat && <Check className="w-3.5 h-3.5 text-[#E87722]" />}
+                        {category === cat && <Check className="w-3.5 h-3.5 text-[#C4F542]" />}
                       </button>
                     ))}
                   </div>
@@ -161,7 +161,7 @@ export default function VeiligheidPage() {
                 placeholder="Beschrijf het probleem zo duidelijk mogelijk..."
                 rows={4}
                 maxLength={1000}
-                className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-[#E87722] transition-colors"
+                className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm resize-none focus:outline-none focus:border-[#C4F542] transition-colors"
               />
               <p className="text-xs text-gray-300 text-right mt-1">{report.length}/1000</p>
             </div>
@@ -181,7 +181,7 @@ export default function VeiligheidPage() {
       {/* Twee-factor authenticatie */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
         <div className="flex items-center gap-3">
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Twee-factor authenticatie</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Twee-factor authenticatie</p>
           <span className="text-[10px] font-bold bg-gray-100 text-gray-400 px-2 py-0.5 rounded-full">Binnenkort</span>
         </div>
         <p className="text-xs text-gray-400">Extra beveiliging via een verificatiecode bij elke login. We werken hier aan.</p>

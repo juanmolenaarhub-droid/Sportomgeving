@@ -13,7 +13,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${checked ? 'bg-[#E87722]' : 'bg-gray-200'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${checked ? 'bg-[#C4F542]' : 'bg-gray-200'}`}
     >
       <span className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`} />
     </button>
@@ -91,7 +91,7 @@ export default function NotificatiesInstellingenPage() {
 
   if (loading) return (
     <div className="max-w-2xl mx-auto py-12 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
     </div>
   )
 
@@ -116,7 +116,7 @@ export default function NotificatiesInstellingenPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Notificaties</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Notificaties</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Notificaties</h1>
         </div>
       </div>
 
@@ -125,8 +125,8 @@ export default function NotificatiesInstellingenPage() {
       {/* In-app */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
-          <Bell className="w-4 h-4 text-[#E87722]" />
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>In-app meldingen</p>
+          <Bell className="w-4 h-4 text-[#C4F542]" />
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>In-app meldingen</p>
         </div>
         <div className="divide-y divide-black/5">
           {IN_APP.map(({ key, label, desc }) => (
@@ -145,7 +145,7 @@ export default function NotificatiesInstellingenPage() {
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
           <Mail className="w-4 h-4 text-gray-400" />
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>E-mail meldingen</p>
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>E-mail meldingen</p>
           <span className="text-xs text-gray-300 ml-auto">Binnenkort beschikbaar</span>
         </div>
         <div className="divide-y divide-black/5 opacity-60 pointer-events-none">

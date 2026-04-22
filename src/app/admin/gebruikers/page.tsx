@@ -31,7 +31,7 @@ function Avatar({ name, size = 32 }: { name: string | null; size?: number }) {
   const initials = (name ?? '?').split(' ').map(w => w[0]).join('').slice(0, 2).toUpperCase()
   return (
     <div
-      className="bg-[#111111] rounded-lg flex items-center justify-center text-white font-bold shrink-0"
+      className="bg-[#1E2B20] rounded-lg flex items-center justify-center text-white font-bold shrink-0"
       style={{ width: size, height: size, fontSize: size * 0.35 }}
     >
       {initials}
@@ -111,7 +111,7 @@ export default function GebruikersPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-6">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Gebruikers</h1>
       </div>
 
@@ -191,7 +191,7 @@ export default function GebruikersPage() {
                 ) : filtered.map((p, i) => (
                   <tr
                     key={p.id}
-                    className={`hover:bg-[#F5F0E8]/60 cursor-pointer transition-colors ${i % 2 === 1 ? 'bg-[#F5F0E8]/30' : ''}`}
+                    className={`hover:bg-[#F4F1E8]/60 cursor-pointer transition-colors ${i % 2 === 1 ? 'bg-[#F4F1E8]/30' : ''}`}
                     onClick={() => openUser(p)}
                   >
                     <td className="px-4 py-3">
@@ -232,11 +232,11 @@ export default function GebruikersPage() {
       {selectedUser && (
         <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-end p-4" onClick={() => setSelectedUser(null)}>
           <div
-            className="bg-[#F5F0E8] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+            className="bg-[#F4F1E8] w-full max-w-md rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
             onClick={e => e.stopPropagation()}
           >
             {/* Header */}
-            <div className="bg-[#111111] px-6 py-6 flex items-start justify-between">
+            <div className="bg-[#1E2B20] px-6 py-6 flex items-start justify-between">
               <div className="flex items-center gap-3">
                 <Avatar name={selectedUser.full_name ?? selectedUser.username} size={44} />
                 <div>
@@ -266,7 +266,7 @@ export default function GebruikersPage() {
                       { label: 'Posts', value: selectedUser.posts },
                     ].map(s => (
                       <div key={s.label} className="bg-white rounded-xl p-3 text-center border border-black/8">
-                        <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: '#E87722' }}>{s.value}</p>
+                        <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, color: '#C4F542' }}>{s.value}</p>
                         <p className="text-xs text-gray-400">{s.label}</p>
                       </div>
                     ))}
