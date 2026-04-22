@@ -27,7 +27,7 @@ function DeactivateModal({ onConfirm, onCancel, loading }: { onConfirm: () => vo
             <AlertTriangle className="w-5 h-5 text-red-500" />
           </div>
           <div>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#1E2B20' }}>Account deactiveren?</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#111' }}>Account deactiveren?</p>
             <p className="text-xs text-gray-400 mt-0.5">Je profiel wordt verborgen voor anderen</p>
           </div>
         </div>
@@ -130,13 +130,13 @@ export default function AccountInstellingenPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Account</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Account</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Account</h1>
         </div>
       </div>
 
       {/* E-mail */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>E-mailadres wijzigen</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>E-mailadres wijzigen</p>
         <div>
           <p className="text-xs text-gray-400 mb-1">Huidig e-mailadres</p>
           <p className="text-sm font-semibold text-gray-400 bg-gray-50 px-4 py-3 rounded-xl">{currentEmail || '—'}</p>
@@ -148,7 +148,7 @@ export default function AccountInstellingenPage() {
             value={newEmail}
             onChange={e => setNewEmail(e.target.value)}
             placeholder="nieuw@email.nl"
-            className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C4F542] transition-colors"
+            className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#E87722] transition-colors"
           />
         </div>
         {emailError && <p className="text-xs text-red-500 font-semibold">{emailError}</p>}
@@ -170,7 +170,7 @@ export default function AccountInstellingenPage() {
       {/* Wachtwoord */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <div className="flex items-center justify-between">
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Wachtwoord wijzigen</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Wachtwoord wijzigen</p>
           <button onClick={() => setShowPw(v => !v)} className="text-gray-400 hover:text-gray-600 transition-colors">
             {showPw ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
           </button>
@@ -187,7 +187,7 @@ export default function AccountInstellingenPage() {
               value={value}
               onChange={e => set(e.target.value)}
               placeholder="••••••••"
-              className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#C4F542] transition-colors"
+              className="w-full border border-black/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-[#E87722] transition-colors"
             />
           </div>
         ))}
@@ -204,8 +204,8 @@ export default function AccountInstellingenPage() {
 
       {/* Abonnement */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Abonnement</p>
-        <div className="flex items-center justify-between p-4 bg-[#F4F1E8] rounded-xl">
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Abonnement</p>
+        <div className="flex items-center justify-between p-4 bg-[#F5F0E8] rounded-xl">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center shadow-sm">
               <Crown className="w-4 h-4 text-gray-400" />
@@ -217,7 +217,7 @@ export default function AccountInstellingenPage() {
           </div>
           <Link
             href="/pricing"
-            className="text-xs font-bold bg-[#111] text-white px-4 py-2 rounded-lg hover:bg-[#C4F542] transition-colors"
+            className="text-xs font-bold bg-[#111] text-white px-4 py-2 rounded-lg hover:bg-[#E87722] transition-colors"
             style={SYNE}
           >
             Upgraden

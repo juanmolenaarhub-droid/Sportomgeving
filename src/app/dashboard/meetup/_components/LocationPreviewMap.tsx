@@ -23,7 +23,7 @@ export default function LocationPreviewMap({ lat, lon }: Props) {
       <Marker longitude={lon} latitude={lat} anchor="bottom">
         <div style={{
           width: 20, height: 20, borderRadius: '50%',
-          background: '#C4F542', border: '3px solid #fff',
+          background: '#E87722', border: '3px solid #fff',
           boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
         }} />
       </Marker>

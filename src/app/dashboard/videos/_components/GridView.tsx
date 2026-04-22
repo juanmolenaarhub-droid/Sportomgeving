@@ -45,7 +45,7 @@ export function GridView({ posts, loading, onCardClick, onLoadMore, hasMore }: P
       {/* Sentinel for infinite scroll */}
       <div ref={sentinelRef} className="h-10 mt-2 flex items-center justify-center">
         {loading && (
-          <div className="w-5 h-5 border-2 border-gray-300 border-t-[#C4F542] rounded-full animate-spin" />
+          <div className="w-5 h-5 border-2 border-gray-300 border-t-[#E87722] rounded-full animate-spin" />
         )}
       </div>
     </div>

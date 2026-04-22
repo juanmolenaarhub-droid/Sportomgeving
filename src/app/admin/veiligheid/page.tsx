@@ -86,11 +86,11 @@ export default async function VeiligheidPage() {
     <div className="p-6 max-w-5xl mx-auto space-y-8">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <div className="w-10 h-10 rounded-xl bg-[#C4F542]/10 flex items-center justify-center">
-          <Shield className="w-5 h-5 text-[#C4F542]" />
+        <div className="w-10 h-10 rounded-xl bg-[#E87722]/10 flex items-center justify-center">
+          <Shield className="w-5 h-5 text-[#E87722]" />
         </div>
         <div>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#1E2B20' }}>Veiligheid & Compliance</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#111' }}>Veiligheid & Compliance</h1>
           <p className="text-sm text-gray-400 mt-0.5">Beveiligingsoverzicht, AVG-verzoeken en misbruikrapportages</p>
         </div>
       </div>
@@ -107,7 +107,7 @@ export default async function VeiligheidPage() {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           {KPI_CARDS.map(card => (
             <Link key={card.label} href={card.href}
-              className="bg-white rounded-2xl border border-black/8 p-5 hover:border-[#C4F542]/40 transition-colors relative overflow-hidden"
+              className="bg-white rounded-2xl border border-black/8 p-5 hover:border-[#E87722]/40 transition-colors relative overflow-hidden"
             >
               {card.urgent && (
                 <span className="absolute top-3 right-3 w-2.5 h-2.5 rounded-full bg-red-500" />
@@ -141,8 +141,8 @@ export default async function VeiligheidPage() {
       {/* Security Health Check */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-4 border-b border-black/5 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#C4F542]" />
-          <h2 style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#1E2B20' }}>Security Health Check</h2>
+          <Shield className="w-4 h-4 text-[#E87722]" />
+          <h2 style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#111' }}>Security Health Check</h2>
           <InfoButton
             title="Security Health Check"
             body={`Een automatische checklist van beveiligingsinstellingen.\n\nGroen vinkje → alles is in orde.\nRood kruis → actie vereist.\n\nRLS → Row Level Security, zorgt dat users alleen hun eigen data kunnen zien.\nAdmin route → alleen jij kunt het admin-panel bereiken.\nE-mailverificatie → nieuwe accounts moeten hun e-mail bevestigen.\nRapporten ouder dan 7 dagen → als er meldingen zijn die al een week onbehandeld liggen.\nRate limit events → tekenen van misbruik of geautomatiseerde aanvallen.\nGeblokkeerde uploads → bestanden die geweigerd zijn vanwege verkeerd type of te groot.\nAdmin account → je ADMIN_USER_ID is ingesteld in de omgevingsvariabelen.\nService role key → je SUPABASE_SERVICE_ROLE_KEY is aanwezig (nooit committen naar git!).`}

@@ -1,7 +1,7 @@
 'use client'
 
 const SPORT_COLORS: Record<string, string> = {
-  default: '#C4F542',
+  default: '#E87722',
 }
 export function getSportColor(s: string): string {
   return SPORT_COLORS[s] ?? SPORT_COLORS.default

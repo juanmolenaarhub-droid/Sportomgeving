@@ -70,8 +70,8 @@ export function StoriesRow({
             bottom: 0, right: 0,
             width: 22, height: 22,
             borderRadius: '50%',
-            background: '#C4F542',
-            border: '2px solid #F4F1E8',
+            background: '#E87722',
+            border: '2px solid #F5F0E8',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <Plus style={{ width: 12, height: 12, color: 'white' }} strokeWidth={3} />
@@ -119,7 +119,7 @@ export function StoriesRow({
               borderRadius: '50%',
               border: buddy.seen
                 ? '2.5px solid rgba(26,23,20,0.18)'
-                : '2.5px solid #C4F542',
+                : '2.5px solid #E87722',
               overflow: 'hidden',
             }}>
               <Avatar name={buddy.name} imageUrl={buddy.avatarUrl} size="lg" />
@@ -131,10 +131,10 @@ export function StoriesRow({
                 position: 'absolute',
                 bottom: 0, left: '50%',
                 transform: 'translateX(-50%)',
-                background: '#C4F542',
+                background: '#E87722',
                 borderRadius: 999,
                 padding: '2px 8px',
-                border: '1.5px solid #F4F1E8',
+                border: '1.5px solid #F5F0E8',
               }}>
                 <span style={{
                   fontFamily: "'DM Sans', sans-serif",

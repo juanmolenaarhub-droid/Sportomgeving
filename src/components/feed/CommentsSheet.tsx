@@ -6,8 +6,8 @@ import { createClient } from '@/lib/supabase'
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
-const ACCENT = '#C4F542'
-const INK    = '#1E2B20'
+const ACCENT = '#E87722'
+const INK    = '#111111'
 
 type Comment = {
   id: string
@@ -29,7 +29,7 @@ function timeAgo(iso: string) {
 }
 
 function Avatar({ name, url, size }: { name: string; url: string | null; size: number }) {
-  const colors = ['#C4F542', '#2A2420', '#11998e', '#6366F1', '#DB2777']
+  const colors = ['#E87722', '#2A2420', '#11998e', '#6366F1', '#DB2777']
   const bg = colors[name.charCodeAt(0) % colors.length]
   if (url) return <img src={url} alt={name} style={{ width: size, height: size, borderRadius: '50%', objectFit: 'cover', flexShrink: 0 }} />
   return (

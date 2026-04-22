@@ -2,11 +2,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
 
 :root {
-  --background: #F4F1E8;
-  --foreground: #0B0B0B;
-  --accent:     #C4F542;
-  --forest:     #1E2B20;
-  --bone:       #F4F1E8;
+  --background: #F5F0E8;
+  --foreground: #171717;
 }
 
 @theme inline {
@@ -23,8 +20,8 @@ html {
 
 body {
   height: 100%;
-  background: #F4F1E8;
-  color: #0B0B0B;
+  background: #F5F0E8;
+  color: #171717;
 }
 
 @keyframes fadeInUp {

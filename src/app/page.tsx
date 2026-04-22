@@ -63,10 +63,10 @@ export default function LandingPage() {
 
 
   return (
-    <div style={DM} className="bg-[#F4F1E8] overflow-x-hidden">
+    <div style={DM} className="bg-[#F5F0E8] overflow-x-hidden">
 
       {/* ── NAVBAR ── */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F4F1E8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
@@ -79,7 +79,7 @@ export default function LandingPage() {
           </nav>
           <div className="flex items-center gap-4">
             <Link href="/login" className="text-sm font-medium text-gray-500 hover:text-black transition-colors">Inloggen</Link>
-            <Link href="/register" className="bg-black text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#C4F542] transition-all duration-200 flex items-center gap-1.5">
+            <Link href="/register" className="bg-black text-white text-sm font-semibold px-5 py-2.5 rounded-xl hover:bg-[#E87722] transition-all duration-200 flex items-center gap-1.5">
               Gratis starten <ArrowRight className="w-3.5 h-3.5" />
             </Link>
           </div>
@@ -87,7 +87,7 @@ export default function LandingPage() {
       </header>
 
       {/* ── TICKER ── */}
-      <div className="fixed top-16 left-0 right-0 z-40 bg-[#1E2B20] overflow-hidden" style={{ height: '36px' }}>
+      <div className="fixed top-16 left-0 right-0 z-40 bg-[#111111] overflow-hidden" style={{ height: '36px' }}>
         <div className="flex items-center h-full" style={{ animation: 'ticker 40s linear infinite', whiteSpace: 'nowrap', willChange: 'transform' }}>
           {[...TICKER_ITEMS, ...TICKER_ITEMS].map((item, i) => (
             <span key={i} className="inline-flex items-center gap-3 text-white text-xs font-semibold px-8 tracking-wide">
@@ -116,14 +116,14 @@ export default function LandingPage() {
               style={{ opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(32px)', transition: 'all 0.9s cubic-bezier(0.16,1,0.3,1)' }}>
 
               <div className="inline-flex items-center gap-2.5 text-xs font-semibold px-3.5 py-1.5 rounded-full mb-8 border border-black/10 bg-white/60 text-gray-600 tracking-wide">
-                <span className="w-1.5 h-1.5 bg-[#C4F542] rounded-full" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
+                <span className="w-1.5 h-1.5 bg-[#E87722] rounded-full" style={{ animation: 'pulse 2s ease-in-out infinite' }} />
                 2.400+ sporters actief in Nederland
               </div>
 
               <h1 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
                 className="text-[clamp(56px,7.5vw,116px)] text-black">
                 Vind je<br />
-                <span className="text-[#C4F542]">perfecte</span><br />
+                <span className="text-[#E87722]">perfecte</span><br />
                 <span className="inline-block transition-all duration-350"
                   style={{
                     opacity: wordVisible ? 1 : 0,
@@ -140,7 +140,7 @@ export default function LandingPage() {
 
               <div className="flex flex-wrap gap-3 mt-9">
                 <Link href="/register"
-                  className="group inline-flex items-center gap-2 bg-[#C4F542] text-white font-semibold px-8 py-4 rounded-2xl hover:bg-black transition-all duration-250 text-[15px]">
+                  className="group inline-flex items-center gap-2 bg-[#E87722] text-white font-semibold px-8 py-4 rounded-2xl hover:bg-black transition-all duration-250 text-[15px]">
                   Start gratis account
                   <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                 </Link>
@@ -170,12 +170,12 @@ export default function LandingPage() {
 
               <div className="absolute top-0 right-0 w-64 bg-white rounded-3xl shadow-xl p-5 border border-gray-100/80"
                 style={{ animation: 'float1 7s ease-in-out infinite' }}>
-                <div className="w-12 h-12 bg-[#C4F542] rounded-2xl mb-3 flex items-center justify-center text-white font-bold text-base" style={SYNE}>TvB</div>
+                <div className="w-12 h-12 bg-[#E87722] rounded-2xl mb-3 flex items-center justify-center text-white font-bold text-base" style={SYNE}>TvB</div>
                 <p className="font-bold text-black text-sm" style={SYNE}>Tim van Berg</p>
                 <p className="text-xs text-gray-400 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />Amsterdam</p>
                 <div className="flex gap-1.5 mt-3">
                   <span className="text-xs bg-black text-white font-semibold px-2.5 py-1 rounded-full">Hardlopen</span>
-                  <span className="text-xs bg-orange-50 text-[#C4F542] font-semibold px-2.5 py-1 rounded-full">Gevorderd</span>
+                  <span className="text-xs bg-orange-50 text-[#E87722] font-semibold px-2.5 py-1 rounded-full">Gevorderd</span>
                 </div>
                 <p className="text-xs text-gray-400 mt-3 leading-relaxed bg-gray-50 rounded-xl p-2.5">
                   Zoek iemand voor ochtendtraining, 3x per week — snelheid en consistentie zijn mijn prioriteit.
@@ -184,16 +184,16 @@ export default function LandingPage() {
 
               <div className="absolute bottom-20 left-0 w-56 bg-black rounded-3xl shadow-xl p-5"
                 style={{ animation: 'float2 8s ease-in-out infinite 0.5s' }}>
-                <div className="w-11 h-11 bg-[#C4F542] rounded-xl mb-3 flex items-center justify-center text-white font-bold text-sm" style={SYNE}>SJ</div>
+                <div className="w-11 h-11 bg-[#E87722] rounded-xl mb-3 flex items-center justify-center text-white font-bold text-sm" style={SYNE}>SJ</div>
                 <p className="font-bold text-white text-sm" style={SYNE}>Sarah Jansen</p>
                 <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5"><MapPin className="w-3 h-3" />Utrecht</p>
                 <div className="flex gap-1.5 mt-3">
-                  <span className="text-xs bg-[#C4F542] text-white font-semibold px-2.5 py-1 rounded-full">Fietsen</span>
+                  <span className="text-xs bg-[#E87722] text-white font-semibold px-2.5 py-1 rounded-full">Fietsen</span>
                   <span className="text-xs bg-white/10 text-white font-semibold px-2.5 py-1 rounded-full">Gemiddeld</span>
                 </div>
               </div>
 
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#C4F542] text-white rounded-2xl px-4 py-2.5 shadow-lg z-10 whitespace-nowrap"
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#E87722] text-white rounded-2xl px-4 py-2.5 shadow-lg z-10 whitespace-nowrap"
                 style={{ animation: 'float3 5.5s ease-in-out infinite' }}>
                 <div className="flex items-center gap-2">
                   <Sparkles className="w-3.5 h-3.5" />
@@ -213,11 +213,11 @@ export default function LandingPage() {
 
 
       {/* ── HOE HET WERKT ── */}
-      <section id="hoe-het-werkt" className="py-32 bg-[#F4F1E8]">
+      <section id="hoe-het-werkt" className="py-32 bg-[#F5F0E8]">
         <div className="max-w-7xl mx-auto px-8">
           <div className="grid lg:grid-cols-2 gap-20 items-start">
             <div>
-              <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Simpel en direct</p>
+              <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Simpel en direct</p>
               <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
                 className="text-[clamp(40px,5vw,72px)] text-black mb-6">
                 In 3 stappen je buddy gevonden
@@ -225,7 +225,7 @@ export default function LandingPage() {
               <p className="text-gray-500 text-lg leading-relaxed font-light">
                 Geen ingewikkeld systeem. Geen lange vragenlijsten. Gewoon sporten met iemand die dezelfde doelen heeft als jij.
               </p>
-              <Link href="/register" className="inline-flex items-center gap-2 mt-10 bg-black text-white font-semibold px-7 py-4 rounded-2xl hover:bg-[#C4F542] transition-all duration-200">
+              <Link href="/register" className="inline-flex items-center gap-2 mt-10 bg-black text-white font-semibold px-7 py-4 rounded-2xl hover:bg-[#E87722] transition-all duration-200">
                 Direct beginnen <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
@@ -234,7 +234,7 @@ export default function LandingPage() {
               {steps.map((step) => (
                 <div key={step.num}
                   className="group bg-white rounded-2xl p-7 border border-[#E8E0D5] hover:border-[#111]/20 hover:shadow-lg transition-all duration-300 flex items-start gap-6">
-                  <span style={{ ...SYNE, fontWeight: 800 }} className="text-4xl text-[#C4F542]/25 leading-none shrink-0 group-hover:text-[#C4F542]/50 transition-colors">{step.num}</span>
+                  <span style={{ ...SYNE, fontWeight: 800 }} className="text-4xl text-[#E87722]/25 leading-none shrink-0 group-hover:text-[#E87722]/50 transition-colors">{step.num}</span>
                   <div>
                     <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-xl text-black mb-2">{step.title}</h3>
                     <p className="text-gray-500 leading-relaxed font-light">{step.desc}</p>
@@ -247,10 +247,10 @@ export default function LandingPage() {
       </section>
 
       {/* ── VIDEO SECTIE ── */}
-      <section className="py-24 bg-[#F4F1E8]">
+      <section className="py-24 bg-[#F5F0E8]">
         <div className="max-w-5xl mx-auto px-8">
           <div className="text-center mb-10">
-            <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Bekijk hoe het werkt</p>
+            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Bekijk hoe het werkt</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(36px,4.5vw,64px)] text-black">
               Zie Buddys in actie
@@ -269,7 +269,7 @@ export default function LandingPage() {
               style={{ background: 'radial-gradient(ellipse at center, rgba(232,119,34,0.08) 0%, transparent 60%)' }} />
             {/* Play button */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="w-20 h-20 bg-[#C4F542] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300 mb-6">
+              <div className="w-20 h-20 bg-[#E87722] rounded-full flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform duration-300 mb-6">
                 <Play className="w-8 h-8 text-white ml-1" fill="white" />
               </div>
               <p style={{ ...SYNE, fontWeight: 700 }} className="text-white text-xl">Bekijk de introductievideo</p>
@@ -282,10 +282,10 @@ export default function LandingPage() {
       <TestimonialV2 />
 
       {/* ── PRIJZEN ── */}
-      <section id="prijzen" className="py-32 bg-[#F4F1E8]">
+      <section id="prijzen" className="py-32 bg-[#F5F0E8]">
         <div className="max-w-6xl mx-auto px-8">
           <div className="text-center mb-16">
-            <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Pricing</p>
+            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Pricing</p>
             <h2 style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(40px,5vw,72px)] text-black mb-4">
               Begin vandaag. Het kost je niets.
@@ -313,7 +313,7 @@ export default function LandingPage() {
                   { text: 'Subtiele advertenties', check: false },
                 ].map(item => (
                   <li key={item.text} className="flex items-center gap-2.5">
-                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.check ? 'bg-[#1E2B20]' : 'bg-gray-100'}`}>
+                    <div className={`w-4 h-4 rounded-full flex items-center justify-center shrink-0 ${item.check ? 'bg-[#111111]' : 'bg-gray-100'}`}>
                       {item.check
                         ? <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                         : <span className="text-gray-400 text-[9px] font-bold">—</span>
@@ -329,11 +329,11 @@ export default function LandingPage() {
             </div>
 
             {/* Pro — featured, taller */}
-            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl bg-[#1E2B20]">
+            <div className="relative rounded-3xl p-8 flex flex-col -my-4 shadow-2xl bg-[#111111]">
               <h3 style={{ ...SYNE, fontWeight: 700 }} className="text-2xl text-white mb-1">Pro</h3>
               <p className="text-white/50 text-sm mb-7">Voor de serieuze sporter</p>
               <div className="mb-7">
-                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#C4F542]">€4,99</span>
+                <span style={{ ...SYNE, fontWeight: 800 }} className="text-5xl text-[#E87722]">€4,99</span>
                 <span className="text-white/50 text-sm ml-1">/ maand</span>
               </div>
               <div className="mb-7 -mt-5">
@@ -349,14 +349,14 @@ export default function LandingPage() {
                   'Strava en MyFitnessPal koppeling',
                 ].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-[#C4F542] flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-[#E87722] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/register" className="block text-center font-semibold py-3.5 rounded-2xl hover:opacity-90 transition-all text-white" style={{ background: '#C4F542' }}>
+              <Link href="/register" className="block text-center font-semibold py-3.5 rounded-2xl hover:opacity-90 transition-all text-white" style={{ background: '#E87722' }}>
                 Start met Pro
               </Link>
             </div>
@@ -379,7 +379,7 @@ export default function LandingPage() {
                   'Directe zichtbaarheid bij jouw doelgroep',
                 ].map(item => (
                   <li key={item} className="flex items-center gap-2.5">
-                    <div className="w-4 h-4 rounded-full bg-[#1E2B20] flex items-center justify-center shrink-0">
+                    <div className="w-4 h-4 rounded-full bg-[#111111] flex items-center justify-center shrink-0">
                       <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
                     </div>
                     {item}
@@ -408,7 +408,7 @@ export default function LandingPage() {
       </div>
 
       {/* ── FINAL CTA ── */}
-      <section className="relative py-36 bg-[#1E2B20] overflow-hidden">
+      <section className="relative py-36 bg-[#111111] overflow-hidden">
         <div className="absolute inset-0 opacity-[0.04]"
           style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90deg, #fff 1px, transparent 1px)', backgroundSize: '48px 48px' }} />
         <div className="relative max-w-4xl mx-auto px-8 text-center">

@@ -52,14 +52,14 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
       onClick={onClose}
     >
       <div
-        className="bg-[#F4F1E8] w-full sm:max-w-[420px] sm:rounded-[14px] rounded-t-[20px] shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col"
+        className="bg-[#F5F0E8] w-full sm:max-w-[420px] sm:rounded-[14px] rounded-t-[20px] shadow-2xl overflow-hidden max-h-[92dvh] flex flex-col"
         onClick={e => e.stopPropagation()}
       >
         {submitted ? (
           /* ── Bevestigingsscherm ── */
           <div className="flex flex-col items-center text-center px-8 py-10">
-            <CheckCircle style={{ color: '#C4F542', width: 48, height: 48 }} strokeWidth={1.5} className="mb-5" />
-            <h2 style={{ fontSize: 17, fontWeight: 500, color: '#1E2B20', lineHeight: 1.4 }} className="mb-3">
+            <CheckCircle style={{ color: '#E87722', width: 48, height: 48 }} strokeWidth={1.5} className="mb-5" />
+            <h2 style={{ fontSize: 17, fontWeight: 500, color: '#111', lineHeight: 1.4 }} className="mb-3">
               Bedankt voor je melding
             </h2>
             <p style={{ fontSize: 14, lineHeight: 1.6 }} className="text-gray-400 mb-3">
@@ -72,7 +72,7 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
             )}
             <button
               onClick={() => { onSubmit(submittedWithBlock); onClose() }}
-              style={{ borderRadius: 8, backgroundColor: '#C4F542' }}
+              style={{ borderRadius: 8, backgroundColor: '#E87722' }}
               className="w-full py-3 text-white text-sm font-bold mt-2"
             >
               Sluiten
@@ -83,7 +83,7 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
             {/* Header */}
             <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-black/8 shrink-0">
               <div>
-                <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#1E2B20' }}>
+                <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#111' }}>
                   Rapporteer {otherUserName}
                 </h2>
                 <p style={{ fontSize: 13 }} className="text-gray-400 mt-1 leading-relaxed">
@@ -116,14 +116,14 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
                       className="w-full flex items-center gap-3 px-4 py-3 rounded-xl border text-left transition-all"
                       style={{
                         backgroundColor: sel ? '#FFF8F4' : '#fff',
-                        borderColor: sel ? '#C4F542' : 'rgba(0,0,0,0.08)',
+                        borderColor: sel ? '#E87722' : 'rgba(0,0,0,0.08)',
                       }}
                     >
                       <div
                         className="w-4 h-4 rounded-full border-2 shrink-0 flex items-center justify-center transition-colors"
-                        style={{ borderColor: sel ? '#C4F542' : '#d1d5db' }}
+                        style={{ borderColor: sel ? '#E87722' : '#d1d5db' }}
                       >
-                        {sel && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#C4F542' }} />}
+                        {sel && <div className="w-2 h-2 rounded-full" style={{ backgroundColor: '#E87722' }} />}
                       </div>
                       <span className="text-sm font-medium text-gray-800">{cat}</span>
                     </button>
@@ -153,8 +153,8 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
                 <div
                   className="w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 transition-colors"
                   style={{
-                    backgroundColor: blockAlso ? '#1E2B20' : 'transparent',
-                    borderColor: blockAlso ? '#1E2B20' : '#d1d5db',
+                    backgroundColor: blockAlso ? '#111' : 'transparent',
+                    borderColor: blockAlso ? '#111' : '#d1d5db',
                   }}
                 >
                   {blockAlso && <Check className="w-3 h-3 text-white" />}
@@ -175,7 +175,7 @@ export function ReportUserModal({ otherUserId, otherUserName, conversationId, on
                 onClick={handleSubmit}
                 disabled={!category || submitting}
                 style={SYNE}
-                className="flex-1 py-3 rounded-xl bg-[#C4F542] text-white text-sm font-bold transition-colors hover:bg-[#d06a1a] disabled:opacity-40 disabled:cursor-not-allowed"
+                className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold transition-colors hover:bg-[#d06a1a] disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 {submitting ? 'Indienen...' : 'Rapport indienen'}
               </button>

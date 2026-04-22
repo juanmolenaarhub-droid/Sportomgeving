@@ -107,10 +107,10 @@ export default function CreatorAanmeldenPage() {
   // Thank you screen
   if (submitted) {
     return (
-      <div style={DM} className="min-h-screen bg-[#F4F1E8] flex items-center justify-center px-4">
+      <div style={DM} className="min-h-screen bg-[#F5F0E8] flex items-center justify-center px-4">
         <div className="max-w-md w-full text-center">
-          <div className="w-20 h-20 bg-[#C4F542]/10 rounded-full flex items-center justify-center mx-auto mb-6">
-            <CheckCircle className="w-10 h-10 text-[#C4F542]" />
+          <div className="w-20 h-20 bg-[#E87722]/10 rounded-full flex items-center justify-center mx-auto mb-6">
+            <CheckCircle className="w-10 h-10 text-[#E87722]" />
           </div>
           <h1 style={{ ...SYNE, fontWeight: 800 }} className="text-3xl text-black mb-3">Aanvraag ontvangen!</h1>
           <p className="text-gray-500 leading-relaxed mb-8">
@@ -118,7 +118,7 @@ export default function CreatorAanmeldenPage() {
             direct toegang tot het creator dashboard en de verified badge.
           </p>
           <Link href="/dashboard"
-            className="inline-flex items-center gap-2 bg-[#1E2B20] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#333] transition-colors">
+            className="inline-flex items-center gap-2 bg-[#111111] text-white font-bold px-8 py-4 rounded-2xl hover:bg-[#333] transition-colors">
             Terug naar dashboard <ArrowRight className="w-4 h-4" />
           </Link>
         </div>
@@ -127,10 +127,10 @@ export default function CreatorAanmeldenPage() {
   }
 
   return (
-    <div style={DM} className="min-h-screen bg-[#F4F1E8]">
+    <div style={DM} className="min-h-screen bg-[#F5F0E8]">
 
       {/* Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F4F1E8]/95 backdrop-blur-sm border-b border-black/8">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-[#F5F0E8]/95 backdrop-blur-sm border-b border-black/8">
         <div className="max-w-7xl mx-auto px-8 h-16 flex items-center justify-between">
           <Link href="/creator">
             <Image src="/logo.png" alt="Buddys" height={30} width={105} className="object-contain" />
@@ -150,8 +150,8 @@ export default function CreatorAanmeldenPage() {
               {STEP_LABELS.map((label, i) => (
                 <div key={label} className="flex items-center gap-2">
                   <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-black transition-all ${
-                    i + 1 < step ? 'bg-[#1E2B20] text-white' :
-                    i + 1 === step ? 'bg-[#C4F542] text-white' :
+                    i + 1 < step ? 'bg-[#111111] text-white' :
+                    i + 1 === step ? 'bg-[#E87722] text-white' :
                     'bg-white border-2 border-gray-200 text-gray-400'
                   }`}>
                     {i + 1 < step ? <Check className="w-3.5 h-3.5" /> : i + 1}
@@ -160,13 +160,13 @@ export default function CreatorAanmeldenPage() {
                     {label}
                   </span>
                   {i < STEP_LABELS.length - 1 && (
-                    <div className={`hidden sm:block h-px w-12 mx-2 ${i + 1 < step ? 'bg-[#1E2B20]' : 'bg-gray-200'}`} />
+                    <div className={`hidden sm:block h-px w-12 mx-2 ${i + 1 < step ? 'bg-[#111111]' : 'bg-gray-200'}`} />
                   )}
                 </div>
               ))}
             </div>
             <div className="h-1 bg-gray-200 rounded-full overflow-hidden">
-              <div className="h-full bg-[#C4F542] rounded-full transition-all duration-500"
+              <div className="h-full bg-[#E87722] rounded-full transition-all duration-500"
                 style={{ width: `${((step - 1) / (STEP_LABELS.length - 1)) * 100}%` }} />
             </div>
           </div>
@@ -192,7 +192,7 @@ export default function CreatorAanmeldenPage() {
                         onClick={() => setCategory(cat.value)}
                         className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                           category === cat.value
-                            ? 'bg-[#1E2B20] text-white border-[#1E2B20]'
+                            ? 'bg-[#111111] text-white border-[#111111]'
                             : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
                         }`}
                       >
@@ -283,7 +283,7 @@ export default function CreatorAanmeldenPage() {
                         onClick={() => toggleSport(sport)}
                         className={`px-3.5 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                           selectedSports.includes(sport)
-                            ? 'bg-[#1E2B20] text-white border-[#1E2B20]'
+                            ? 'bg-[#111111] text-white border-[#111111]'
                             : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
                         }`}
                       >
@@ -303,7 +303,7 @@ export default function CreatorAanmeldenPage() {
                         onClick={() => toggleGoal(goal.value)}
                         className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                           selectedGoals.includes(goal.value)
-                            ? 'bg-[#C4F542] text-white border-[#C4F542]'
+                            ? 'bg-[#E87722] text-white border-[#E87722]'
                             : 'bg-white border-gray-200 text-gray-600 hover:border-gray-400'
                         }`}
                       >
@@ -324,7 +324,7 @@ export default function CreatorAanmeldenPage() {
                 </div>
 
                 {/* Samenvatting */}
-                <div className="bg-[#F4F1E8] rounded-2xl p-5 space-y-3">
+                <div className="bg-[#F5F0E8] rounded-2xl p-5 space-y-3">
                   <div className="flex items-center justify-between text-sm">
                     <span className="text-gray-500">Categorie</span>
                     <span className="font-semibold text-black capitalize">
@@ -348,7 +348,7 @@ export default function CreatorAanmeldenPage() {
                 </div>
 
                 {/* Uitleg */}
-                <div className="bg-[#C4F542]/8 border border-[#C4F542]/20 rounded-2xl p-5">
+                <div className="bg-[#E87722]/8 border border-[#E87722]/20 rounded-2xl p-5">
                   <p className="text-sm text-gray-700 leading-relaxed">
                     Jouw aanvraag wordt binnen <strong>48 uur</strong> beoordeeld door het Buddys team.
                     Na goedkeuring krijg je direct toegang tot het creator dashboard, de verified badge
@@ -368,14 +368,14 @@ export default function CreatorAanmeldenPage() {
                   <button
                     onClick={() => setAgreed(!agreed)}
                     className={`w-5 h-5 rounded border-2 flex items-center justify-center shrink-0 mt-0.5 transition-all ${
-                      agreed ? 'bg-[#1E2B20] border-[#1E2B20]' : 'bg-white border-gray-300'
+                      agreed ? 'bg-[#111111] border-[#111111]' : 'bg-white border-gray-300'
                     }`}
                   >
                     {agreed && <Check className="w-3 h-3 text-white" />}
                   </button>
                   <span className="text-sm text-gray-600 leading-relaxed">
                     Ik ga akkoord met de{' '}
-                    <a href="#" className="text-[#C4F542] font-semibold hover:underline">creator voorwaarden</a>{' '}
+                    <a href="#" className="text-[#E87722] font-semibold hover:underline">creator voorwaarden</a>{' '}
                     van Buddys en begrijp dat mijn aanvraag beoordeeld wordt voor activering.
                   </span>
                 </label>
@@ -395,7 +395,7 @@ export default function CreatorAanmeldenPage() {
               <button
                 onClick={() => step < 3 ? setStep(s => s + 1) : handleSubmit()}
                 disabled={!canNext() || loading}
-                className="flex-1 flex items-center justify-center gap-2 bg-[#1E2B20] text-white font-bold py-3 rounded-xl hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 flex items-center justify-center gap-2 bg-[#111111] text-white font-bold py-3 rounded-xl hover:bg-[#333] disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
               >
                 {loading ? 'Bezig...' : step === 3 ? 'Aanvraag indienen' : 'Volgende stap'}
                 {!loading && <ArrowRight className="w-4 h-4" />}
@@ -405,7 +405,7 @@ export default function CreatorAanmeldenPage() {
 
           <p className="text-center text-xs text-gray-400 mt-5">
             Al een account?{' '}
-            <Link href="/login" className="text-[#C4F542] font-semibold hover:underline">Inloggen</Link>
+            <Link href="/login" className="text-[#E87722] font-semibold hover:underline">Inloggen</Link>
           </p>
         </div>
       </div>

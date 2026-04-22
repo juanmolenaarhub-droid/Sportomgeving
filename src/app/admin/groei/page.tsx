@@ -21,7 +21,7 @@ function Table({ headers, rows, striped = true }: { headers: string[]; rows: (st
           {rows.length === 0 ? (
             <tr><td colSpan={headers.length} className="px-4 py-8 text-center text-gray-300 text-xs">Geen data</td></tr>
           ) : rows.map((row, i) => (
-            <tr key={i} className={striped && i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
+            <tr key={i} className={striped && i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
               {row.map((cell, j) => (
                 <td key={j} className="px-4 py-3 text-gray-700">{cell}</td>
               ))}
@@ -102,7 +102,7 @@ export default async function GroeiPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div className="mb-2">
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Groei</h1>
       </div>
 
@@ -137,10 +137,10 @@ export default async function GroeiPage() {
               <div key={step.key}>
                 <div className="flex justify-between text-sm mb-1">
                   <span className="font-medium text-gray-700">{step.label}</span>
-                  <span style={{ ...SYNE, fontWeight: 700, color: '#C4F542' }}>{count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
+                  <span style={{ ...SYNE, fontWeight: 700, color: '#E87722' }}>{count} <span className="text-gray-400 font-normal text-xs">({pct}%)</span></span>
                 </div>
                 <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                  <div className="h-full bg-[#C4F542] rounded-full" style={{ width: `${pct}%` }} />
+                  <div className="h-full bg-[#E87722] rounded-full" style={{ width: `${pct}%` }} />
                 </div>
               </div>
             )

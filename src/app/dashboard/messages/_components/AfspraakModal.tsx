@@ -46,18 +46,18 @@ export function AfspraakModal({ sport, otherUserName, onClose, onSubmit }: Props
       onClick={onClose}
     >
       <div
-        className="bg-[#F4F1E8] w-full sm:max-w-[400px] sm:rounded-[14px] rounded-t-[20px] shadow-2xl overflow-hidden"
+        className="bg-[#F5F0E8] w-full sm:max-w-[400px] sm:rounded-[14px] rounded-t-[20px] shadow-2xl overflow-hidden"
         onClick={e => e.stopPropagation()}
       >
         {/* Header */}
         <div className="flex items-start justify-between px-6 pt-6 pb-4 border-b border-black/8">
           <div>
-            <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#1E2B20' }}>
+            <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 18, color: '#111' }}>
               Training plannen
             </h2>
             <p style={{ fontSize: 13 }} className="text-gray-400 mt-1">
               Stel een afspraak voor met {otherUserName}
-              {sport && <span className="text-[#C4F542] font-semibold"> · {sport}</span>}
+              {sport && <span className="text-[#E87722] font-semibold"> · {sport}</span>}
             </p>
           </div>
           <button
@@ -81,7 +81,7 @@ export function AfspraakModal({ sport, otherUserName, onClose, onSubmit }: Props
               placeholder="bijv. Sportpark De Meer, Amsterdam"
               maxLength={100}
               required
-              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/30"
+              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/30"
             />
           </div>
 
@@ -96,7 +96,7 @@ export function AfspraakModal({ sport, otherUserName, onClose, onSubmit }: Props
               min={minDate}
               onChange={e => setDate(e.target.value)}
               required
-              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/30"
+              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/30"
             />
           </div>
 
@@ -110,7 +110,7 @@ export function AfspraakModal({ sport, otherUserName, onClose, onSubmit }: Props
               onChange={e => setNotes(e.target.value.slice(0, 200))}
               placeholder="bijv. Breng een bal mee, parkeer bij ingang Noord..."
               rows={2}
-              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#C4F542]/30 resize-none"
+              className="w-full bg-white border border-black/10 rounded-xl px-4 py-3 text-sm text-black focus:outline-none focus:ring-2 focus:ring-[#E87722]/30 resize-none"
             />
           </div>
 
@@ -127,7 +127,7 @@ export function AfspraakModal({ sport, otherUserName, onClose, onSubmit }: Props
               type="submit"
               disabled={!location.trim() || !date || submitting}
               style={SYNE}
-              className="flex-1 py-3 rounded-xl bg-[#C4F542] text-white text-sm font-bold hover:bg-[#d06a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+              className="flex-1 py-3 rounded-xl bg-[#E87722] text-white text-sm font-bold hover:bg-[#d06a1a] disabled:opacity-40 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
             >
               <CalendarDays className="w-4 h-4" />
               {submitting ? 'Sturen...' : 'Stel voor'}

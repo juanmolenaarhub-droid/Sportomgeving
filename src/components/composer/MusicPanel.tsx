@@ -81,7 +81,7 @@ export default function MusicPanel({ value, onChange }: MusicPanelProps) {
             placeholder="Artiest"
             value={artist}
             onChange={(e) => setArtist(e.target.value)}
-            className="w-full px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
+            className="w-full px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#E87722]"
             style={{ borderColor: '#F5F2EE', backgroundColor: '#FAFAF7' }}
           />
           <input
@@ -90,14 +90,14 @@ export default function MusicPanel({ value, onChange }: MusicPanelProps) {
             value={track}
             onChange={(e) => setTrack(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleOk()}
-            className="w-full px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
+            className="w-full px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#E87722]"
             style={{ borderColor: '#F5F2EE', backgroundColor: '#FAFAF7' }}
           />
           <button
             type="button"
             onClick={handleOk}
-            className="self-end px-4 py-1.5 rounded-full text-[13px] font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#C4F542]"
-            style={{ backgroundColor: '#C4F542', fontFamily: "'Syne', sans-serif" }}
+            className="self-end px-4 py-1.5 rounded-full text-[13px] font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-[#E87722]"
+            style={{ backgroundColor: '#E87722', fontFamily: "'Syne', sans-serif" }}
           >
             OK
           </button>

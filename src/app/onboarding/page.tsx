@@ -273,7 +273,7 @@ export default function OnboardingPage() {
           min-height: 44px;
         }
         .ob-field::placeholder { color: #aaa; }
-        .ob-field:focus { border-color: #C4F542; }
+        .ob-field:focus { border-color: #E87722; }
         .ob-field-error { border-color: #ef4444 !important; }
         @keyframes ob-anders-in {
           from { opacity: 0; transform: translateY(-6px); }
@@ -292,14 +292,14 @@ export default function OnboardingPage() {
           width: 20px;
           height: 20px;
           border-radius: 50%;
-          background: #C4F542;
+          background: #E87722;
           cursor: pointer;
           border: 2px solid white;
           box-shadow: 0 1px 4px rgba(0,0,0,.2);
         }
       `}</style>
 
-      <div style={{ ...DM, background: '#F4F1E8', minHeight: '100vh' }}>
+      <div style={{ ...DM, background: '#F5F0E8', minHeight: '100vh' }}>
 
         {/* Top bar */}
         <div className="flex items-center justify-center py-8 relative">
@@ -330,7 +330,7 @@ export default function OnboardingPage() {
                   const active  = step === s
                   return (
                     <div key={s} className="flex-1 flex flex-col items-center gap-1.5">
-                      <div className="relative w-full h-1.5 rounded-full" style={{ background: active || done ? '#C4F542' : '#E5E5E5' }}>
+                      <div className="relative w-full h-1.5 rounded-full" style={{ background: active || done ? '#E87722' : '#E5E5E5' }}>
                         {done && (
                           <div className="absolute inset-0 flex items-center justify-center">
                             <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
@@ -346,7 +346,7 @@ export default function OnboardingPage() {
                   const s = i + 1
                   return (
                     <div key={s} className="flex-1 text-center">
-                      <span style={{ fontSize: 10, fontWeight: 600, color: step === s ? '#C4F542' : '#aaa', letterSpacing: '0.02em' }}>
+                      <span style={{ fontSize: 10, fontWeight: 600, color: step === s ? '#E87722' : '#aaa', letterSpacing: '0.02em' }}>
                         {label}
                       </span>
                     </div>
@@ -361,7 +361,7 @@ export default function OnboardingPage() {
               {/* ── STAP 1 ── */}
               {step === 1 && (
                 <div>
-                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#1E2B20', marginBottom: 6, width: 'fit-content' }}>
+                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6, width: 'fit-content' }}>
                     Vertel iets over jezelf.
                   </h1>
                   <p style={{ fontSize: 14, color: '#666', marginBottom: 28, fontWeight: 400 }}>
@@ -436,7 +436,7 @@ export default function OnboardingPage() {
                         <div style={{
                           position: 'absolute', bottom: 2, right: 2,
                           width: 24, height: 24, borderRadius: '50%',
-                          background: '#C4F542', border: '2px solid white',
+                          background: '#E87722', border: '2px solid white',
                           display: 'flex', alignItems: 'center', justifyContent: 'center',
                         }}>
                           <Camera style={{ width: 11, height: 11, color: 'white' }} />
@@ -448,8 +448,8 @@ export default function OnboardingPage() {
 
                   {/* Naam */}
                   <div className="mb-5">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 6 }}>
-                      Volledige naam <span style={{ color: '#C4F542' }}>*</span>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
+                      Volledige naam <span style={{ color: '#E87722' }}>*</span>
                     </label>
                     <input
                       className={`ob-field ${errors1.fullName ? 'ob-field-error' : ''}`}
@@ -464,8 +464,8 @@ export default function OnboardingPage() {
                   {/* Stad + Leeftijd */}
                   <div className="grid grid-cols-2 gap-4 mb-5">
                     <div>
-                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 6 }}>
-                        Stad / Regio <span style={{ color: '#C4F542' }}>*</span>
+                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
+                        Stad / Regio <span style={{ color: '#E87722' }}>*</span>
                       </label>
                       <PlacesInput
                         value={region}
@@ -478,8 +478,8 @@ export default function OnboardingPage() {
                       {errors1.region && <p style={{ fontSize: 12, color: '#ef4444', marginTop: 4 }}>{errors1.region}</p>}
                     </div>
                     <div>
-                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 6 }}>
-                        Leeftijd <span style={{ color: '#C4F542' }}>*</span>
+                      <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
+                        Leeftijd <span style={{ color: '#E87722' }}>*</span>
                       </label>
                       <input
                         className={`ob-field ${errors1.age ? 'ob-field-error' : ''}`}
@@ -495,26 +495,26 @@ export default function OnboardingPage() {
 
                   {/* Geslacht */}
                   <div className="mb-5">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 10 }}>
-                      Geslacht <span style={{ color: '#C4F542' }}>*</span>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
+                      Geslacht <span style={{ color: '#E87722' }}>*</span>
                     </label>
                     <div className="flex gap-2">
                       {/* Man */}
                       <button
                         onClick={() => { setGeslacht1('Man'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Man' ? '#C4F542' : '#EDEDED', color: geslacht1 === 'Man' ? 'white' : '#555' }}
+                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Man' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Man' ? 'white' : '#555' }}
                       >Man</button>
 
                       {/* Vrouw */}
                       <button
                         onClick={() => { setGeslacht1('Vrouw'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Vrouw' ? '#C4F542' : '#EDEDED', color: geslacht1 === 'Vrouw' ? 'white' : '#555' }}
+                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Vrouw' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Vrouw' ? 'white' : '#555' }}
                       >Vrouw</button>
 
                       {/* Anders */}
                       <button
                         onClick={() => { setGeslacht1('Anders'); setAndersOptie(''); setErrors1(p => ({ ...p, geslacht: '' })) }}
-                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Anders' ? '#C4F542' : '#EDEDED', color: geslacht1 === 'Anders' ? 'white' : '#555' }}
+                        style={{ flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s', background: geslacht1 === 'Anders' ? '#E87722' : '#EDEDED', color: geslacht1 === 'Anders' ? 'white' : '#555' }}
                       >
                         {andersOptie && geslacht1 === 'Anders' ? andersOptie : 'Anders'}
                       </button>
@@ -553,7 +553,7 @@ export default function OnboardingPage() {
 
                   {/* Bio */}
                   <div className="mb-8">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 6 }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
                       Over mij
                     </label>
                     <textarea
@@ -569,7 +569,7 @@ export default function OnboardingPage() {
                   <button
                     onClick={() => { if (validateStep1()) goTo(2, 'forward') }}
                     className="w-full flex items-center justify-center gap-2"
-                    style={{ ...SYNE, height: 52, background: '#C4F542', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}
+                    style={{ ...SYNE, height: 52, background: '#E87722', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: 'pointer' }}
                   >
                     Volgende stap →
                   </button>
@@ -579,7 +579,7 @@ export default function OnboardingPage() {
               {/* ── STAP 2 ── */}
               {step === 2 && (
                 <div>
-                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#1E2B20', marginBottom: 6 }}>
+                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6 }}>
                     Welke sporten doe je?
                   </h1>
                   <p style={{ fontSize: 14, color: '#666', marginBottom: 24, fontWeight: 400 }}>
@@ -599,12 +599,12 @@ export default function OnboardingPage() {
                   {/* Per sport niveau */}
                   {selectedSports.length > 0 && (
                     <div className="mb-8 space-y-3">
-                      <p style={{ fontSize: 13, fontWeight: 600, color: '#1E2B20' }}>Niveau per sport:</p>
+                      <p style={{ fontSize: 13, fontWeight: 600, color: '#111' }}>Niveau per sport:</p>
                       {selectedSports.map(s => {
                         const sport = getSportById(s.sportId)
                         return (
                           <div key={s.sportId} className="p-3 rounded-xl" style={{ background: '#F9F9F9', border: '1px solid #F0F0F0' }}>
-                            <p style={{ fontSize: 12, fontWeight: 700, color: '#C4F542', marginBottom: 8 }}>
+                            <p style={{ fontSize: 12, fontWeight: 700, color: '#E87722', marginBottom: 8 }}>
                               {sport?.label ?? s.sportId}
                             </p>
                             <div className="flex gap-2">
@@ -615,7 +615,7 @@ export default function OnboardingPage() {
                                   className="flex-1 py-2 rounded-xl transition-all"
                                   style={{
                                     fontSize: 11, fontWeight: 600, border: 'none', cursor: 'pointer',
-                                    background: s.level === l.value ? '#C4F542' : '#EDEDED',
+                                    background: s.level === l.value ? '#E87722' : '#EDEDED',
                                     color: s.level === l.value ? 'white' : '#555',
                                   }}
                                 >
@@ -635,14 +635,14 @@ export default function OnboardingPage() {
                     <button
                       onClick={() => goTo(1, 'back')}
                       className="flex items-center justify-center"
-                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#1E2B20', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
+                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#111', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
                     >
                       ← Vorige
                     </button>
                     <button
                       onClick={() => { if (selectedSports.length > 0) goTo(3, 'forward') }}
                       className="flex-1 flex items-center justify-center"
-                      style={{ ...SYNE, height: 52, background: selectedSports.length === 0 ? '#F0C9A8' : '#C4F542', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: selectedSports.length === 0 ? 'not-allowed' : 'pointer' }}
+                      style={{ ...SYNE, height: 52, background: selectedSports.length === 0 ? '#F0C9A8' : '#E87722', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: selectedSports.length === 0 ? 'not-allowed' : 'pointer' }}
                     >
                       Volgende stap →
                     </button>
@@ -653,7 +653,7 @@ export default function OnboardingPage() {
               {/* ── STAP 3 ── */}
               {step === 3 && (
                 <div>
-                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#1E2B20', marginBottom: 6 }}>
+                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6 }}>
                     Wanneer ben je beschikbaar?
                   </h1>
                   <p style={{ fontSize: 14, color: '#666', marginBottom: 28, fontWeight: 400 }}>
@@ -674,18 +674,18 @@ export default function OnboardingPage() {
                           )}
                           className="relative flex flex-col items-center justify-center gap-2 py-7 rounded-2xl transition-all"
                           style={{
-                            border: `2px solid ${selected ? '#C4F542' : '#E5E5E5'}`,
+                            border: `2px solid ${selected ? '#E87722' : '#E5E5E5'}`,
                             background: selected ? '#FFF5EE' : 'white',
                             cursor: 'pointer',
                           }}
                         >
                           {selected && (
-                            <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#C4F542' }}>
+                            <span className="absolute top-2.5 right-2.5 w-5 h-5 rounded-full flex items-center justify-center" style={{ background: '#E87722' }}>
                               <Check className="w-3 h-3 text-white" strokeWidth={3} />
                             </span>
                           )}
                           <div className="text-center">
-                            <p style={{ ...SYNE, fontSize: 14, fontWeight: 700, color: selected ? '#C4F542' : '#1E2B20' }}>{slot.label}</p>
+                            <p style={{ ...SYNE, fontSize: 14, fontWeight: 700, color: selected ? '#E87722' : '#111' }}>{slot.label}</p>
                             <p style={{ fontSize: 11, color: '#aaa', marginTop: 2 }}>{slot.sub}</p>
                           </div>
                         </button>
@@ -696,14 +696,14 @@ export default function OnboardingPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => goTo(2, 'back')}
-                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#1E2B20', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
+                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#111', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
                     >
                       ← Vorige
                     </button>
                     <button
                       onClick={() => { if (beschikbaarheid.length > 0) goTo(4, 'forward') }}
                       className="flex-1 flex items-center justify-center"
-                      style={{ ...SYNE, height: 52, background: beschikbaarheid.length === 0 ? '#F0C9A8' : '#C4F542', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: beschikbaarheid.length === 0 ? 'not-allowed' : 'pointer' }}
+                      style={{ ...SYNE, height: 52, background: beschikbaarheid.length === 0 ? '#F0C9A8' : '#E87722', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: beschikbaarheid.length === 0 ? 'not-allowed' : 'pointer' }}
                     >
                       Volgende stap →
                     </button>
@@ -714,7 +714,7 @@ export default function OnboardingPage() {
               {/* ── STAP 4 ── */}
               {step === 4 && (
                 <div>
-                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#1E2B20', marginBottom: 6 }}>
+                  <h1 style={{ ...SYNE, fontWeight: 800, fontSize: 28, letterSpacing: '-0.02em', color: '#111', marginBottom: 6 }}>
                     Bijna klaar!
                   </h1>
                   <p style={{ fontSize: 14, color: '#666', marginBottom: 28, fontWeight: 400 }}>
@@ -723,7 +723,7 @@ export default function OnboardingPage() {
 
                   {/* Taalvoorkeur */}
                   <div className="mb-5">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 10 }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
                       Taalvoorkeur <span style={{ fontSize: 11, color: '#aaa', fontWeight: 400 }}>(optioneel)</span>
                     </label>
                     <div className="flex gap-2">
@@ -733,7 +733,7 @@ export default function OnboardingPage() {
                           onClick={() => setTaalvoorkeur(t)}
                           style={{
                             flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 13, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
-                            background: taalvoorkeur === t ? '#C4F542' : '#EDEDED',
+                            background: taalvoorkeur === t ? '#E87722' : '#EDEDED',
                             color: taalvoorkeur === t ? 'white' : '#555',
                           }}
                         >
@@ -745,7 +745,7 @@ export default function OnboardingPage() {
 
                   {/* Burgerlijke staat */}
                   <div className="mb-5">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 6 }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 6 }}>
                       Burgerlijke staat <span style={{ fontSize: 11, color: '#aaa', fontWeight: 400 }}>(optioneel)</span>
                     </label>
                     <select
@@ -763,15 +763,15 @@ export default function OnboardingPage() {
 
                   {/* Zoekradius */}
                   <div className="mb-5">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 10 }}>
-                      Zoekradius — <span style={{ color: '#C4F542' }}>{radius} km</span>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
+                      Zoekradius — <span style={{ color: '#E87722' }}>{radius} km</span>
                     </label>
                     <input
                       type="range"
                       min={5} max={100} step={5}
                       value={radius}
                       onChange={e => setRadius(Number(e.target.value))}
-                      style={{ background: `linear-gradient(to right, #C4F542 0%, #C4F542 ${((radius - 5) / 95) * 100}%, #E5E5E5 ${((radius - 5) / 95) * 100}%, #E5E5E5 100%)` }}
+                      style={{ background: `linear-gradient(to right, #E87722 0%, #E87722 ${((radius - 5) / 95) * 100}%, #E5E5E5 ${((radius - 5) / 95) * 100}%, #E5E5E5 100%)` }}
                     />
                     <div className="flex justify-between mt-1">
                       <span style={{ fontSize: 11, color: '#aaa' }}>5 km</span>
@@ -781,7 +781,7 @@ export default function OnboardingPage() {
 
                   {/* Geslacht voorkeur */}
                   <div className="mb-8">
-                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#1E2B20', marginBottom: 10 }}>
+                    <label style={{ display: 'block', fontSize: 13, fontWeight: 600, color: '#111', marginBottom: 10 }}>
                       Voorkeur buddy <span style={{ fontSize: 11, color: '#aaa', fontWeight: 400 }}>(optioneel)</span>
                     </label>
                     <div className="flex gap-2">
@@ -791,7 +791,7 @@ export default function OnboardingPage() {
                           onClick={() => setGeslacht(g.val)}
                           style={{
                             flex: 1, padding: '9px 12px', borderRadius: 20, fontSize: 12, fontWeight: 600, border: 'none', cursor: 'pointer', transition: 'all .15s',
-                            background: geslacht === g.val ? '#C4F542' : '#EDEDED',
+                            background: geslacht === g.val ? '#E87722' : '#EDEDED',
                             color: geslacht === g.val ? 'white' : '#555',
                           }}
                         >
@@ -804,7 +804,7 @@ export default function OnboardingPage() {
                   <div className="flex gap-3">
                     <button
                       onClick={() => goTo(3, 'back')}
-                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#1E2B20', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
+                      style={{ height: 52, padding: '0 24px', background: 'white', border: '1.5px solid #E5E5E5', borderRadius: 14, fontWeight: 700, fontSize: 13, color: '#111', cursor: 'pointer', fontFamily: "'Syne', sans-serif", letterSpacing: '0.05em' }}
                     >
                       ← Vorige
                     </button>
@@ -812,7 +812,7 @@ export default function OnboardingPage() {
                       onClick={handleFinish}
                       disabled={loading}
                       className="flex-1 flex items-center justify-center"
-                      style={{ ...SYNE, height: 52, background: loading ? '#F0C9A8' : '#C4F542', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer' }}
+                      style={{ ...SYNE, height: 52, background: loading ? '#F0C9A8' : '#E87722', color: 'white', border: 'none', borderRadius: 14, fontWeight: 800, fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase', cursor: loading ? 'not-allowed' : 'pointer' }}
                     >
                       {loading ? 'Opslaan...' : 'Start met Buddys →'}
                     </button>

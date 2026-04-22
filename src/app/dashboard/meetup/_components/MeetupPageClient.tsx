@@ -20,8 +20,8 @@ const MeetupMap = dynamic(() => import('./MeetupMap'), {
 const MeetupDetailSheet = dynamic(() => import('./MeetupDetailSheet'), { ssr: false })
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
-const INK     = '#1E2B20'
-const ACCENT  = '#C4F542'
+const INK     = '#111111'
+const ACCENT  = '#E87722'
 const PANEL   = '#F2F0EC'
 const LINE    = '#E6E3DD'
 const MUTE    = '#9A958D'

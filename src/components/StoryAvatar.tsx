@@ -56,14 +56,14 @@ function StoryViewer({ posts, startIndex, onClose }: { posts: StoryPost[]; start
         {/* Achtergrond */}
         {post.image_url
           ? <img src={post.image_url} alt="" className="absolute inset-0 w-full h-full object-cover" />
-          : <div className="absolute inset-0 bg-gradient-to-br from-[#1E2B20] to-gray-800" />
+          : <div className="absolute inset-0 bg-gradient-to-br from-[#111111] to-gray-800" />
         }
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-transparent to-black/75" />
 
         {/* Header */}
         <div className="relative z-10 flex items-center justify-between p-4 pt-8">
           <div className="flex items-center gap-3">
-            <div className={`w-10 h-10 rounded-full border-2 border-[#C4F542] flex items-center justify-center text-sm font-bold text-white ${colorFromName(post.user.name)}`}>
+            <div className={`w-10 h-10 rounded-full border-2 border-[#E87722] flex items-center justify-center text-sm font-bold text-white ${colorFromName(post.user.name)}`}>
               {initials(post.user.name)}
             </div>
             <div>
@@ -162,8 +162,8 @@ export function StoryAvatar({
       >
         {hasStory && (
           <>
-            <span className="absolute inset-0 rounded-full bg-[#C4F542] blur-[6px] opacity-50 animate-pulse" />
-            <span className={`absolute inset-0 rounded-full ${s.ring} ring-[#C4F542]`} />
+            <span className="absolute inset-0 rounded-full bg-[#E87722] blur-[6px] opacity-50 animate-pulse" />
+            <span className={`absolute inset-0 rounded-full ${s.ring} ring-[#E87722]`} />
             <span className={`absolute ${s.inset} rounded-full ring-2 ring-white`} />
           </>
         )}

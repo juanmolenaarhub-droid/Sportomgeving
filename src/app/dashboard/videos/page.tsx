@@ -306,7 +306,7 @@ export default function PlayPage() {
                     textAlign: 'left',
                     fontFamily: "'Syne', sans-serif",
                     fontWeight: 700, fontSize: 14,
-                    color: tab === t ? '#C4F542' : 'white',
+                    color: tab === t ? '#E87722' : 'white',
                     background: 'none', border: 'none', cursor: 'pointer',
                   }}
                 >

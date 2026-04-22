@@ -98,7 +98,7 @@ const POST_TYPES: {
   iconColor: string
 }[] = [
   { key: 'post',      label: 'Bericht',    icon: MessageSquare, iconBg: '#EDEAE5', iconColor: '#6B7280' },
-  { key: 'activity',  label: 'Activiteit', icon: Activity,      iconBg: '#FFF0E5', iconColor: '#C4F542' },
+  { key: 'activity',  label: 'Activiteit', icon: Activity,      iconBg: '#FFF0E5', iconColor: '#E87722' },
   { key: 'meetup',    label: 'Meetup',     icon: CalendarDays,  iconBg: '#EFF6FF', iconColor: '#3B82F6' },
   { key: 'challenge', label: 'Challenge',  icon: Star,          iconBg: '#FFF7ED', iconColor: '#F59E0B' },
   { key: 'question',  label: 'Vraag',      icon: HelpCircle,    iconBg: '#FAF5FF', iconColor: '#8B5CF6' },
@@ -152,13 +152,13 @@ function StepOne({
                 className="flex flex-col items-center gap-2.5 py-4 px-3 rounded-2xl transition-all"
                 style={{
                   background: active ? '#FFF5EE' : '#F5F2EE',
-                  border:     active ? '2px solid #C4F542' : '2px solid transparent',
+                  border:     active ? '2px solid #E87722' : '2px solid transparent',
                 }}
               >
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center" style={{ background: iconBg }}>
                   <Icon className="w-5 h-5" style={{ color: iconColor }} />
                 </div>
-                <span className="text-[12px] font-bold" style={{ color: active ? '#C4F542' : '#888888' }}>
+                <span className="text-[12px] font-bold" style={{ color: active ? '#E87722' : '#888888' }}>
                   {label}
                 </span>
               </button>
@@ -172,7 +172,7 @@ function StepOne({
         <button
           onClick={onContinue}
           className="w-full py-3 rounded-xl text-white font-bold text-[15px] transition-opacity hover:opacity-90"
-          style={{ ...SYNE, background: '#C4F542' }}
+          style={{ ...SYNE, background: '#E87722' }}
         >
           Doorgaan →
         </button>

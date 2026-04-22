@@ -77,7 +77,7 @@ export default function UploadsPage() {
 
   if (loading) return (
     <div className="p-6 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
     </div>
   )
 
@@ -86,7 +86,7 @@ export default function UploadsPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <Upload className="w-5 h-5 text-purple-500" />
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Upload Log</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Upload Log</h1>
           <span className="text-xs font-bold bg-purple-100 text-purple-700 px-2.5 py-1 rounded-full">{filtered.length}</span>
         </div>
         <button

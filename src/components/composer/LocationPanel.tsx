@@ -141,7 +141,7 @@ export default function LocationPanel({ value, onChange, onClear }: LocationPane
                 placeholder="Zoek een locatie..."
                 value={query}
                 onChange={(e) => setQuery(e.target.value)}
-                className="w-full px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
+                className="w-full px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#E87722]"
                 style={{ borderColor: '#F5F2EE', backgroundColor: '#FAFAF7' }}
               />
 
@@ -192,7 +192,7 @@ export default function LocationPanel({ value, onChange, onClear }: LocationPane
                     setQuery('')
                   }
                 }}
-                className="flex-1 px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#C4F542]"
+                className="flex-1 px-3 py-2 text-[14px] text-gray-700 rounded-lg border focus:outline-none focus:ring-2 focus:ring-[#E87722]"
                 style={{ borderColor: '#F5F2EE', backgroundColor: '#FAFAF7' }}
               />
               <button
@@ -205,7 +205,7 @@ export default function LocationPanel({ value, onChange, onClear }: LocationPane
                   }
                 }}
                 className="px-4 py-1.5 rounded-full text-[13px] font-semibold text-white transition-opacity hover:opacity-90 focus:outline-none"
-                style={{ backgroundColor: '#C4F542', fontFamily: "'Syne', sans-serif" }}
+                style={{ backgroundColor: '#E87722', fontFamily: "'Syne', sans-serif" }}
               >
                 OK
               </button>

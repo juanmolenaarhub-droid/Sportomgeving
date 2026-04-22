@@ -9,7 +9,7 @@ function KpiCard({ label, value, sub }: { label: string; value: string | number;
   return (
     <div className="bg-white rounded-2xl border border-black/8 p-6">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-      <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#C4F542', lineHeight: 1 }}>{value}</p>
+      <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#E87722', lineHeight: 1 }}>{value}</p>
       {sub && <p className="text-xs text-gray-400 mt-2">{sub}</p>}
     </div>
   )
@@ -51,7 +51,7 @@ export default async function AdminOverzichtPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl">
       <div className="mb-8">
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">
           Admin
         </p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">
@@ -98,7 +98,7 @@ export default async function AdminOverzichtPage() {
         ) : (
           <div className="divide-y divide-black/5">
             {activityLog.map((event, i) => (
-              <div key={event.id} className={`px-6 py-3.5 flex items-center justify-between ${i % 2 === 0 ? 'bg-white' : 'bg-[#F4F1E8]/40'}`}>
+              <div key={event.id} className={`px-6 py-3.5 flex items-center justify-between ${i % 2 === 0 ? 'bg-white' : 'bg-[#F5F0E8]/40'}`}>
                 <div className="flex items-center gap-3">
                   <span className="text-sm">{EVENT_LABELS[event.event_type] ?? event.event_type}</span>
                   <span className="text-xs text-gray-400 font-mono">{event.user_id?.slice(0, 8)}…</span>

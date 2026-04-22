@@ -133,7 +133,7 @@ export default async function IssuesPage() {
   return (
     <div className="p-6 md:p-10 max-w-7xl space-y-8">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">
           Admin
         </p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">
@@ -152,7 +152,7 @@ export default async function IssuesPage() {
         ].map(({ label, value, sub, highlight }) => (
           <div key={label} className="bg-white rounded-2xl border border-black/8 p-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, color: (highlight as boolean | undefined) ? '#C4F542' : '#1E2B20', lineHeight: 1 }}>{value}</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 32, color: (highlight as boolean | undefined) ? '#E87722' : '#111', lineHeight: 1 }}>{value}</p>
             {sub && <p className="text-xs text-gray-400 mt-2">{sub}</p>}
           </div>
         ))}
@@ -164,7 +164,7 @@ export default async function IssuesPage() {
         <p className="text-xs text-gray-400 mb-6">Opgelost + afgewezen (oranje) vs open + in behandeling (grijs)</p>
         <div className="flex h-8 rounded-xl overflow-hidden">
           <div
-            className="bg-[#C4F542] flex items-center justify-center text-white text-xs font-bold transition-all"
+            className="bg-[#E87722] flex items-center justify-center text-white text-xs font-bold transition-all"
             style={{ width: `${resolvedPct}%` }}
           >
             {resolvedPct >= 15 ? `${resolvedPct}%` : ''}
@@ -175,7 +175,7 @@ export default async function IssuesPage() {
         </div>
         <div className="flex gap-6 mt-3">
           <div className="flex items-center gap-2">
-            <div className="w-3 h-3 rounded-full bg-[#C4F542]" />
+            <div className="w-3 h-3 rounded-full bg-[#E87722]" />
             <span className="text-xs text-gray-500">Afgehandeld ({resolvedCount})</span>
           </div>
           <div className="flex items-center gap-2">
@@ -256,10 +256,10 @@ export default async function IssuesPage() {
                 const catResolved = catReports.filter(r => r.status === 'resolved' || r.status === 'dismissed').length
                 const pct = totalReports > 0 ? Math.round((count / totalReports) * 100) : 0
                 return (
-                  <tr key={cat} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
+                  <tr key={cat} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
                     <td className="px-4 py-3 font-semibold text-gray-900 capitalize">{cat}</td>
                     <td className="px-4 py-3">
-                      <span style={{ ...SYNE, fontWeight: 700, color: '#C4F542' }}>{count}</span>
+                      <span style={{ ...SYNE, fontWeight: 700, color: '#E87722' }}>{count}</span>
                     </td>
                     <td className="px-4 py-3 text-gray-600">{pct}%</td>
                     <td className="px-4 py-3">

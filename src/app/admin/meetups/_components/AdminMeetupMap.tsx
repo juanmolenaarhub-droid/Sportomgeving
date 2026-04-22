@@ -5,7 +5,7 @@ import Map, { Marker, Popup } from 'react-map-gl/mapbox'
 import 'mapbox-gl/dist/mapbox-gl.css'
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#C4F542', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
   'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#EC4899',
   'Voetbal': '#10B981', default: '#6B7280',
 }
@@ -87,11 +87,11 @@ export default function AdminMeetupMap({ meetups }: Props) {
                 {selected.is_spontaneous && <span style={{ marginLeft: 6, fontSize: 10, color: 'rgba(255,255,255,0.85)' }}>⚡ Spontaan</span>}
               </div>
               <div style={{ padding: '8px 12px 10px' }}>
-                <p style={{ fontSize: 13, fontWeight: 800, color: '#1E2B20', margin: '0 0 4px' }}>{selected.title}</p>
+                <p style={{ fontSize: 13, fontWeight: 800, color: '#111', margin: '0 0 4px' }}>{selected.title}</p>
                 <p style={{ fontSize: 11, color: '#6b7280', margin: 0 }}>📍 {selected.city}</p>
                 <a
                   href={`/dashboard/meetup/${selected.id}`}
-                  style={{ display: 'block', marginTop: 8, fontSize: 11, color: '#C4F542', fontWeight: 600, textDecoration: 'none' }}
+                  style={{ display: 'block', marginTop: 8, fontSize: 11, color: '#E87722', fontWeight: 600, textDecoration: 'none' }}
                 >
                   Bekijk →
                 </a>

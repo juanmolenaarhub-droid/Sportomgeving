@@ -44,7 +44,7 @@ export function BuddyRequestCard({ requestId, fromUserId, name, sport, message, 
         </div>
         <Link
           href={`/dashboard/messages`}
-          className="flex items-center gap-1.5 bg-[#111] text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-[#C4F542] transition-colors shrink-0"
+          className="flex items-center gap-1.5 bg-[#111] text-white text-xs font-bold px-3 py-2 rounded-lg hover:bg-[#E87722] transition-colors shrink-0"
         >
           <MessageCircle className="w-3.5 h-3.5" />
           Chat
@@ -68,9 +68,9 @@ export function BuddyRequestCard({ requestId, fromUserId, name, sport, message, 
       </Link>
       <div className="flex-1 min-w-0">
         <p className="text-sm text-gray-700">
-          <Link href={`/dashboard/profile/${fromUserId}`} className="font-bold text-black hover:text-[#C4F542] transition-colors">{name}</Link>
+          <Link href={`/dashboard/profile/${fromUserId}`} className="font-bold text-black hover:text-[#E87722] transition-colors">{name}</Link>
           {' '}wil jouw sportbuddy worden
-          {sport && <span className="text-[#C4F542] font-semibold"> · {sport}</span>}
+          {sport && <span className="text-[#E87722] font-semibold"> · {sport}</span>}
         </p>
         {message && (
           <p className="text-xs text-gray-500 mt-1 bg-white rounded-lg px-3 py-2 border border-gray-100 italic">
@@ -82,7 +82,7 @@ export function BuddyRequestCard({ requestId, fromUserId, name, sport, message, 
           <button
             onClick={handleAccept}
             disabled={isPending}
-            className="flex items-center gap-1.5 bg-[#1E2B20] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#C4F542] transition-colors disabled:opacity-50"
+            className="flex items-center gap-1.5 bg-[#111111] text-white text-xs font-bold px-4 py-2 rounded-lg hover:bg-[#E87722] transition-colors disabled:opacity-50"
           >
             <Check className="w-3.5 h-3.5" />
             Accepteer
@@ -97,7 +97,7 @@ export function BuddyRequestCard({ requestId, fromUserId, name, sport, message, 
           </button>
         </div>
       </div>
-      <div className="w-2 h-2 bg-[#C4F542] rounded-full shrink-0 mt-2" />
+      <div className="w-2 h-2 bg-[#E87722] rounded-full shrink-0 mt-2" />
     </div>
   )
 }

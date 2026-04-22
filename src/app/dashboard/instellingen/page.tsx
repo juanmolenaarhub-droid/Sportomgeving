@@ -74,7 +74,7 @@ export default function InstellingenPage() {
           <ArrowLeft className="w-4 h-4 text-gray-600" />
         </Link>
         <div>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#1E2B20' }}>Instellingen</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 22, color: '#111' }}>Instellingen</h1>
           <p className="text-sm text-gray-400">Beheer je account en voorkeuren</p>
         </div>
       </div>
@@ -85,13 +85,13 @@ export default function InstellingenPage() {
           <Link
             key={href}
             href={href}
-            className="flex items-center gap-4 px-5 py-4 hover:bg-[#F4F1E8] transition-colors group"
+            className="flex items-center gap-4 px-5 py-4 hover:bg-[#F5F0E8] transition-colors group"
           >
-            <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center shrink-0 group-hover:bg-[#C4F542]/10 transition-colors">
-              <Icon className="w-5 h-5 text-gray-500 group-hover:text-[#C4F542] transition-colors" />
+            <div className="w-10 h-10 rounded-xl bg-black/5 flex items-center justify-center shrink-0 group-hover:bg-[#E87722]/10 transition-colors">
+              <Icon className="w-5 h-5 text-gray-500 group-hover:text-[#E87722] transition-colors" />
             </div>
             <div className="flex-1 min-w-0">
-              <p style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#1E2B20' }}>{title}</p>
+              <p style={{ ...SYNE, fontWeight: 700, fontSize: 14, color: '#111' }}>{title}</p>
               <p className="text-xs text-gray-400 mt-0.5">{desc}</p>
             </div>
             <ChevronRight className="w-4 h-4 text-gray-300 shrink-0" />

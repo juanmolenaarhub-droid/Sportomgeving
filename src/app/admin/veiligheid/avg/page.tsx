@@ -109,7 +109,7 @@ export default function AvgPage() {
 
   if (loading) return (
     <div className="p-6 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
     </div>
   )
 
@@ -118,7 +118,7 @@ export default function AvgPage() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-3">
           <FileText className="w-5 h-5 text-blue-500" />
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>AVG-verzoeken</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>AVG-verzoeken</h1>
           <span className="text-xs font-bold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">{filtered.length}</span>
         </div>
         <button
@@ -179,7 +179,7 @@ export default function AvgPage() {
                     <td className="px-4 py-3">
                       <button
                         onClick={() => openDetail(r)}
-                        className="text-xs font-bold text-[#C4F542] border border-[#C4F542]/30 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors"
+                        className="text-xs font-bold text-[#E87722] border border-[#E87722]/30 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors"
                       >
                         Bekijk
                       </button>
@@ -196,7 +196,7 @@ export default function AvgPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-lg p-6 space-y-4 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between">
-              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }}>AVG-verzoek details</h2>
+              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>AVG-verzoek details</h2>
               <button onClick={() => setSelected(null)} className="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
             </div>
             <div className="space-y-1.5 text-sm">

@@ -32,7 +32,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
   return (
     <button
       onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${checked ? 'bg-[#C4F542]' : 'bg-gray-200'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors shrink-0 ${checked ? 'bg-[#E87722]' : 'bg-gray-200'}`}
     >
       <span
         className={`absolute top-0.5 left-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform ${checked ? 'translate-x-5' : 'translate-x-0'}`}
@@ -194,7 +194,7 @@ export default function PrivacyInstellingenPage() {
 
   if (loading) return (
     <div className="max-w-2xl mx-auto py-12 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
     </div>
   )
 
@@ -215,7 +215,7 @@ export default function PrivacyInstellingenPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Privacy</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Privacy</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Privacy</h1>
         </div>
       </div>
 
@@ -226,8 +226,8 @@ export default function PrivacyInstellingenPage() {
       {/* Toggle kaart */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
-          <Shield className="w-4 h-4 text-[#C4F542]" />
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>Zichtbaarheid</p>
+          <Shield className="w-4 h-4 text-[#E87722]" />
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>Zichtbaarheid</p>
         </div>
         <div className="divide-y divide-black/5">
           {TOGGLES.map(({ key, label, desc }) => (
@@ -245,8 +245,8 @@ export default function PrivacyInstellingenPage() {
       {/* Account type */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
-          <Globe className="w-4 h-4 text-[#C4F542]" />
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>Accounttype</p>
+          <Globe className="w-4 h-4 text-[#E87722]" />
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>Accounttype</p>
         </div>
         <div className="p-5 space-y-3">
           <p className="text-xs text-gray-400">
@@ -263,14 +263,14 @@ export default function PrivacyInstellingenPage() {
                   key={value}
                   onClick={() => setSettings(prev => ({ ...prev, account_type: value }))}
                   className="flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all text-center"
-                  style={{ borderColor: active ? '#C4F542' : '#E5E7EB', background: active ? '#FFF5EE' : 'white' }}
+                  style={{ borderColor: active ? '#E87722' : '#E5E7EB', background: active ? '#FFF5EE' : 'white' }}
                 >
-                  <Icon className="w-5 h-5" style={{ color: active ? '#C4F542' : '#9CA3AF' }} />
+                  <Icon className="w-5 h-5" style={{ color: active ? '#E87722' : '#9CA3AF' }} />
                   <div>
-                    <p className="text-sm font-black" style={{ ...SYNE, color: active ? '#C4F542' : '#1E2B20' }}>{label}</p>
+                    <p className="text-sm font-black" style={{ ...SYNE, color: active ? '#E87722' : '#111' }}>{label}</p>
                     <p className="text-[10px] text-gray-400 mt-0.5">{desc}</p>
                   </div>
-                  {active && <span className="w-2 h-2 rounded-full bg-[#C4F542]" />}
+                  {active && <span className="w-2 h-2 rounded-full bg-[#E87722]" />}
                 </button>
               )
             })}
@@ -290,7 +290,7 @@ export default function PrivacyInstellingenPage() {
       {/* Geblokkeerde gebruikers */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-3 border-b border-black/5">
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>Geblokkeerde gebruikers</p>
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>Geblokkeerde gebruikers</p>
         </div>
         {blockedUsers.length === 0 ? (
           <p className="px-5 py-6 text-sm text-gray-400 text-center">Je hebt niemand geblokkeerd.</p>
@@ -303,7 +303,7 @@ export default function PrivacyInstellingenPage() {
                 <button
                   onClick={() => handleUnblock(u.blocked_id)}
                   disabled={unblocking === u.blocked_id}
-                  className="text-xs font-bold text-[#C4F542] border border-[#C4F542]/30 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
+                  className="text-xs font-bold text-[#E87722] border border-[#E87722]/30 px-3 py-1.5 rounded-lg hover:bg-orange-50 transition-colors disabled:opacity-50"
                 >
                   {unblocking === u.blocked_id ? '...' : 'Deblokkeren'}
                 </button>
@@ -316,8 +316,8 @@ export default function PrivacyInstellingenPage() {
       {/* Jouw gegevens */}
       <div className="bg-white rounded-2xl border border-black/8 overflow-hidden">
         <div className="px-5 py-3 border-b border-black/5 flex items-center gap-2">
-          <FileText className="w-4 h-4 text-[#C4F542]" />
-          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>Jouw gegevens (AVG)</p>
+          <FileText className="w-4 h-4 text-[#E87722]" />
+          <p style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>Jouw gegevens (AVG)</p>
         </div>
         <div className="divide-y divide-black/5">
 
@@ -394,7 +394,7 @@ export default function PrivacyInstellingenPage() {
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }}>AVG-verzoek indienen</h2>
+              <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>AVG-verzoek indienen</h2>
               <button onClick={() => setAvgModal(false)} className="text-gray-400 hover:text-gray-700 text-xl font-bold">&times;</button>
             </div>
             <div className="space-y-3">
@@ -403,7 +403,7 @@ export default function PrivacyInstellingenPage() {
                 <select
                   value={avgType}
                   onChange={e => setAvgType(e.target.value as AvgRequestType)}
-                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#C4F542]"
+                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722]"
                 >
                   <option value="inzage">Inzage — mijn data bekijken</option>
                   <option value="correctie">Correctie — onjuiste data aanpassen</option>
@@ -418,7 +418,7 @@ export default function PrivacyInstellingenPage() {
                   value={avgDetails}
                   onChange={e => setAvgDetails(e.target.value)}
                   rows={3}
-                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#C4F542] resize-none"
+                  className="w-full px-3 py-2 rounded-xl border border-black/10 text-sm focus:outline-none focus:border-[#E87722] resize-none"
                   placeholder="Beschrijf je verzoek..."
                 />
               </div>
@@ -439,7 +439,7 @@ export default function PrivacyInstellingenPage() {
       {deleteConfirm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40">
           <div className="bg-white rounded-2xl shadow-2xl w-full max-w-sm p-6 space-y-4">
-            <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }}>Account verwijderen?</h2>
+            <h2 style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>Account verwijderen?</h2>
             <p className="text-sm text-gray-500">Dit is permanent. Al je posts, berichten, matches en profieldata worden gewist. Dit kan niet ongedaan worden gemaakt.</p>
             <div className="flex gap-3">
               <button

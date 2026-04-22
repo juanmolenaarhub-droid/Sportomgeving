@@ -281,7 +281,7 @@ export default function ProfielInstellingenPage() {
 
   if (loading) return (
     <div className="max-w-2xl mx-auto py-12 flex justify-center">
-      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#C4F542] rounded-full animate-spin" />
+      <div className="w-6 h-6 border-2 border-gray-200 border-t-[#E87722] rounded-full animate-spin" />
     </div>
   )
 
@@ -294,7 +294,7 @@ export default function ProfielInstellingenPage() {
         </Link>
         <div>
           <p className="text-xs text-gray-400">Instellingen › Profiel</p>
-          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#1E2B20' }}>Profiel bewerken</h1>
+          <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 20, color: '#111' }}>Profiel bewerken</h1>
         </div>
       </div>
 
@@ -304,9 +304,9 @@ export default function ProfielInstellingenPage() {
 
       {/* Username setup banner — shown when no username is set yet */}
       {!form.username && (
-        <div className="bg-[#C4F542]/10 border border-[#C4F542]/30 rounded-xl p-4 space-y-3">
+        <div className="bg-[#E87722]/10 border border-[#E87722]/30 rounded-xl p-4 space-y-3">
           <div>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#C4F542' }}>Kies je gebruikersnaam</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 13, color: '#E87722' }}>Kies je gebruikersnaam</p>
             <p className="text-xs text-gray-500 mt-0.5">Je gebruikersnaam is permanent. Kies hem zorgvuldig.</p>
           </div>
 
@@ -322,7 +322,7 @@ export default function ProfielInstellingenPage() {
               value={bannerUsername}
               onChange={e => handleBannerUsernameChange(e.target.value)}
               placeholder="jouwusername"
-              className="w-full pl-7 pr-9 py-2.5 bg-white border border-black/10 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#C4F542] transition-colors"
+              className="w-full pl-7 pr-9 py-2.5 bg-white border border-black/10 rounded-lg text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:border-[#E87722] transition-colors"
               style={SYNE}
             />
             <span className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none">
@@ -339,7 +339,7 @@ export default function ProfielInstellingenPage() {
             onClick={handleSetUsername}
             disabled={bannerState !== 'available' || bannerSaving}
             className="w-full py-2.5 rounded-lg text-white text-sm font-bold disabled:opacity-40 transition-opacity"
-            style={{ backgroundColor: '#C4F542', ...SYNE }}
+            style={{ backgroundColor: '#E87722', ...SYNE }}
           >
             {bannerSaving ? 'Opslaan...' : 'Gebruikersnaam instellen'}
           </button>
@@ -351,7 +351,7 @@ export default function ProfielInstellingenPage() {
         <button
           onClick={() => bannerInputRef.current?.click()}
           className="w-full h-32 relative flex items-center justify-center group"
-          style={{ background: form.banner_url ? 'transparent' : '#F4F1E8' }}
+          style={{ background: form.banner_url ? 'transparent' : '#F5F0E8' }}
         >
           {form.banner_url
             ? <img src={form.banner_url} alt="Banner" className="w-full h-full object-cover" />
@@ -382,7 +382,7 @@ export default function ProfielInstellingenPage() {
           </button>
           <input ref={avatarInputRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarUpload} />
           <div className="mt-3">
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }}>{form.full_name || 'Jouw naam'}</p>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }}>{form.full_name || 'Jouw naam'}</p>
             <p className="text-xs text-gray-400">@{form.username || 'gebruikersnaam'}</p>
           </div>
         </div>
@@ -390,7 +390,7 @@ export default function ProfielInstellingenPage() {
 
       {/* Formulier */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Basisinfo</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Basisinfo</p>
 
         <Field label="Weergavenaam" required>
           <input value={form.full_name} onChange={e => set('full_name', e.target.value)} placeholder="Jouw naam" className={INPUT} />
@@ -435,7 +435,7 @@ export default function ProfielInstellingenPage() {
       {/* Sporten */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-4">
         <div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Jouw sporten</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Jouw sporten</p>
           <p className="text-xs text-gray-400 mt-0.5">Selecteer alle sporten die je beoefent.</p>
         </div>
 
@@ -453,7 +453,7 @@ export default function ProfielInstellingenPage() {
               const sport = getSportById(entry.sportId)
               return (
                 <div key={entry.sportId} className="flex items-center justify-between gap-4">
-                  <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#1E2B20' }}>
+                  <span style={{ ...SYNE, fontWeight: 700, fontSize: 13, color: '#111' }}>
                     {sport?.label ?? entry.sportId}
                   </span>
                   <div className="flex gap-1.5">
@@ -464,7 +464,7 @@ export default function ProfielInstellingenPage() {
                         onClick={() => setNiveauForSport(entry.sportId, n.value)}
                         className="px-3 py-1.5 rounded-lg text-xs font-bold transition-all"
                         style={{
-                          background: entry.niveau === n.value ? '#C4F542' : '#F3F4F6',
+                          background: entry.niveau === n.value ? '#E87722' : '#F3F4F6',
                           color: entry.niveau === n.value ? 'white' : '#6B7280',
                         }}
                       >
@@ -481,7 +481,7 @@ export default function ProfielInstellingenPage() {
 
       {/* Beschikbaarheid weekrooster */}
       <div className="bg-white rounded-2xl border border-black/8 p-5 space-y-3">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#1E2B20' }}>Beschikbaarheid</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 14, color: '#111' }}>Beschikbaarheid</p>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
@@ -505,7 +505,7 @@ export default function ProfielInstellingenPage() {
                           onClick={() => toggleBeschikbaarheid(val)}
                           className={`w-8 h-8 rounded-lg text-[10px] font-bold transition-all ${
                             active
-                              ? 'bg-[#C4F542] text-white shadow-sm'
+                              ? 'bg-[#E87722] text-white shadow-sm'
                               : 'bg-black/5 text-gray-400 hover:bg-black/10'
                           }`}
                         >
@@ -540,11 +540,11 @@ function Field({ label, required, children }: { label: string; required?: boolea
   return (
     <div>
       <label className="block text-xs font-bold text-gray-600 mb-1.5">
-        {label} {required && <span className="text-[#C4F542]">*</span>}
+        {label} {required && <span className="text-[#E87722]">*</span>}
       </label>
       {children}
     </div>
   )
 }
 
-const INPUT = 'w-full border border-black/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542] bg-white'
+const INPUT = 'w-full border border-black/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white'

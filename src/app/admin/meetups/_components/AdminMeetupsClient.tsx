@@ -9,7 +9,7 @@ import { cancelMeetup } from '@/app/actions/meetups'
 const AdminMeetupMap = dynamic(() => import('./AdminMeetupMap'), { ssr: false })
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#C4F542', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
   'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#8B5CF6', default: '#6B7280',
 }
 function getSportColor(s: string) { return SPORT_COLORS[s] ?? SPORT_COLORS.default }
@@ -86,7 +86,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 26, color: '#1E2B20' }}>Meetups</h1>
+        <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 26, color: '#111' }}>Meetups</h1>
         <p className="text-sm text-gray-400 mt-1">Overzicht van alle sportactiviteiten op het platform</p>
       </div>
 
@@ -95,7 +95,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
         {[
           { label: 'Actieve Meetups', value: kpis.activeCount, sub: 'open of vol', color: '#059669' },
           { label: 'Deze week', value: kpis.weekCount, sub: 'aangemaakt', color: '#3B82F6' },
-          { label: 'Populairste sport', value: kpis.topSport, sub: 'meeste meetups', color: '#C4F542' },
+          { label: 'Populairste sport', value: kpis.topSport, sub: 'meeste meetups', color: '#E87722' },
           { label: 'Conversieratio', value: `${kpis.convRatio}%`, sub: 'interesse → geaccepteerd', color: '#8B5CF6' },
         ].map(({ label, value, sub, color }) => (
           <div key={label} className="bg-white rounded-2xl border border-black/8 p-5">
@@ -108,7 +108,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
 
       {/* Kaart */}
       <div className="bg-white rounded-2xl border border-black/8 p-5">
-        <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#1E2B20', marginBottom: 12 }}>Actieve meetups in Nederland</p>
+        <p style={{ ...SYNE, fontWeight: 800, fontSize: 15, color: '#111', marginBottom: 12 }}>Actieve meetups in Nederland</p>
         <div style={{ height: 340, borderRadius: 12, overflow: 'hidden', border: '1px solid rgba(0,0,0,0.08)' }}>
           <AdminMeetupMap meetups={meetups.filter(m => m.status === 'open' || m.status === 'vol')} />
         </div>
@@ -123,7 +123,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
             value={search}
             onChange={e => setSearch(e.target.value)}
             placeholder="Zoek op titel, stad of creator..."
-            className="pl-8 pr-4 py-2 border border-black/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#C4F542] bg-white w-64"
+            className="pl-8 pr-4 py-2 border border-black/10 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-[#E87722] bg-white w-64"
           />
         </div>
 
@@ -136,7 +136,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
             <select
               value={value}
               onChange={e => setter(e.target.value)}
-              className="appearance-none bg-white border border-black/10 rounded-xl pl-3 pr-7 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#C4F542] cursor-pointer"
+              className="appearance-none bg-white border border-black/10 rounded-xl pl-3 pr-7 py-2 text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-[#E87722] cursor-pointer"
             >
               {options.map(o => <option key={o} value={o}>{o.charAt(0).toUpperCase() + o.slice(1)}</option>)}
             </select>
@@ -152,7 +152,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
         <div className="overflow-x-auto">
           <table className="w-full text-sm">
             <thead>
-              <tr className="border-b border-black/6 bg-[#F4F1E8]/50">
+              <tr className="border-b border-black/6 bg-[#F5F0E8]/50">
                 {['Datum', 'Creator', 'Sport', 'Titel', 'Stad', 'Modus', 'Geïnt.', 'Deeln.', 'Status', 'Acties'].map(h => (
                   <th key={h} className="px-4 py-3 text-left text-xs font-bold text-gray-500">{h}</th>
                 ))}
@@ -182,7 +182,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
                         ? <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-red-50 text-red-500 flex items-center gap-1 w-fit"><Zap className="w-3 h-3" />Spontaan</span>
                         : <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 flex items-center gap-1 w-fit"><Calendar className="w-3 h-3" />Gepland</span>}
                     </td>
-                    <td className="px-4 py-3 text-xs font-bold text-[#C4F542]">{m.interestedCount}</td>
+                    <td className="px-4 py-3 text-xs font-bold text-[#E87722]">{m.interestedCount}</td>
                     <td className="px-4 py-3 text-xs text-gray-600">{m.acceptedCount}/{m.max_participants}</td>
                     <td className="px-4 py-3">
                       <span className={`text-xs font-bold px-2 py-0.5 rounded-full ${STATUS_STYLE[m.status] ?? 'bg-gray-100 text-gray-500'}`}>
@@ -215,7 +215,7 @@ export default function AdminMeetupsClient({ meetups, kpis }: Props) {
       {/* Cancel confirm modal */}
       {cancelId && (
         <div className="fixed inset-0 z-50 bg-black/50 flex items-center justify-center p-4" onClick={() => setCancelId(null)}>
-          <div className="bg-[#F4F1E8] rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="bg-[#F5F0E8] rounded-2xl p-6 w-full max-w-sm shadow-2xl" onClick={e => e.stopPropagation()}>
             <h3 style={{ ...SYNE, fontWeight: 800, marginBottom: 8 }}>Meetup annuleren?</h3>
             <p className="text-sm text-gray-600 mb-6">Alle geaccepteerde deelnemers ontvangen een notificatie.</p>
             <div className="flex gap-3">

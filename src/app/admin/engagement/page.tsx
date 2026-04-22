@@ -9,7 +9,7 @@ function BigStat({ label, value, sub, color }: { label: string; value: string | 
   return (
     <div className="bg-white rounded-2xl border border-black/8 p-6">
       <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">{label}</p>
-      <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: color ?? '#C4F542', lineHeight: 1 }}>{value}</p>
+      <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: color ?? '#E87722', lineHeight: 1 }}>{value}</p>
       {sub && <p className="text-xs text-gray-400 mt-2">{sub}</p>}
     </div>
   )
@@ -86,7 +86,7 @@ export default async function EngagementPage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div className="mb-2">
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Engagement</h1>
       </div>
 
@@ -101,11 +101,11 @@ export default async function EngagementPage() {
         </div>
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <BigStat label="DAU" value={dau} sub="Unieke actieve users vandaag" />
-          <BigStat label="WAU" value={wau} sub="Afgelopen 7 dagen" color="#1E2B20" />
-          <BigStat label="MAU" value={mau} sub="Afgelopen 30 dagen" color="#1E2B20" />
+          <BigStat label="WAU" value={wau} sub="Afgelopen 7 dagen" color="#111111" />
+          <BigStat label="MAU" value={mau} sub="Afgelopen 30 dagen" color="#111111" />
           <div className="bg-white rounded-2xl border border-black/8 p-6">
             <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Stickiness</p>
-            <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, lineHeight: 1, color: stickiness >= 20 ? '#22c55e' : '#C4F542' }}>
+            <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, lineHeight: 1, color: stickiness >= 20 ? '#22c55e' : '#E87722' }}>
               {stickiness}%
             </p>
             <p className="text-xs text-gray-400 mt-2">DAU/MAU ratio · {stickiness >= 20 ? '✓ Gezond' : 'Onder 20% streefwaarde'}</p>
@@ -122,7 +122,7 @@ export default async function EngagementPage() {
               body={`Hoeveel berichten twee gebuddyde users gemiddeld met elkaar sturen.\n\nHoge waarde = mensen voeren echt gesprekken na het matchen. Dat is goed.\nLage waarde = mensen matchen maar praten nauwelijks met elkaar.\n\nBerekening: totaal berichten gedeeld door totaal actieve matches.`}
             />
           </div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#C4F542', lineHeight: 1 }}>{avgMsgPerMatch}</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#E87722', lineHeight: 1 }}>{avgMsgPerMatch}</p>
           <p className="text-xs text-gray-400 mt-2">Per geaccepteerde match</p>
         </div>
         <div className="bg-white rounded-2xl border border-black/8 p-6">
@@ -133,7 +133,7 @@ export default async function EngagementPage() {
               body={`Hoeveel nieuwe posts er vandaag aangemaakt zijn.\n\nGisteren staat er ook bij zodat je direct kan vergelijken.\nGroen pijltje omhoog → meer dan gisteren.\nRood pijltje omlaag → minder dan gisteren.`}
             />
           </div>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#C4F542', lineHeight: 1 }}>{postsToday ?? 0}</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#E87722', lineHeight: 1 }}>{postsToday ?? 0}</p>
           <p className="text-xs text-gray-400 mt-2">
             Gisteren: {postsYesterday ?? 0}
             {(postsToday ?? 0) > (postsYesterday ?? 0)
@@ -145,7 +145,7 @@ export default async function EngagementPage() {
         </div>
         <div className="bg-white rounded-2xl border border-black/8 p-6">
           <p className="text-xs font-semibold text-gray-400 uppercase tracking-widest mb-3">Actief vandaag</p>
-          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#C4F542', lineHeight: 1 }}>{sessionList.length}</p>
+          <p style={{ ...SYNE, fontWeight: 800, fontSize: 36, color: '#E87722', lineHeight: 1 }}>{sessionList.length}</p>
           <p className="text-xs text-gray-400 mt-2">unieke users met activiteit</p>
         </div>
       </div>
@@ -171,9 +171,9 @@ export default async function EngagementPage() {
         ) : (
           <div className="divide-y divide-black/5">
             {sessionList.slice(0, 30).map((s, i) => (
-              <div key={s.userId} className={`px-6 py-3.5 flex items-center justify-between ${i % 2 === 1 ? 'bg-[#F4F1E8]/40' : ''}`}>
+              <div key={s.userId} className={`px-6 py-3.5 flex items-center justify-between ${i % 2 === 1 ? 'bg-[#F5F0E8]/40' : ''}`}>
                 <div className="flex items-center gap-3">
-                  <span className="w-7 h-7 bg-[#1E2B20] rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
+                  <span className="w-7 h-7 bg-[#111111] rounded-lg flex items-center justify-center text-white text-xs font-bold shrink-0">
                     {i + 1}
                   </span>
                   <span className="text-xs font-mono text-gray-500">{s.userId.slice(0, 16)}…</span>

@@ -6,7 +6,7 @@ import { Avatar } from '@/components/Avatar'
 import type { ModalCreator } from '@/app/actions/meetups'
 
 const SPORT_COLORS: Record<string, string> = {
-  'Hardlopen': '#C4F542', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
+  'Hardlopen': '#E87722', 'Fietsen': '#3B82F6', 'Zwemmen': '#06B6D4',
   'Gym': '#22C55E', 'Tennis': '#8B5CF6', 'Padel': '#EC4899',
   'Voetbal': '#10B981', default: '#6B7280',
 }
@@ -37,7 +37,7 @@ type TrustBadge = { label: string; color: string; bg: string; icon: React.ReactN
 function getTrustBadge(score: number): TrustBadge | null {
   if (score < 40) return null
   if (score < 60) return { label: 'Nieuw', color: '#3B82F6', bg: '#EFF6FF', icon: <User size={11} /> }
-  if (score < 75) return { label: 'Actief', color: '#C4F542', bg: '#FFF5EE', icon: <Zap size={11} /> }
+  if (score < 75) return { label: 'Actief', color: '#E87722', bg: '#FFF5EE', icon: <Zap size={11} /> }
   if (score < 90) return { label: 'Betrouwbaar', color: '#22C55E', bg: '#F0FDF4', icon: <ShieldCheck size={11} /> }
   return { label: 'Top organisator', color: '#F59E0B', bg: '#FFFBEB', icon: <Star size={11} /> }
 }
@@ -62,7 +62,7 @@ export default function HostTrustCard({ creator }: Props) {
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to bottom, transparent 40%, rgba(0,0,0,0.4))' }} />
         {/* Avatar gecentreerd onderaan, overlappend */}
         <div style={{ position: 'absolute', bottom: -22, left: 14 }}>
-          <div style={{ width: 52, height: 52, borderRadius: '50%', border: '3px solid #F4F1E8', overflow: 'hidden', background: '#fff' }}>
+          <div style={{ width: 52, height: 52, borderRadius: '50%', border: '3px solid #F5F0E8', overflow: 'hidden', background: '#fff' }}>
             <Avatar name={creator.name} imageUrl={creator.avatarUrl} size="md" />
           </div>
         </div>
@@ -71,7 +71,7 @@ export default function HostTrustCard({ creator }: Props) {
       {/* Naam + badges */}
       <div style={{ padding: '28px 14px 10px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 15, fontWeight: 800, color: '#1E2B20', fontFamily: "'Syne', sans-serif" }}>
+          <span style={{ fontSize: 15, fontWeight: 800, color: '#111', fontFamily: "'Syne', sans-serif" }}>
             {creator.name}
           </span>
           {creator.sport && (
@@ -94,7 +94,7 @@ export default function HostTrustCard({ creator }: Props) {
       <div style={{ padding: '8px 14px', borderTop: '1px solid rgba(0,0,0,0.05)' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
           {creator.organizerRating ? (
-            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: '#1E2B20' }}>
+            <span style={{ display: 'flex', alignItems: 'center', gap: 4, fontSize: 13, fontWeight: 700, color: '#111' }}>
               ⭐ {creator.organizerRating.toFixed(1)}/5
               <span style={{ fontSize: 11, color: '#9ca3af', fontWeight: 400 }}>({creator.organizerReviewCount} beoordelingen)</span>
             </span>
@@ -129,9 +129,9 @@ export default function HostTrustCard({ creator }: Props) {
           { icon: '📅', label: 'Gejoind', value: creator.meetupsJoined },
           { icon: '✅', label: 'Aanwezigheid', value: `${attendPct}%` },
         ].map(({ icon, label, value }) => (
-          <div key={label} style={{ background: '#F4F1E8', borderRadius: 10, padding: '8px 10px' }}>
+          <div key={label} style={{ background: '#F5F0E8', borderRadius: 10, padding: '8px 10px' }}>
             <p style={{ fontSize: 10, color: '#9ca3af', margin: '0 0 2px', fontWeight: 600 }}>{icon} {label}</p>
-            <p style={{ fontSize: 16, fontWeight: 900, color: '#1E2B20', margin: 0, fontFamily: "'Syne', sans-serif" }}>{value}</p>
+            <p style={{ fontSize: 16, fontWeight: 900, color: '#111', margin: 0, fontFamily: "'Syne', sans-serif" }}>{value}</p>
           </div>
         ))}
       </div>
@@ -142,7 +142,7 @@ export default function HostTrustCard({ creator }: Props) {
           href={`/dashboard/profile/${creator.id}`}
           style={{
             display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-            background: '#1E2B20', color: '#fff', borderRadius: 10, padding: '9px 14px',
+            background: '#111', color: '#fff', borderRadius: 10, padding: '9px 14px',
             textDecoration: 'none', fontSize: 13, fontWeight: 700,
           }}
         >

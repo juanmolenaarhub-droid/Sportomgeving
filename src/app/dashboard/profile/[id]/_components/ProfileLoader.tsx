@@ -131,7 +131,7 @@ export default function ProfileLoader({ profileId, currentUserId, isOwnProfile }
     return (
       <div className="max-w-2xl mx-auto py-20 text-center space-y-3">
         <p className="text-gray-400 font-semibold">Profiel niet gevonden.</p>
-        <Link href="/dashboard/find" className="inline-block text-[#C4F542] font-bold hover:underline">
+        <Link href="/dashboard/find" className="inline-block text-[#E87722] font-bold hover:underline">
           Terug naar zoeken
         </Link>
       </div>

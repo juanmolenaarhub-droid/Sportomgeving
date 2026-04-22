@@ -40,7 +40,7 @@ function MiniAvatar({ url, name, size }: { url: string | null; name: string; siz
   return (
     <div style={{
       width: size, height: size, borderRadius: '50%', flexShrink: 0,
-      background: '#C4F542',
+      background: '#E87722',
       display: 'flex', alignItems: 'center', justifyContent: 'center',
     }}>
       <span style={{ fontSize: size * 0.45, fontWeight: 700, color: 'white', lineHeight: 1 }}>
@@ -223,7 +223,7 @@ export function FullScreenCard({
 
   return (
     <div
-      style={{ position: 'relative', width: '100%', height: '100%', background: '#1E2B20', userSelect: 'none' }}
+      style={{ position: 'relative', width: '100%', height: '100%', background: '#111', userSelect: 'none' }}
       onClick={handleTap}
       onTouchStart={onTouchStart}
       onTouchEnd={onTouchEnd}
@@ -300,7 +300,7 @@ export function FullScreenCard({
             <span key={i} style={{
               height: 3, borderRadius: 999,
               width: i === mediaIndex ? 16 : 6,
-              background: i === mediaIndex ? '#C4F542' : 'rgba(255,255,255,0.5)',
+              background: i === mediaIndex ? '#E87722' : 'rgba(255,255,255,0.5)',
               transition: 'width 200ms',
             }} />
           ))}
@@ -333,7 +333,7 @@ export function FullScreenCard({
           zIndex: 25, pointerEvents: 'none',
           animation: 'heartPop 0.9s ease-out forwards',
         }}>
-          <Heart size={80} color="#C4F542" fill="#C4F542" />
+          <Heart size={80} color="#E87722" fill="#E87722" />
         </div>
       )}
 
@@ -351,7 +351,7 @@ export function FullScreenCard({
         <button
           style={{
             width: 44, height: 44, borderRadius: '50%',
-            background: '#C4F542',
+            background: '#E87722',
             border: 'none', cursor: 'pointer',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 4px 16px rgba(232,119,34,0.45)',
@@ -377,8 +377,8 @@ export function FullScreenCard({
           >
             <Heart
               size={26} strokeWidth={2}
-              color={liked ? '#C4F542' : 'white'}
-              fill={liked ? '#C4F542' : 'white'}
+              color={liked ? '#E87722' : 'white'}
+              fill={liked ? '#E87722' : 'white'}
               style={{ transform: bounce ? 'scale(1.4)' : 'scale(1)', transition: 'transform 150ms' }}
             />
             <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 11, fontWeight: 700, color: 'white', lineHeight: 1 }}>
@@ -442,7 +442,7 @@ export function FullScreenCard({
           display: 'flex', alignItems: 'center', gap: 7,
         }}>
           <MiniAvatar url={post.avatar_url} name={post.displayName} size={24} />
-          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, color: '#1E2B20' }}>
+          <span style={{ fontFamily: "'DM Sans', sans-serif", fontSize: 13, fontWeight: 700, color: '#111111' }}>
             @{post.username}
           </span>
         </div>
@@ -451,7 +451,7 @@ export function FullScreenCard({
         <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
           {sport && (
             <div style={{
-              background: '#C4F542', borderRadius: 999,
+              background: '#E87722', borderRadius: 999,
               padding: '5px 10px',
               display: 'flex', alignItems: 'center', gap: 5,
             }}>
@@ -532,7 +532,7 @@ export function FullScreenCard({
             <div style={{
               position: 'absolute', left: 0, top: 0, bottom: 0,
               width: `${progress * 100}%`,
-              borderRadius: 2, background: '#C4F542',
+              borderRadius: 2, background: '#E87722',
               transition: seeking ? 'none' : 'width 0.25s linear',
             }} />
             {/* Thumb */}
@@ -541,7 +541,7 @@ export function FullScreenCard({
               left: `${progress * 100}%`,
               transform: 'translate(-50%, -50%)',
               width: 12, height: 12, borderRadius: '50%',
-              background: '#C4F542',
+              background: '#E87722',
               boxShadow: '0 0 6px rgba(232,119,34,0.7)',
               transition: seeking ? 'none' : 'left 0.25s linear',
             }} />

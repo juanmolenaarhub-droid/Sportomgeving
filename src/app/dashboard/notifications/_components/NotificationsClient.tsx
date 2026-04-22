@@ -40,14 +40,14 @@ type PendingRequest = {
 
 const SYNE: React.CSSProperties = { fontFamily: "'Syne', sans-serif" }
 const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
-const CREAM  = '#F4F1E8'
-const ORANGE = '#C4F542'
-const INK    = '#1E2B20'
+const CREAM  = '#F5F0E8'
+const ORANGE = '#E87722'
+const INK    = '#111111'
 const GREEN  = '#1D9E75'
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
 
-const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#C4F542','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
+const USER_COLORS = ['#D4538C','#7F77DD','#1D9E75','#E87722','#3A7AC4','#D4A87A','#E8A560','#5B4A8B']
 
 function getUserColor(id: string): string {
   const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)

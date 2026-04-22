@@ -120,7 +120,7 @@ export default function RegisterPage() {
           font-weight: 500;
         }
         .ri::placeholder { color: #c0bdb8; font-weight: 400; }
-        .ri:focus { border-bottom-color: #C4F542; }
+        .ri:focus { border-bottom-color: #E87722; }
 
         .rb {
           display: flex;
@@ -129,7 +129,7 @@ export default function RegisterPage() {
           gap: 10px;
           width: 100%;
           padding: 17px 24px;
-          background: #C4F542;
+          background: #E87722;
           color: white;
           border: none;
           border-radius: 14px;
@@ -165,7 +165,7 @@ export default function RegisterPage() {
       <div style={DM} className="min-h-screen flex">
 
         {/* ── LEFT: Black brand panel ── */}
-        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#1E2B20' }}>
+        <div className="hidden lg:flex flex-col w-[42%] p-14 relative overflow-hidden select-none" style={{ background: '#111111' }}>
 
           {/* Logo */}
           <Link href="/" className="relative z-10">
@@ -177,21 +177,21 @@ export default function RegisterPage() {
 
             {/* Label + Headline */}
             <div>
-              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#C4F542' }} className="mb-6">
+              <p style={{ ...SYNE, fontSize: '10px', fontWeight: 800, letterSpacing: '0.22em', textTransform: 'uppercase', color: '#E87722' }} className="mb-6">
                 Gratis starten
               </p>
               <h2 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.9, letterSpacing: '-0.03em', fontSize: 'clamp(46px, 3.4vw, 64px)' }}>
                 <span style={{ color: 'white' }}>Word lid.</span><br />
                 <span style={{ color: 'white' }}>Sport samen.</span><br />
-                <span style={{ color: '#C4F542' }}>Gratis.</span>
+                <span style={{ color: '#E87722' }}>Gratis.</span>
               </h2>
             </div>
 
             {/* Live activity block */}
             <div style={{ background: '#1A1A1A', borderRadius: 16, padding: '16px 18px' }}>
               <div className="flex items-center gap-2 mb-4">
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#C4F542', display: 'inline-block', animation: 'rpulse 2s ease-in-out infinite' }} />
-                <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#C4F542' }}>Nu actief op Buddys</span>
+                <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E87722', display: 'inline-block', animation: 'rpulse 2s ease-in-out infinite' }} />
+                <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.18em', textTransform: 'uppercase', color: '#E87722' }}>Nu actief op Buddys</span>
               </div>
               <div className="space-y-3">
                 {[
@@ -248,7 +248,7 @@ export default function RegisterPage() {
                     borderRadius: '999px',
                     fontSize: '11px',
                     fontWeight: 600,
-                    background: tag.highlight ? '#C4F542' : '#222222',
+                    background: tag.highlight ? '#E87722' : '#222222',
                     color: 'white',
                     flexShrink: 0,
                   }}>
@@ -276,7 +276,7 @@ export default function RegisterPage() {
           {/* Bottom link */}
           <p className="relative z-10" style={{ fontSize: 13, color: 'rgba(255,255,255,0.3)' }}>
             Al een account?{' '}
-            <Link href="/login" style={{ color: '#C4F542', fontWeight: 700 }}>Inloggen →</Link>
+            <Link href="/login" style={{ color: '#E87722', fontWeight: 700 }}>Inloggen →</Link>
           </p>
         </div>
 
@@ -295,12 +295,12 @@ export default function RegisterPage() {
               {/* Heading */}
               <div className="r1 mb-10">
                 <div className="flex items-center gap-2 mb-5">
-                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#C4F542', animation: 'r-dot 2s ease-in-out infinite', display: 'inline-block' }} />
-                  <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#C4F542' }}>
+                  <span style={{ width: 7, height: 7, borderRadius: '50%', background: '#E87722', animation: 'r-dot 2s ease-in-out infinite', display: 'inline-block' }} />
+                  <span style={{ ...SYNE, fontSize: 10, fontWeight: 800, letterSpacing: '0.2em', textTransform: 'uppercase', color: '#E87722' }}>
                     Nu aanmelden
                   </span>
                 </div>
-                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#1E2B20' }}>
+                <h1 style={{ ...SYNE, fontWeight: 900, lineHeight: 0.88, letterSpacing: '-0.03em', fontSize: 'clamp(38px, 4vw, 50px)', color: '#111' }}>
                   Account<br />aanmaken.
                 </h1>
               </div>
@@ -316,7 +316,7 @@ export default function RegisterPage() {
                   {/* Preview */}
                   {username.length >= 3 && (
                     <p style={{ ...DM, fontSize: 11, color: '#bbb', marginBottom: 8 }}>
-                      buddys.nl/@<span style={{ color: '#1E2B20', fontWeight: 600 }}>{username}</span>
+                      buddys.nl/@<span style={{ color: '#111', fontWeight: 600 }}>{username}</span>
                     </p>
                   )}
 
@@ -410,7 +410,7 @@ export default function RegisterPage() {
               {/* Mobile link */}
               <p className="lg:hidden mt-8 text-center" style={{ fontSize: 13, color: '#aaa' }}>
                 Al een account?{' '}
-                <Link href="/login" style={{ color: '#C4F542', fontWeight: 700 }}>Inloggen</Link>
+                <Link href="/login" style={{ color: '#E87722', fontWeight: 700 }}>Inloggen</Link>
               </p>
 
             </div>

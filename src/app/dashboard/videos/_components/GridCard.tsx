@@ -58,7 +58,7 @@ export function GridCard({ post, onClick }: Props) {
         {tag && (
           <span
             className="inline-block text-white text-[9px] font-black px-1.5 py-0.5 rounded-full"
-            style={{ background: '#C4F542' }}
+            style={{ background: '#E87722' }}
           >
             {tag}
           </span>

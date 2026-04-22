@@ -78,7 +78,7 @@ function TestimonialCard({ t }: { t: Testimonial }) {
       {/* Stars */}
       <div className="flex gap-0.5">
         {[...Array(5)].map((_, i) => (
-          <span key={i} className="text-[#C4F542] text-sm">★</span>
+          <span key={i} className="text-[#E87722] text-sm">★</span>
         ))}
       </div>
 
@@ -91,14 +91,14 @@ function TestimonialCard({ t }: { t: Testimonial }) {
       <div className="flex items-center gap-3 pt-4 border-t border-[#E8E0D5]">
         <div
           className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-xs font-bold shrink-0"
-          style={{ ...SYNE, background: '#C4F542' }}
+          style={{ ...SYNE, background: '#E87722' }}
         >
           {getInitials(t.name)}
         </div>
         <div>
           <p className="text-black font-bold text-sm" style={SYNE}>{t.name}</p>
           <p className="text-[#888077] text-xs mt-0.5">
-            {t.location} · <span className="text-[#C4F542]">{t.sport}</span>
+            {t.location} · <span className="text-[#E87722]">{t.sport}</span>
           </p>
         </div>
       </div>
@@ -134,13 +134,13 @@ export function TestimonialV2() {
   const col3 = TESTIMONIALS.slice(6, 9)
 
   return (
-    <section id="community" className="py-32 bg-[#F4F1E8] overflow-hidden">
+    <section id="community" className="py-32 bg-[#F5F0E8] overflow-hidden">
       <div className="max-w-7xl mx-auto px-8">
 
         {/* Header */}
         <div className="flex items-end justify-between mb-14 flex-wrap gap-6">
           <div>
-            <p className="text-xs font-semibold text-[#C4F542] uppercase tracking-widest mb-4">Community</p>
+            <p className="text-xs font-semibold text-[#E87722] uppercase tracking-widest mb-4">Community</p>
             <h2
               style={{ ...SYNE, fontWeight: 800, lineHeight: 1.0, letterSpacing: '-0.02em' }}
               className="text-[clamp(40px,5vw,72px)] text-black"
@@ -148,7 +148,7 @@ export function TestimonialV2() {
               Zij vonden hun buddy
             </h2>
           </div>
-          <a href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#C4F542] hover:text-black transition-colors">
+          <a href="/register" className="inline-flex items-center gap-1.5 text-sm font-semibold text-[#E87722] hover:text-black transition-colors">
             Sluit je aan
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
               <path d="M9 18l6-6-6-6" />

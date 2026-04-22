@@ -69,7 +69,7 @@ export function CreateActionSheet({ open, onClose, onNewPost }: CreateActionShee
           position: 'fixed',
           bottom: 0, left: 0, right: 0,
           zIndex: 56,
-          background: '#F4F1E8',
+          background: '#F5F0E8',
           borderRadius: '28px 28px 0 0',
           padding: '0 24px 40px',
           animation: 'slideUp 0.3s cubic-bezier(.16,1,.3,1) both',

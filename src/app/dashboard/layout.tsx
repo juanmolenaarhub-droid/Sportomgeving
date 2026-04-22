@@ -175,7 +175,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   }
 
   return (
-    <div className={`${isVideosPage ? 'bg-black' : 'bg-[#F4F1E8]'} flex flex-col h-full`}>
+    <div className={`${isVideosPage ? 'bg-black' : 'bg-[#F5F0E8]'} flex flex-col h-full`}>
 
       {/* ── Topbar — verborgen op mobile, zichtbaar op desktop ─────────── */}
       <header
@@ -196,20 +196,20 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   key={href}
                   href={href}
                   className={`relative flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-semibold transition-colors ${
-                    active ? 'bg-[#1E2B20] text-white' : 'text-gray-500 hover:text-black hover:bg-black/5'
+                    active ? 'bg-[#111111] text-white' : 'text-gray-500 hover:text-black hover:bg-black/5'
                   }`}
                 >
                   <Icon className="w-4 h-4" />
                   {label}
 
                   {href === '/dashboard/messages' && unreadMessages > 0 && (
-                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#C4F542] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
+                    <span className="absolute -top-1.5 -right-1.5 min-w-[18px] h-[18px] bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
                       {unreadMessages > 9 ? '9+' : unreadMessages}
                     </span>
                   )}
 
                   {href === '/dashboard/meetup' && hasMeetupDot && !active && (
-                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#C4F542] rounded-full" />
+                    <span className="absolute top-1 right-1 w-2 h-2 bg-[#E87722] rounded-full" />
                   )}
                 </Link>
               )
@@ -219,7 +219,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <div className="flex items-center gap-2">
             <Link
               href="/dashboard/find"
-              className="hidden md:flex items-center gap-2 bg-[#1E2B20] text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-[#C4F542] transition-colors shrink-0"
+              className="hidden md:flex items-center gap-2 bg-[#111111] text-white text-sm font-bold px-4 py-2 rounded-xl hover:bg-[#E87722] transition-colors shrink-0"
               style={{ fontFamily: "'Syne', sans-serif" }}
             >
               <Search className="w-3.5 h-3.5" />
@@ -232,7 +232,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             >
               <Bell className="w-5 h-5 text-gray-500" />
               {notifCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#C4F542] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] bg-[#E87722] text-white text-[10px] font-black rounded-full flex items-center justify-center px-1">
                   {notifCount > 9 ? '9+' : notifCount}
                 </span>
               )}
@@ -241,7 +241,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={() => setShowDropdown(v => !v)}
-                className="rounded-full overflow-hidden hover:ring-2 hover:ring-[#C4F542] transition-all focus:outline-none"
+                className="rounded-full overflow-hidden hover:ring-2 hover:ring-[#E87722] transition-all focus:outline-none"
               >
                 <Avatar name={profileName || 'G'} imageUrl={profileImageUrl} size="sm" />
               </button>
@@ -256,7 +256,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     href="/dashboard/profile/me"
                     onClick={() => setShowDropdown(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F4F1E8] transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors"
                   >
                     <User className="w-4 h-4 text-gray-400" /> Mijn profiel
                   </Link>
@@ -264,7 +264,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
                   <Link
                     href="/dashboard/instellingen"
                     onClick={() => setShowDropdown(false)}
-                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F4F1E8] transition-colors"
+                    className="flex items-center gap-3 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-[#F5F0E8] transition-colors"
                   >
                     <Settings className="w-4 h-4 text-gray-400" /> Instellingen
                   </Link>
@@ -357,14 +357,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               position: 'absolute',
               top: -4, right: -4,
               minWidth: 18, height: 18,
-              background: '#C4F542',
+              background: '#E87722',
               color: 'white',
               fontSize: 10, fontWeight: 900,
               borderRadius: 999,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               padding: '0 4px',
               fontFamily: "'DM Sans', sans-serif",
-              border: '2px solid #F4F1E8',
+              border: '2px solid #F5F0E8',
             }}>
               {notifCount > 9 ? '9+' : notifCount}
             </span>
@@ -385,7 +385,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             width: 52,
             height: 52,
             borderRadius: '50%',
-            background: '#C4F542',
+            background: '#E87722',
             border: 'none',
             boxShadow: '0 4px 20px rgba(232,119,34,0.45)',
             display: 'flex',
@@ -452,7 +452,7 @@ function BottomNavItem({
         background: active ? 'rgba(232,119,34,0.12)' : 'transparent',
         transition: 'background 150ms',
       }}>
-        <span style={{ color: active ? '#C4F542' : '#9CA3AF' }}>{icon}</span>
+        <span style={{ color: active ? '#E87722' : '#9CA3AF' }}>{icon}</span>
       </div>
 
       {/* Label */}
@@ -460,7 +460,7 @@ function BottomNavItem({
         fontFamily: "'DM Sans', sans-serif",
         fontSize: 10,
         fontWeight: active ? 700 : 500,
-        color: active ? '#C4F542' : '#9CA3AF',
+        color: active ? '#E87722' : '#9CA3AF',
         lineHeight: 1,
       }}>
         {label}
@@ -471,7 +471,7 @@ function BottomNavItem({
         <span style={{
           position: 'absolute', top: 2, right: '20%',
           minWidth: 16, height: 16,
-          background: '#C4F542',
+          background: '#E87722',
           color: 'white',
           fontSize: 9,
           fontWeight: 900,

@@ -228,7 +228,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
             onClick={onBack}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
           >
-            <ArrowLeft size={20} color="#1E2B20" />
+            <ArrowLeft size={20} color="#111" />
           </button>
           <span className="text-[15px] font-semibold text-gray-900" style={SYNE}>
             Foto / Video
@@ -244,7 +244,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
             onDragLeave={handleDragLeave}
             className="w-full flex flex-col items-center justify-center gap-4 rounded-2xl transition-colors cursor-pointer"
             style={{
-              border: `2px dashed ${isDragging ? '#C4F542' : '#E0DDD8'}`,
+              border: `2px dashed ${isDragging ? '#E87722' : '#E0DDD8'}`,
               background: isDragging ? '#FFF0E5' : 'transparent',
               minHeight: 280,
               padding: '40px 24px',
@@ -275,7 +275,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
           <button
             onClick={() => fileInputRef.current?.click()}
             className="mt-6 px-6 py-2.5 rounded-full text-[14px] font-semibold border-2 transition-colors hover:bg-[#FFF0E5]"
-            style={{ borderColor: '#C4F542', color: '#C4F542', ...SYNE }}
+            style={{ borderColor: '#E87722', color: '#E87722', ...SYNE }}
           >
             Selecteer van computer
           </button>
@@ -310,7 +310,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
             onClick={() => setPhase('upload')}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
           >
-            <ArrowLeft size={20} color="#1E2B20" />
+            <ArrowLeft size={20} color="#111" />
           </button>
           <span className="text-[15px] font-semibold text-gray-900" style={SYNE}>
             Selectie ({files.length})
@@ -319,7 +319,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
             onClick={() => fileInputRef.current?.click()}
             className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
           >
-            <Upload size={18} color="#C4F542" />
+            <Upload size={18} color="#E87722" />
           </button>
         </div>
 
@@ -392,7 +392,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
           <button
             onClick={() => setPhase('caption')}
             className="w-full py-3.5 rounded-2xl text-white text-[15px] font-semibold transition-opacity"
-            style={{ background: '#C4F542', ...SYNE }}
+            style={{ background: '#E87722', ...SYNE }}
           >
             Doorgaan
           </button>
@@ -429,7 +429,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
           onClick={() => setPhase('preview')}
           className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-[#F5F2EE] transition-colors"
         >
-          <ArrowLeft size={20} color="#1E2B20" />
+          <ArrowLeft size={20} color="#111" />
         </button>
         <span className="text-[15px] font-semibold text-gray-900" style={SYNE}>
           Nieuw bericht
@@ -438,7 +438,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
           onClick={handleShareSubmit}
           disabled={submitting}
           className="px-4 py-1.5 rounded-full text-white text-[13px] font-semibold transition-opacity disabled:opacity-50"
-          style={{ background: '#C4F542', ...SYNE }}
+          style={{ background: '#E87722', ...SYNE }}
         >
           {submitting ? 'Bezig…' : 'Delen'}
         </button>
@@ -501,7 +501,7 @@ export default function Step2Photo({ onBack, onSubmit, userName, avatarUrl, user
               placeholder="Schrijf een bijschrift…"
               rows={4}
               className="w-full bg-transparent text-[15px] text-gray-900 placeholder-gray-300 outline-none resize-none"
-              style={{ caretColor: '#C4F542', ...SYNE }}
+              style={{ caretColor: '#E87722', ...SYNE }}
             />
 
             <div className="border-t" style={{ borderColor: '#F5F2EE' }} />

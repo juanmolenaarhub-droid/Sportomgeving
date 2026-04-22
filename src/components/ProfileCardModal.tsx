@@ -34,10 +34,10 @@ export function useProfileCard() {
 function MiniAvatar({ name, url, size = 'md' }: { name: string; url?: string; size?: 'sm' | 'md' | 'lg' }) {
   const sz = size === 'lg' ? 'w-16 h-16 text-xl' : size === 'md' ? 'w-12 h-12 text-base' : 'w-9 h-9 text-sm'
   return (
-    <div className={`${sz} rounded-full bg-[#F4F1E8] overflow-hidden flex items-center justify-center shrink-0`}>
+    <div className={`${sz} rounded-full bg-[#F5F0E8] overflow-hidden flex items-center justify-center shrink-0`}>
       {url
         ? <img src={url} className="w-full h-full object-cover" alt="" />
-        : <span style={{ ...SYNE, fontWeight: 900, color: '#C4F542' }}>{name.charAt(0).toUpperCase()}</span>
+        : <span style={{ ...SYNE, fontWeight: 900, color: '#E87722' }}>{name.charAt(0).toUpperCase()}</span>
       }
     </div>
   )
@@ -46,7 +46,7 @@ function MiniAvatar({ name, url, size = 'md' }: { name: string; url?: string; si
 function levelStyle(level: string) {
   const l = level?.toLowerCase()
   if (l === 'gevorderd' || l === 'advanced') return 'bg-black text-white'
-  if (l === 'gemiddeld' || l === 'intermediate') return 'bg-[#C4F542] text-white'
+  if (l === 'gemiddeld' || l === 'intermediate') return 'bg-[#E87722] text-white'
   return 'bg-gray-100 text-gray-500'
 }
 
@@ -155,7 +155,7 @@ function ProfileCardModalInner({
             <div className="flex items-center gap-4">
               <MiniAvatar name={profile.name} url={profile.avatarUrl} size="lg" />
               <div className="flex-1 min-w-0">
-                <p style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#1E2B20' }} className="truncate">{profile.name}</p>
+                <p style={{ ...SYNE, fontWeight: 800, fontSize: 16, color: '#111' }} className="truncate">{profile.name}</p>
                 {profile.username && <p className="text-xs text-gray-400">@{profile.username}</p>}
                 {profile.region && (
                   <p className="flex items-center gap-1 text-xs text-gray-400 mt-0.5">
@@ -208,7 +208,7 @@ function ProfileCardModalInner({
               <Link
                 href={`/dashboard/profile/${profile.id}`}
                 onClick={onClose}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#F4F1E8] text-black text-sm font-bold hover:bg-[#ede7dc] transition-colors group"
+                className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-[#F5F0E8] text-black text-sm font-bold hover:bg-[#ede7dc] transition-colors group"
               >
                 Volledig profiel
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

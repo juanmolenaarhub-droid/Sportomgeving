@@ -13,18 +13,18 @@ function RetentieRing({ label, pct, sub }: { label: string; pct: number; sub: st
   return (
     <div className="bg-white rounded-2xl border border-black/8 p-6 flex flex-col items-center gap-3">
       <svg width={96} height={96} viewBox="0 0 96 96">
-        <circle cx={48} cy={48} r={r} fill="none" stroke="#F4F1E8" strokeWidth={10} />
+        <circle cx={48} cy={48} r={r} fill="none" stroke="#F5F0E8" strokeWidth={10} />
         <circle
           cx={48} cy={48} r={r}
           fill="none"
-          stroke="#C4F542"
+          stroke="#E87722"
           strokeWidth={10}
           strokeDasharray={`${filled} ${circ - filled}`}
           strokeDashoffset={circ / 4}
           strokeLinecap="round"
           style={{ transition: 'stroke-dasharray 0.6s ease' }}
         />
-        <text x={48} y={52} textAnchor="middle" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, fill: '#1E2B20' }}>
+        <text x={48} y={52} textAnchor="middle" style={{ fontFamily: "'Syne', sans-serif", fontWeight: 800, fontSize: 18, fill: '#111' }}>
           {pct}%
         </text>
       </svg>
@@ -85,7 +85,7 @@ export default async function RetentiePage() {
   return (
     <div className="p-6 md:p-10 max-w-6xl space-y-8">
       <div>
-        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#C4F542' }} className="uppercase mb-2">Admin</p>
+        <p style={{ ...SYNE, fontSize: 11, fontWeight: 800, letterSpacing: '0.18em', color: '#E87722' }} className="uppercase mb-2">Admin</p>
         <h1 style={{ ...SYNE, fontWeight: 900, fontSize: 32, letterSpacing: '-0.02em' }} className="text-black">Retentie</h1>
         <p className="text-sm text-gray-400 mt-1">Percentage gebruikers dat terugkomt na de eerste login · {total} totaal</p>
       </div>
@@ -167,21 +167,21 @@ export default async function RetentiePage() {
               {cohortEntries.length === 0 ? (
                 <tr><td colSpan={5} className="px-4 py-8 text-center text-gray-300 text-xs">Geen data beschikbaar</td></tr>
               ) : cohortEntries.map(([week, c], i) => (
-                <tr key={week} className={i % 2 === 1 ? 'bg-[#F4F1E8]/50' : ''}>
+                <tr key={week} className={i % 2 === 1 ? 'bg-[#F5F0E8]/50' : ''}>
                   <td className="px-4 py-3 text-gray-700 font-mono text-xs">{week}</td>
                   <td className="px-4 py-3 text-gray-700">{c.signups}</td>
                   <td className="px-4 py-3">
-                    <span style={{ color: '#C4F542', ...SYNE, fontWeight: 700 }}>
+                    <span style={{ color: '#E87722', ...SYNE, fontWeight: 700 }}>
                       {c.signups > 0 ? Math.round((c.d1 / c.signups) * 100) : 0}%
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span style={{ color: '#C4F542', ...SYNE, fontWeight: 700 }}>
+                    <span style={{ color: '#E87722', ...SYNE, fontWeight: 700 }}>
                       {c.signups > 0 ? Math.round((c.d7 / c.signups) * 100) : 0}%
                     </span>
                   </td>
                   <td className="px-4 py-3">
-                    <span style={{ color: '#C4F542', ...SYNE, fontWeight: 700 }}>
+                    <span style={{ color: '#E87722', ...SYNE, fontWeight: 700 }}>
                       {c.signups > 0 ? Math.round((c.d30 / c.signups) * 100) : 0}%
                     </span>
                   </td>
