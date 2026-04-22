@@ -142,6 +142,15 @@ export async function updateNotificationSettings(input: NotificationSettingsInpu
 
 export async function getNotificationSettings(userId: string): Promise<NotificationSettingsInput> {
   const supabase = await createServerSupabaseClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  // Only allow fetching own settings
+  if (!user || user.id !== userId) {
+    return {
+      notify_buddy_request: true, notify_match: true, notify_message: true,
+      notify_like: true, notify_comment: true, email_weekly: false,
+      email_buddy_request: false, email_news: false,
+    }
+  }
   const { data } = await supabase
     .from('user_settings')
     .select('key, value')
@@ -289,6 +298,9 @@ export async function deactivateAccount(): Promise<{ success: boolean; error?: s
 // ─── 9. Check notificatie-instelling voor ontvanger ──────────────────────────
 
 export async function shouldNotify(userId: string, key: keyof NotificationSettingsInput): Promise<boolean> {
+  // This is called server-side by system actions (e.g. when sending notifications to a target user).
+  // We use a direct DB read without an auth check because the caller is trusted server code.
+  // The userId here is the RECIPIENT, not the requester — no privacy leak.
   const supabase = await createServerSupabaseClient()
   const { data } = await supabase
     .from('user_settings')
@@ -297,7 +309,6 @@ export async function shouldNotify(userId: string, key: keyof NotificationSettin
     .eq('key', key)
     .maybeSingle()
 
-  // Default true als er geen instelling is
   if (!data) return true
   return data.value === 'true'
 }
