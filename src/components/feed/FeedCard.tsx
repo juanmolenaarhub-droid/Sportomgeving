@@ -5,6 +5,7 @@ import { Heart, MessageCircle, Send, Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase'
 import { CommentsSheet } from './CommentsSheet'
+import { Avatar, getInitials } from '@/components/ui/Avatar'
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -42,18 +43,6 @@ const DM:   React.CSSProperties = { fontFamily: "'DM Sans', sans-serif" }
 const ORANGE = '#E87722'
 const INK    = '#111111'
 
-// ─── User color (deterministic from userId) ────────────────────────────────────
-
-const USER_COLORS = [
-  '#D4538C', '#7F77DD', '#1D9E75', '#E87722',
-  '#3A7AC4', '#D4A87A', '#E8A560', '#5B4A8B',
-]
-
-function getUserColor(id: string): string {
-  const hash = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0)
-  return USER_COLORS[hash % USER_COLORS.length]
-}
-
 // ─── Sport color mapping ────────────────────────────────────────────────────────
 
 const SPORT_COLORS: Record<string, string> = {
@@ -80,10 +69,6 @@ function getSportColor(sport: string | null): string {
 }
 
 // ─── Helpers ───────────────────────────────────────────────────────────────────
-
-function getInitials(name: string): string {
-  return name.trim().split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
-}
 
 function getFirstName(fullName: string): string {
   return fullName.trim().split(' ')[0]
@@ -188,8 +173,6 @@ function EditorialCard({ post, onLikeToggle }: {
   const hasMedia   = !!(post.media_url || post.thumbnail_url)
   const isVideo    = post.media_type === 'video'
   const firstName  = getFirstName(post.userName)
-  const initials   = getInitials(post.userName)
-  const userColor  = getUserColor(post.userId)
   const description = post.content
 
   function UserPill({ absolute }: { absolute?: boolean }) {
@@ -207,14 +190,7 @@ function EditorialCard({ post, onLikeToggle }: {
           border: 'none', cursor: 'pointer',
         }}
       >
-        {post.userAvatarUrl ? (
-          // eslint-disable-next-line @next/next/no-img-element
-          <img src={post.userAvatarUrl} alt={firstName} style={{ width: 22, height: 22, borderRadius: '50%', objectFit: 'cover' }} />
-        ) : (
-          <div style={{ width: 22, height: 22, borderRadius: '50%', background: userColor, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <span style={{ ...SYNE, fontSize: 7, fontWeight: 800, color: 'white' }}>{initials}</span>
-          </div>
-        )}
+        <Avatar initials={getInitials(post.userName)} imageUrl={post.userAvatarUrl} size="xs" />
         <span style={{ ...DM, fontSize: 11, fontWeight: 600, color: INK }}>{firstName}</span>
       </button>
     )
@@ -255,7 +231,7 @@ function EditorialCard({ post, onLikeToggle }: {
           )}
         </div>
       ) : (
-        <div style={{ margin: '14px 14px 0', position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '5/4', background: `linear-gradient(135deg, ${userColor}22 0%, ${userColor}55 100%)` }}>
+        <div style={{ margin: '14px 14px 0', position: 'relative', borderRadius: 14, overflow: 'hidden', aspectRatio: '5/4', background: '#1E2B2020' }}>
           <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', padding: 24 }}>
             <p style={{ ...SYNE, fontWeight: 800, fontSize: 22, lineHeight: 1.1, color: INK, opacity: 0.85 }}>
               &ldquo;{(description ?? '').slice(0, 80)}{(description ?? '').length > 80 ? '…' : ''}&rdquo;
@@ -329,8 +305,6 @@ function HeroCard({ post, onLikeToggle }: {
   const [showComments, setShowComments] = useState(false)
   const [commentCount, setCommentCount] = useState(post.comments_count)
 
-  const userColor  = getUserColor(post.userId)
-  const initials   = getInitials(post.userName)
   const firstName  = getFirstName(post.userName)
   const eyebrow    = getEyebrowText(post)
   const title      = generateTitle(post)
@@ -341,12 +315,12 @@ function HeroCard({ post, onLikeToggle }: {
   const sport      = post.sport_tag ?? post.type ?? null
 
   return (
-    <article style={{ borderRadius: 20, overflow: 'hidden', position: 'relative', background: userColor }}>
+    <article style={{ borderRadius: 20, overflow: 'hidden', position: 'relative', background: '#1E2B20' }}>
 
       {/* Giant initials ornament */}
       <div style={{ position: 'absolute', right: -10, bottom: -20, pointerEvents: 'none', userSelect: 'none', overflow: 'hidden' }}>
-        <span style={{ ...SYNE, fontWeight: 800, fontSize: 280, color: 'rgba(255,255,255,0.10)', lineHeight: 1 }}>
-          {initials}
+        <span style={{ ...SYNE, fontWeight: 800, fontSize: 280, color: 'rgba(196,245,66,0.08)', lineHeight: 1 }}>
+          {getInitials(post.userName)}
         </span>
       </div>
 
@@ -358,14 +332,7 @@ function HeroCard({ post, onLikeToggle }: {
             onClick={() => router.push(`/dashboard/profile/${post.userId}`)}
             style={{ display: 'inline-flex', alignItems: 'center', gap: 6, background: 'rgba(255,255,255,0.92)', borderRadius: 999, padding: '4px 12px 4px 4px', border: 'none', cursor: 'pointer' }}
           >
-            {post.userAvatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img src={post.userAvatarUrl} alt={firstName} style={{ width: 28, height: 28, borderRadius: '50%', objectFit: 'cover', border: '1.5px solid white' }} />
-            ) : (
-              <div style={{ width: 28, height: 28, borderRadius: '50%', background: userColor, display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1.5px solid rgba(255,255,255,0.4)' }}>
-                <span style={{ ...SYNE, fontSize: 9, fontWeight: 800, color: 'white' }}>{initials}</span>
-              </div>
-            )}
+            <Avatar initials={getInitials(post.userName)} imageUrl={post.userAvatarUrl} size="sm" />
             <span style={{ ...DM, fontSize: 11, fontWeight: 700, color: INK }}>{firstName}</span>
           </button>
         </div>

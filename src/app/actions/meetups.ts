@@ -24,6 +24,10 @@ export type CreateMeetupParams = {
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
+function sanitizeName(name: string): string {
+  return name.replace(/[<>&"']/g, (c) => ({ '<': '', '>': '', '&': '', '"': '', "'": '' }[c] ?? c))
+}
+
 async function logActivity(
   supabase: Awaited<ReturnType<typeof createServerSupabaseClient>>,
   userId: string,
@@ -115,7 +119,7 @@ export async function createMeetup(params: CreateMeetupParams) {
     .or(`from_user_id.eq.${user.id},to_user_id.eq.${user.id}`)
 
   const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
-  const senderName = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+  const senderName = sanitizeName(profile.data?.full_name ?? profile.data?.username ?? 'Iemand')
 
   const buddyIds = (buddyRequests ?? []).map(r =>
     r.from_user_id === user.id ? r.to_user_id : r.from_user_id
@@ -160,7 +164,7 @@ export async function showInterest(meetupId: string, message?: string) {
   if (error) return { success: false, error: 'Al interesse getoond' }
 
   const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
-  const senderName = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+  const senderName = sanitizeName(profile.data?.full_name ?? profile.data?.username ?? 'Iemand')
 
   await sendNotification(
     supabase, meetup.creator_id, 'meetup_interest',
@@ -207,7 +211,7 @@ export async function respondToInterest(
   if (response === 'geaccepteerd') {
     // Stuur systeem-bericht in chat
     const profile = await supabase.from('profiles').select('full_name, username').eq('id', userId).single()
-    const name = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+    const name = sanitizeName(profile.data?.full_name ?? profile.data?.username ?? 'Iemand')
     await supabase.from('meetup_messages').insert({
       meetup_id: meetupId,
       sender_id: userId,
@@ -267,7 +271,7 @@ export async function leaveMeetup(meetupId: string) {
 
   // Systeem-bericht
   const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
-  const name = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+  const name = sanitizeName(profile.data?.full_name ?? profile.data?.username ?? 'Iemand')
   await supabase.from('meetup_messages').insert({
     meetup_id: meetupId,
     sender_id: user.id,
@@ -303,7 +307,7 @@ export async function cancelMeetup(meetupId: string, reason?: string) {
     : `De Meetup '${meetup.title}' is geannuleerd`
 
   const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
-  const name = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+  const name = sanitizeName(profile.data?.full_name ?? profile.data?.username ?? 'Iemand')
   await supabase.from('meetup_messages').insert({
     meetup_id: meetupId, sender_id: user.id,
     content: `Meetup geannuleerd door ${name}${reason ? `. Reden: ${reason}` : ''}`,
@@ -355,7 +359,7 @@ export async function sendMeetupMessage(meetupId: string, content: string) {
   try {
     const { data: meetupInfo } = await supabase.from('meetups').select('title, creator_id').eq('id', meetupId).single()
     const profile = await supabase.from('profiles').select('full_name, username').eq('id', user.id).single()
-    const senderName = profile.data?.full_name ?? profile.data?.username ?? 'Iemand'
+    const senderName = sanitizeName(profile.data?.full_name ?? profile.data?.username ?? 'Iemand')
 
     const { data: otherParticipants } = await supabase
       .from('meetup_participants')

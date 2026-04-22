@@ -3,23 +3,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { ArrowLeft, Send, Users, Crown } from 'lucide-react'
 import Link from 'next/link'
-import { Avatar } from '@/components/Avatar'
+import { Avatar, getInitials } from '@/components/ui/Avatar'
 import { createClient } from '@/lib/supabase'
 import { sendMeetupMessage, getMeetupMessages, type MeetupMessageItem } from '@/app/actions/meetups'
-
-// ─── Kleursysteem ─────────────────────────────────────────────────────────────
-
-const CHAT_COLORS = [
-  '#3B82F6', '#22C55E', '#8B5CF6', '#EC4899',
-  '#F59E0B', '#06B6D4', '#EF4444', '#10B981',
-]
-
-function getUserColor(userId: string, participantIds: string[], hostId: string): string {
-  if (userId === hostId) return CHAT_COLORS[0] // host krijgt altijd blauw
-  const idx = participantIds.indexOf(userId)
-  if (idx === -1) return CHAT_COLORS[1]
-  return CHAT_COLORS[idx % CHAT_COLORS.length]
-}
 
 // ─── Hulpfuncties ─────────────────────────────────────────────────────────────
 
@@ -70,15 +56,11 @@ type Props = {
 
 function ParticipantsOverlay({
   participants,
-  hostId,
   currentUserId,
-  participantIds,
   onClose,
 }: {
   participants: Participant[]
-  hostId: string
   currentUserId: string
-  participantIds: string[]
   onClose: () => void
 }) {
   const ref = useRef<HTMLDivElement>(null)
@@ -101,26 +83,24 @@ function ParticipantsOverlay({
       </div>
       <div className="max-h-64 overflow-y-auto">
         {participants.map(p => {
-          const color = getUserColor(p.userId, participantIds, hostId)
           const isMe = p.userId === currentUserId
           return (
             <div key={p.userId} className="flex items-center gap-3 px-4 py-2.5 hover:bg-gray-50 transition-colors">
               <div className="relative shrink-0">
                 {isMe ? (
-                  <Avatar name={p.name} imageUrl={p.avatarUrl} size="xs" />
+                  <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="xs" />
                 ) : (
                   <Link href={`/dashboard/profile/${p.userId}`}>
-                    <Avatar name={p.name} imageUrl={p.avatarUrl} size="xs" />
+                    <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="xs" />
                   </Link>
                 )}
               </div>
               {isMe ? (
                 <p className="flex-1 text-sm font-semibold text-black truncate">{p.name}</p>
               ) : (
-                <Link href={`/dashboard/profile/${p.userId}`} className="flex-1 text-sm font-semibold text-black truncate hover:text-[#E87722] transition-colors">{p.name}</Link>
+                <Link href={`/dashboard/profile/${p.userId}`} className="flex-1 text-sm font-semibold text-black truncate hover:text-forest transition-colors">{p.name}</Link>
               )}
               <div className="flex items-center gap-1 shrink-0">
-                <div className="w-2.5 h-2.5 rounded-full" style={{ background: color }} />
                 {p.isHost && (
                   <span className="text-[10px] font-bold text-[#E87722] bg-orange-50 px-1.5 py-0.5 rounded-full">host</span>
                 )}
@@ -154,11 +134,6 @@ export default function MeetupChatView({
   const messagesEndRef = useRef<HTMLDivElement>(null)
   const messagesAreaRef = useRef<HTMLDivElement>(null)
   const textareaRef = useRef<HTMLTextAreaElement>(null)
-
-  // Geordende lijst van participant IDs voor consistente kleurindex
-  const participantIds = [...participants]
-    .sort((a, b) => (a.userId === hostId ? -1 : b.userId === hostId ? 1 : a.userId.localeCompare(b.userId)))
-    .map(p => p.userId)
 
   // Profielmap
   const profileMap = Object.fromEntries(participants.map(p => [p.userId, p]))
@@ -284,7 +259,7 @@ export default function MeetupChatView({
           <div className="flex -space-x-1.5">
             {visibleParticipants.map(p => (
               <div key={p.userId} className="w-7 h-7 rounded-full border-2 border-white overflow-hidden">
-                <Avatar name={p.name} imageUrl={p.avatarUrl} size="xs" />
+                <Avatar initials={getInitials(p.name)} imageUrl={p.avatarUrl} size="xs" />
               </div>
             ))}
           </div>
@@ -298,9 +273,7 @@ export default function MeetupChatView({
       {showParticipants && (
         <ParticipantsOverlay
           participants={participants}
-          hostId={hostId}
           currentUserId={currentUserId}
-          participantIds={participantIds}
           onClose={() => setShowParticipants(false)}
         />
       )}
@@ -324,7 +297,6 @@ export default function MeetupChatView({
           const showDateSep = !prevMsg || !isSameDay(prevMsg.createdAt, msg.createdAt)
           const prevFromSame = prevMsg && !prevMsg.isSystem && prevMsg.senderId === msg.senderId && !showDateSep
           const showName = !fromMe && !msg.isSystem && !prevFromSame
-          const color = getUserColor(msg.senderId, participantIds, hostId)
           const isHost = msg.senderId === hostId
           const profile = profileMap[msg.senderId]
 
@@ -354,7 +326,7 @@ export default function MeetupChatView({
                   {/* Naam boven bericht */}
                   {showName && (
                     <div className="flex items-center gap-1 ml-9 mb-0.5">
-                      <span className="text-xs font-semibold" style={{ color }}>
+                      <span className="text-xs font-semibold text-forest">
                         {msg.senderName}
                       </span>
                       {isHost && (
@@ -370,7 +342,7 @@ export default function MeetupChatView({
                     {!fromMe && (
                       <div className="w-7 h-7 rounded-full overflow-hidden shrink-0 self-end">
                         {!prevFromSame
-                          ? <Avatar name={msg.senderName} imageUrl={profile?.avatarUrl ?? null} size="xs" />
+                          ? <Avatar initials={getInitials(msg.senderName)} imageUrl={profile?.avatarUrl ?? null} size="xs" />
                           : <div className="w-7 h-7" />}
                       </div>
                     )}

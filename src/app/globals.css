@@ -1,16 +1,21 @@
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap');
-
-:root {
-  --background: #F5F0E8;
-  --foreground: #171717;
-}
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* ── Brand colors ──────────────────────────────────────── */
+  --color-lime:       #C4F542;
+  --color-forest:     #1E2B20;
+  --color-bone:       #F4F1E8;
+  --color-off-black:  #0B0B0B;
+
+  /* ── Utility shades ────────────────────────────────────── */
+  --color-forest-80:  #1E2B20CC;
+  --color-forest-50:  #1E2B2080;
+  --color-forest-10:  #1E2B201A;
+  --color-bone-80:    #F4F1E8CC;
+
+  /* ── Typography ────────────────────────────────────────── */
+  --font-display: var(--font-display);
+  --font-body:    var(--font-body);
 }
 
 html {
@@ -20,8 +25,9 @@ html {
 
 body {
   height: 100%;
-  background: #F5F0E8;
-  color: #171717;
+  background: #F4F1E8;
+  color: #0B0B0B;
+  font-family: var(--font-body);
 }
 
 @keyframes fadeInUp {
