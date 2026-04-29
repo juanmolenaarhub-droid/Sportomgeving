@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Buddys</string>
-    <string name="title_activity_main">Buddys</string>
-    <string name="package_name">nl.buddys.app</string>
-    <string name="custom_url_scheme">nl.buddys.app</string>
-</resources>
